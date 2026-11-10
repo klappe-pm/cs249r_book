@@ -1,0 +1,342 @@
+{
+  "documents": 13,
+  "math_headings": 33,
+  "mismatches": [],
+  "checked": [
+    {
+      "source": "books/vol1/backmatter/appendix_algorithm.qmd",
+      "anchor": "empirical-exponents-and-the-datasetsizeparametersapprox-20-rule",
+      "expected": [
+        "{D}/{P}\\approx 20"
+      ],
+      "actual": [
+        "{D}/{P}\\approx 20"
+      ],
+      "heading": "##### Empirical Exponents and the ${D}/{P}\\approx 20$ Rule"
+    },
+    {
+      "source": "books/vol2/01_introduction/01_introduction.qmd",
+      "anchor": "sec-vol2-introduction-c-cube",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "# V2-01.06 The C³ Taxonomy and Foundations of Scale"
+    },
+    {
+      "source": "books/vol2/01_introduction/01_introduction.qmd",
+      "anchor": "sec-vol2-introduction-projection",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### Projection from D·A·M to C³"
+    },
+    {
+      "source": "books/vol2/01_introduction/01_introduction.qmd",
+      "anchor": "sec-vol2-introduction-c3-landscape",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### The C³ Intersection Landscape"
+    },
+    {
+      "source": "books/vol2/03_network_fabrics/03_network_fabrics.qmd",
+      "anchor": "sec-network-fabrics-performance-model",
+      "expected": [
+        "{\\alpha}",
+        "{\\beta}"
+      ],
+      "actual": [
+        "{\\alpha}",
+        "{\\beta}"
+      ],
+      "heading": "### The ${\\alpha}$-${\\beta}$ Performance Model"
+    },
+    {
+      "source": "books/vol2/13_security_privacy/13_security_privacy.qmd",
+      "anchor": "sec-security-privacy-epsilon-deltadifferential-privacy-formulation-bbe9",
+      "expected": [
+        "({\\epsilon}, {\\delta})"
+      ],
+      "actual": [
+        "({\\epsilon}, {\\delta})"
+      ],
+      "heading": "#### The $({\\epsilon}, {\\delta})$-Differential Privacy Formulation"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_dam.qmd",
+      "anchor": "bridging-to-c3",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### Bridging to C³"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "# V2 The C³ Taxonomy"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-from-dam",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## From D·A·M to C³"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-intersection-landscape",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## C³ Intersections"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-comp-comm",
+      "expected": [
+        "\\cap"
+      ],
+      "actual": [
+        "\\cap"
+      ],
+      "heading": "### Compute $\\cap$ Communication"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-comp-coord",
+      "expected": [
+        "\\cap"
+      ],
+      "actual": [
+        "\\cap"
+      ],
+      "heading": "### Compute $\\cap$ Coordination"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-comm-coord",
+      "expected": [
+        "\\cap"
+      ],
+      "actual": [
+        "\\cap"
+      ],
+      "heading": "### Communication $\\cap$ Coordination"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-coordination-overlap",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### C³ Coordination and Overlap"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-traffic-light",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### The C³ Traffic Light"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-case-studies",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## C³ Case Studies"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-scorecard",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## C³ Scorecard"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-diagnostic-tree",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## C³ Infrastructure Diagnostic Decision Tree and Fleet Diagnostic Scorecard"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-telemetry-mapping",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "### Telemetry Signal Mapping to C³ Axes"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_c3.qmd",
+      "anchor": "sec-appdx-c3-taxonomy-scaling-laws",
+      "expected": [
+        "^3"
+      ],
+      "actual": [],
+      "heading": "## Scaling Laws Through the C³ Lens"
+    },
+    {
+      "source": "books/vol2/backmatter/appendix_communication.qmd",
+      "anchor": "sec-appdx-comm-foundations-alpha-beta",
+      "expected": [
+        "{\\alpha}",
+        "{\\beta}"
+      ],
+      "actual": [
+        "{\\alpha}",
+        "{\\beta}"
+      ],
+      "heading": "## The ${\\alpha}$-${\\beta}$ Communication Model"
+    },
+    {
+      "source": "books/vol3/03_test_time_compute/03_test_time_compute.qmd",
+      "anchor": "sec-vol3-test-time-compute-pass-at-k",
+      "expected": [
+        "{k}"
+      ],
+      "actual": [
+        "{k}"
+      ],
+      "heading": "### Candidate Availability Under Pass@${k}$"
+    },
+    {
+      "source": "books/vol3/backmatter/appendix_math.qmd",
+      "anchor": "sec-vol3-appendix-math-pass-at-k",
+      "expected": [
+        "{k}"
+      ],
+      "actual": [
+        "{k}"
+      ],
+      "heading": "### Pass@${k}$ and Repeated-Run Consistency"
+    },
+    {
+      "source": "books/vol4/11_planning/11_planning.qmd",
+      "anchor": "sec-planning-quintic-splines",
+      "expected": [
+        "^2"
+      ],
+      "actual": [],
+      "heading": "### Quintic Splines and C² Boundary Matching"
+    },
+    {
+      "source": "books/vol4/11_planning/11_planning.qmd",
+      "anchor": "sec-planning-c2-stopping-suffix",
+      "expected": [
+        "^2"
+      ],
+      "actual": [],
+      "heading": "### The C² Stopping Suffix and Jerk-Limited Braking"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_ml.qmd",
+      "anchor": "special-euclidean-group-specialeuclideangroup-transforms",
+      "expected": [
+        "{SE(3)}"
+      ],
+      "actual": [
+        "{SE(3)}"
+      ],
+      "heading": "### Special Euclidean Group ${SE(3)}$ Transforms"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_ml.qmd",
+      "anchor": "lie-algebra-specialeuclideanalgebra-and-manifold-perturbation",
+      "expected": [
+        "{\\mathfrak{se}(3)}"
+      ],
+      "actual": [
+        "{\\mathfrak{se}(3)}"
+      ],
+      "heading": "#### Lie Algebra ${\\mathfrak{se}(3)}$ and Manifold Perturbation"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_ml.qmd",
+      "anchor": "the-asymptotic-collapse-at-zero-failures-observedtrialfailurecount-0",
+      "expected": [
+        "{k} = 0"
+      ],
+      "actual": [
+        "{k} = 0"
+      ],
+      "heading": "#### The Asymptotic Collapse at Zero Failures (${k} = 0$)"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_ml.qmd",
+      "anchor": "exact-bounds-at-zero-failures-observedtrialfailurecount-0",
+      "expected": [
+        "{k} = 0"
+      ],
+      "actual": [
+        "{k} = 0"
+      ],
+      "heading": "#### Exact Bounds at Zero Failures (${k} = 0$)"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_spa.qmd",
+      "anchor": "sec-appendix-spa-belief",
+      "expected": [
+        "{S} \\cap {P}"
+      ],
+      "actual": [
+        "{S} \\cap {P}"
+      ],
+      "heading": "### ${S} \\cap {P}$ Spatial Belief and Epistemic Handoffs"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_spa.qmd",
+      "anchor": "sec-appendix-spa-motion",
+      "expected": [
+        "{P} \\cap {A}"
+      ],
+      "actual": [
+        "{P} \\cap {A}"
+      ],
+      "heading": "### ${P} \\cap {A}$ Admitted Motion and Kinetic Seam Feasibility"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_spa.qmd",
+      "anchor": "sec-appendix-spa-feedback",
+      "expected": [
+        "{A} \\cap {S}"
+      ],
+      "actual": [
+        "{A} \\cap {S}"
+      ],
+      "heading": "### ${A} \\cap {S}$ Physical Feedback, Contact Dynamics, and Reflex Latency"
+    },
+    {
+      "source": "books/vol4/backmatter/appendix_spa.qmd",
+      "anchor": "sec-appendix-spa-permission",
+      "expected": [
+        "{S} \\cap {P} \\cap {A}"
+      ],
+      "actual": [
+        "{S} \\cap {P} \\cap {A}"
+      ],
+      "heading": "### ${S} \\cap {P} \\cap {A}$ Independent Permission Decisions and Silicon Isolation"
+    }
+  ]
+}

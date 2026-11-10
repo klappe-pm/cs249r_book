@@ -1,0 +1,482 @@
+---
+title: V4 The Sense–Plan–Act Paradigm
+type: Reference
+volume: 4
+chapter: 0
+publication_status: In Development
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol4/backmatter/appendix_spa.qmd
+source_anchor: sec-appendix-spa
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Reference
+- Book/Volume_4
+rendered_source_url: https://mlsysbook.ai/vol4/backmatter/appendix_spa.html
+---
+
+# V4 The Sense–Plan–Act Paradigm
+
+[[Home|Home]] · [[01 Books/Volume IV - Physical AI/Volume 4 Overview|Volume Overview]]
+
+^sec-appendix-spa
+
+This appendix uses Sense–Plan–Act to locate failures in sensing, motion proposals, and physical execution. Its reference tables connect observable symptoms to timing, state, and force budgets, then identify the evidence needed to test a remedy. The framework also separates a policy’s ability to propose useful behavior from the permission path’s responsibility to admit motion and preserve a feasible fallback.
+
+## How to Use This Appendix
+
+^how-to-use-this-appendix
+
+Engineers consult this reference when architecting cyber-physical boundaries, evaluating whether end-to-end learned policies can run safely on hardware, or diagnosing operational failures across perception, planning, and control. Each recurring design question or production failure symptom maps to the section that specifies its governing physical contract ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-navigation|table 1]]).
+
+| When you encounter this architectural or diagnostic symptom                        | Consult                                                                                                | For this physical contract or diagnostic framework                                         |
+|:-----------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| Evaluating classical S·P·A vs. end-to-end VLA vs. hierarchical physical AI         | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-evolution\|section 1.2]]       | Representation, timing, and authority contracts across architectural choices               |
+| Triaging single-axis failures in evidence age, proposal validity, or torque limits | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-summary\|section 1.3]]         | Three-axis taxonomy and constraint budgets across Sense, Plan, and Act                     |
+| Spatial memory retains phantom obstacles or misclassifies unobserved space         | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-belief\|section 1.4.1]]        | ${S} \cap {P}$ epistemic handoffs, evidence epochs, and raycast eviction                   |
+| Action-chunk seams command violent torque spikes or exhaust braking margin         | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-motion\|section 1.4.2]]        | ${P} \cap {A}$ kinetic handoffs, ${C}^2$ quintic blending, and stopping suffixes           |
+| End-effector oscillations or limit-cycle chatter occur during rigid contact        | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-feedback\|section 1.4.3]]      | ${A} \cap {S}$ contact passivity, contact-specific response budgets, and impedance control |
+| Safety thread overruns, SoC memory contention, or brownout during inference bursts | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-permission\|section 1.4.4]]    | ${S} \cap {P} \cap {A}$ permission decisions, CBF-QP filters, and silicon isolation        |
+| Tracing cyber-physical custody and typed contracts across the machine levels       | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-lineage\|section 1.5]]         | The record chain from physical plant limits to the release manifest                        |
+| Matching observable production symptoms to physical telemetry and remedies         | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-troubleshooting\|section 1.6]] | Production troubleshooting matrix with measured diagnostic discriminators                  |
+| Establishing verification gates and acceptance criteria before physical release    | [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^sec-appendix-spa-scorecard\|section 1.7]]       | S·P·A systems scorecard across all axes and intersection handoffs                          |
+
+Table 1: **S·P·A architectural and diagnostic navigation**: Symptom-to-section index mapping operational failures and design trade-offs to their governing physical contracts.
+
+^tbl-spa-navigation
+
+### Four-Pass Diagnostic Protocol
+
+^four-pass-diagnostic-protocol
+
+When an embodied system violates a safety envelope, misses an execution deadline, chatters during contact, or trips hardware interlocks, ad-hoc parameter tuning can mask the underlying boundary failure. Work through the diagnosis in four systematic passes that separate symptom capture from causal intervention:
+
+1.  **State the physical symptom and binding budget**: Record the observed stopping-distance breach, contact-force transient, thermal trip, or enforcer deadline overrun, including physical units, payload, operating state, and the threshold declared in the machine’s limit record (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body|The Physical Body]]**).
+2.  **Localize the candidate axis or intersection**: Use [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-components-ref|table 3]] for a preliminary triage across the three core axes. When the symptom involves interface timing, state representations, or actuation authority, move directly to the intersection landscape in [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-intersections|table 4]].
+3.  **Test the quantitative hypothesis**: Measure the candidate constraint or budget using the instruments in [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-troubleshooting|table 6]], such as timestamp skew, bus queue time, phase current, or tracking error.
+4.  **Intervene and remeasure across the causal boundary**: Apply a principled remedy and rerun the test over the declared load, timing, and fault envelope.
+
+The symptom selects a candidate entry point, not a diagnosis. Contact oscillations motivate an Act–Sense (${A} \cap {S}$) feedback test; a torque transient motivates a Plan–Act (${P} \cap {A}$) seam test. Phantom obstacles motivate a Sense–Plan (${S} \cap {P}$) evidence test. Deadline jitter under concurrent inference motivates a shared-resource test at the permission decision (${S} \cap {P} \cap {A}$). Measurements must distinguish these hypotheses from mechanical faults, sensor noise, and other causes.
+
+## Architectural Choices and Their Contracts
+
+^sec-appendix-spa-evolution
+
+A stalled planner and an unstable contact loop require different repairs even when both belong to the same robot. Sense–Plan–Act names functional responsibilities; it does not require that every component wait for the preceding component to finish. Classical estimators, learned policies, and feedback controllers can all participate in concurrent, multirate systems. The useful architectural comparison concerns which representation crosses each interface, how old it is, and which component can authorize motion.
+
+### Modularity, Reactive Control, and Learned Proposals
+
+^modularity-reactive-control-and-learned-proposals
+
+Early robotics systems such as Shakey combined perception, symbolic planning, and physical execution.[[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^fn1|¹]] Brooks’ subsumption architecture demonstrated a different decomposition into asynchronous behavior layers ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-brooks1986robust|Brooks 1986]]; [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-brooks1991intelligence|Brooks 1991]]).[[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^fn2|²]] These approaches motivate a durable distinction between deliberation and rapid feedback. They do not establish that modular robotics must be synchronous, stateless, or unable to handle uncertainty. A modular interface can carry covariance, observation history, and explicit failure status; a reactive controller can retain state.
+
+Learned policies expand the behaviors that can be proposed from images, language, and demonstrations. Vision-language-action models, including RT-2, demonstrate generalization to novel objects and commands ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-brohan2023rt2|Brohan et al. 2023]]), while diffusion policies represent multimodal action choices ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-chi2024diffusionpolicy|Chi et al. 2025]]). These capabilities can reduce the need to specify every recognition rule or manipulation strategy by hand. Their success depends on the training distribution, feedback, and deployment conditions. Neither an end-to-end training objective nor a modular software boundary determines actuator authority; the deployed system must establish that contract separately.
+
+### Timing and Representation Tests
+
+^timing-and-representation-tests
+
+For a blocking sensor-to-actuation path, the latency of one observation’s response is
+
+$$
+{T_{\text{total}}} = {T_{\text{sense}}} + {T_{\text{plan}}} + {T_{\text{act}}}.
+$$
+
+ Each term must include the relevant queueing, transport, and execution delay. Pipelining can overlap work on successive observations and improve throughput, but it does not remove the age of the observation used for the current command. Batching independent cameras, candidate trajectories, or robots is possible when their deadlines permit it. Future observations from one robot remain conditional on its intervening actions and cannot be treated as already available independent samples.
+
+For approximately constant speed during an uncorrected delay, the distance traveled is
+
+$$
+{d_{\text{delay}}} = \int_0^{{T_{\text{total}}}} {v}({t})\,d{t} \approx {v} {T_{\text{total}}}.
+$$
+
+ A local controller may continue to stabilize the plant during that interval; the distance is therefore not necessarily blind travel. It is the motion that the delayed observation cannot yet correct. **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.04 Stopping Envelopes#^sec-enforcement-composite-budget|Sizing the composite stopping budget]]** combines delay travel with the selected braking profile and clearance margins. In a linearized loop, a pure delay also adds phase $-{\omega} {T_{\text{total}}}$ radians at angular frequency ${\omega}$; the allowable delay depends on the loop’s crossover frequency and available phase margin.
+
+Representations impose a separate test. If a geometric state ${\mathbf{Z}_{\text{geom}}}$ is computed solely from sensory data ${\mathbf{S}}$, the data processing inequality gives
+
+$$
+{I}({\mathbf{S}};{\mathbf{Y}_{\text{task}}}) \ge {I}({\mathbf{Z}_{\text{geom}}};{\mathbf{Y}_{\text{task}}}),
+$$
+
+ where ${\mathbf{Y}_{\text{task}}}$ is a task-relevant variable. The inequality supplies no percentage of lost information; equality is possible when the representation retains all information needed for that task. A bounding box can support clearance reasoning while omitting latch state or material compliance. A learned representation may retain useful task cues, but metric clearance checks still need quantities with calibrated units and uncertainty bounds. Even raw images may not identify friction or hidden mass, so learning does not remove the need for additional sensing or physical qualification.
+
+Runtime choices affect both tests. Shared memory, direct memory access (DMA), and preallocated inference buffers can reduce copies and allocation overhead. They also require buffer ownership, coherent snapshots, and measured contention bounds. A sequence lock can require retries; static allocation alone does not bound execution time. **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13 Workload Placement#^sec-placement|Workload Placement]]** develops the isolation evidence needed when inference and permission checks share hardware.
+
+### Architectural Comparison
+
+^architectural-comparison
+
+Capabilities remain separate from obligations across proposal and permission roles ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-architectural-comparison|table 2]]). The permission architecture can accompany either a classical or a learned proposer.
+
+| Architectural dimension     | Modular proposer                                    | Learned proposer                                         | Independent permission path                               |
+|:----------------------------|:----------------------------------------------------|:---------------------------------------------------------|:----------------------------------------------------------|
+| **Useful capability**       | Explicit geometry, dynamics, and search constraints | Recognition and action strategies learned from data      | Admit motion against declared physical limits             |
+| **Representation**          | Metric state, maps, uncertainty, and task symbols   | Images, latent features, language, and action candidates | Timed state estimates, limits, and executable commands    |
+| **Timing obligation**       | Bound the age of inputs and arrival of plans        | Measure proposal latency and handle missing updates      | Meet the configured response deadline under admitted load |
+| **Failure to test**         | Model mismatch, omitted uncertainty, stale state    | Distribution shift, invalid targets, late proposals      | Missing premises, infeasible filtering, deadline failure  |
+| **Fallback responsibility** | Propose recovery or a replacement plan              | Propose recovery or a replacement plan                   | Own a validated response without waiting for the proposer |
+
+Table 2: **Architectural comparison across proposal and permission roles**: Classical and learned components offer different ways to construct behavior; neither earns physical authority from its implementation alone.
+
+^tbl-spa-architectural-comparison
+
+### The Proposal Boundary and Rate Hierarchy
+
+^the-proposal-boundary-and-rate-hierarchy
+
+The five-level machine separates the Brain’s proposals from permission to execute them (**[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.08 The Machine in Five Levels#^sec-boundary-machine-model|The Machine in Five Levels]]**).[[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^fn3|³]] Intent generation, trajectory proposals, permission checks, and motor-current control can run at different rates. Those rates follow the plant, contact conditions, and measured computation budget; they are not universal properties of model classes. A sufficiently fast learned controller can participate in a feedback loop, but its timing and stability still require qualification.
+
+Action chunks let a slower proposer supply multiple execution steps. They also increase the interval over which a proposal can become stale. The permission path therefore checks the measured entry state, current evidence, dynamic limits, and the available fallback before commitment. Rejecting a successor leaves still-valid active authority intact. If no successor is admitted by the earlier admission cutoff, the permission path schedules transfer to the resident or state-matched fallback at the commitment deadline. Expired evidence, state bounds, or leases can require an earlier transfer. A stopping suffix is the book’s recurring example; some loads and contacts require a validated hold or release instead of an unconstrained stop.
+
+The proposal boundary is an authority boundary inside the machine. The causal boundary is where an admitted command produces physical work. Deterministic execution below the proposal boundary helps make timing inspectable, but it does not certify the sensors, model assumptions, or entire machine by itself.
+
+## Diagnostic Summary of the S·P·A Axes
+
+^sec-appendix-spa-summary
+
+The S·P·A taxonomy groups diagnosis by three responsibilities: capturing evidence, proposing behavior, and applying force. The groups overlap because a physical failure often crosses an interface. [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-components-ref|Table 3]] identifies the constraint to measure before selecting a remedy.
+
+| Axis          | Operational role                    | Constraint or budget to test                                                     | Diagnostic action                                                                              | Book locus                                                                                                                                                                                                                                                                           |
+|:--------------|:------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Sense (S)** | Capture and estimate physical state | Evidence age, field of view, clock conversion, uncertainty, and sensor transport | Compare capture and per-cell evidence epochs with a measured state and the permission deadline | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08 Sensor Perception#^sec-perception\|Sensor Perception]]**, **[[01 Books/Volume IV - Physical AI/03 Running the Machine/09 Spatial Memory/V4-09 Spatial Memory#^sec-memory\|Spatial Memory]]**                                                                                              |
+| **Plan (P)**  | Propose a target and trajectory     | Intent validity, compute latency, dynamics, and stopping-suffix admission        | Compare proposed targets and future states with independently checked limits                   | **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/06 Policy Training/V4-06 Policy Training#^sec-training\|Policy Training]]**, **[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10 Grounded Intent#^sec-intent\|Grounded Intent]]**, **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning\|Trajectory Planning]]**     |
+| **Act (A)**   | Apply and measure force             | Current, torque, thermal headroom, brake response, and kinetic clearance         | Measure command-to-force response and achieved stop under the declared load                    | **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body\|The Physical Body]]**, **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04 The Nervous System#^sec-nervous\|The Nervous System]]**, **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12 Safety Enforcement#^sec-enforcement\|Safety Enforcement]]** |
+
+Table 3: **S·P·A axis reference**: The axes organize diagnosis around measured constraints and budgets, with the chapter that develops each contract.
+
+^tbl-spa-components-ref
+
+### The Sense Axis: Evidence Age and Temporal Registration
+
+^the-sense-axis-evidence-age-and-temporal-registration
+
+A fresh map publication can contain old observations. Sense diagnosis therefore follows the capture epoch through clock conversion, transport, and estimation rather than treating message arrival as the observation time. Exposure duration and rolling-shutter readout can also spread one image across several physical states. **[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08 Sensor Perception#^sec-perception|Sensor Perception]]** develops this distinction; **[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-ptp|Clock Synchronization and Network Timestamps]]** supplies the clock-conversion model.
+
+Let ${t_{\text{capture}}}$ be the capture epoch converted to the permission clock and ${\epsilon_{\text{sync}}}$ a bound on conversion error. A conservative age check is
+
+$$
+{t_{\text{age}}} = {t_{\text{curr}}} - {t_{\text{capture}}} + {\epsilon_{\text{sync}}} \le {T_{\text{inv}}}.
+$$
+
+ The validity limit must follow the task’s motion and uncertainty bounds. For an obstacle whose speed is bounded by ${v_{\max}}$, an initial position uncertainty radius ${r}_0$ expands conservatively as
+
+$$
+{r_{\text{risk}}}({t_{\text{age}}}) = {r}_0 + {v_{\max}} {t_{\text{age}}}.
+$$
+
+ This bound assumes the stated speed limit holds and does not account for an obstacle that was never observed. Expired evidence cannot renew a clearance claim merely because the map was republished.
+
+### The Plan Axis: Proposal Quality and Admitted Horizon
+
+^the-plan-axis-proposal-quality-and-admitted-horizon
+
+A useful plan must specify an achievable task and arrive in time to be executed. Learned intent models and policies can supply semantic targets and dexterous action candidates, while search and optimization can construct trajectories from explicit models. Both need closed-loop evaluation. Low prediction error on demonstrations does not characterize the states induced by the deployed policy. The $\mathcal{O}({S}^2{\epsilon})$ behavioral-cloning bound concerns worst-case cumulative task cost under stated assumptions, not a universal distance-drift law (**[[05 Reference/Volume IV - Physical AI/V4 Machine Learning Background#^sec-appendix-ml-compounding|Imitation Learning and Compounding Covariate Shift]]**; Ross et al. ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-ross2011reduction|2011]])).
+
+For a chunk of ${H}$ waypoints separated by ${\Delta} {t}$, the proposed horizon is ${H}{\Delta} {t}$. Only the portion supported by current evidence, timing, and fallback authority may be admitted. Chunking reduces proposal frequency but can delay correction; single-step control remains viable when the model and runtime satisfy the required feedback budget. **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning|Trajectory Planning]]** develops the seam and stopping checks that turn either proposal form into executable motion.
+
+### The Act Axis: Electromechanical Dynamics and Thermal Ceilings
+
+^the-act-axis-electromechanical-dynamics-and-thermal-ceilings
+
+A normalized policy output must eventually map to a physical setpoint. For a motor with torque constant ${K_t}$, the motor-side torque is approximately ${\tau_{\text{motor}}} = {K_t} {i_q}$ under the applicable field-oriented-control convention. Current response depends on winding inductance, resistance, back-EMF, and available voltage; it cannot follow an arbitrary instantaneous command. **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body|The Physical Body]]** develops these actuator limits and their measurement.
+
+Gear reduction also changes the inertia seen at the joint. For an ideal rigid reducer with speed ratio ${N_{\text{gear}}} = {\omega_m}/{\omega}_j$, rotor inertia ${J_{\text{rotor}}}$ contributes ${N_{\text{gear}}}^2 {J_{\text{rotor}}}$ on the joint side. In a single-joint model,
+
+$$
+{\tau_{\text{out}}} = {N_{\text{gear}}}^2 {J_{\text{rotor}}}{\ddot{q}} + {\tau_{\text{load}}}, \qquad {\tau_{\text{motor}}} = {\tau_{\text{out}}}/{N_{\text{gear}}},
+$$
+
+ where ${\tau_{\text{load}}}$ includes the other joint-side inertial and load torques and losses are neglected. A step in acceleration produces a step in required torque; its magnitude depends on inertia and the step size. Infinite ideal jerk does not imply infinite torque or a particular current spike.
+
+A lumped winding thermal model gives another diagnostic budget:
+
+$$
+{C_{\text{th}}}\frac{d{T_{\text{winding}}}}{d{t}} = {I_{\text{phase}}}^2 {R}({T_{\text{winding}}}) - \frac{{T_{\text{winding}}}-{T_{\text{amb}}}}{{R_{\text{th}}}}.
+$$
+
+ Here the current and resistance must use a consistent equivalent-winding convention. Continuous and peak current limits, duty cycle, cooling, and measured temperature determine admissible torque. Permanent-magnet demagnetization can occur below the Curie temperature; the relevant limit is the motor’s qualified operating envelope.
+
+Single-axis tests narrow the candidate cause. Interface tests then determine whether the failure arose from a stale estimate, an infeasible trajectory seam, or interference with the permission path.
+
+## The Intersection Landscape
+
+^sec-appendix-spa-intersections
+
+When a mobile manipulator clips a cart that just rolled out of a cross-aisle, the fault often spans more than one subsystem: a voxel layer that held a stale free-space timestamp, a trajectory handoff that delayed braking, or a shared memory bus that stalled the safety check. The Sense, Plan, and Act (S·P·A) triad meets across three pairwise interfaces and one central permission region ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^fig-spa-triad|figure 1]]). Its three pairwise interfaces are ${S} \cap {P}$ (locating object position in current time), ${P} \cap {A}$ (verifying that proposed trajectories satisfy dynamic limits), and ${A} \cap {S}$ (measuring physical state evolution after actuation). The independent permission decision sits at their central three-way intersection (${S} \cap {P} \cap {A}$), where a qualified permission path gates all motor commands against physical budgets before actuation. Each intersection below pairs its physical handoff contract with a discriminating measurement.
+
+![[90 Assets/Volume IV/Shared Figures/Fig01 Spa Triad 941bcc9db6.svg]]
+
+*Three overlapping circles labeled Sense, Plan, and Act. Sense and Plan ask where an object is now. Plan and Act ask whether motion fits physical limits. Act and Sense ask what changed. The center, where all three overlap, is the independent permission decision.*
+
+Figure 1: **The S·P·A intersection landscape**: Sense, Plan, and Act meet pairwise in three physical decisions, locating the object now, checking that proposed motion fits limits, and measuring what changed after acting. Their center is the permission decision, where an independent permission path checks the shared physical budget before actuation.
+
+^fig-spa-triad
+
+Each intersection is a testable handoff. [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-intersections|Table 4]] names the failure mode and the evidence needed before a proposed fix earns permission.
+
+| Intersection                          | Handoff contract                                           | Failure to test                                                                | Evidence and candidate remedy                                                                                                                    |
+|:--------------------------------------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| **${S}\cap {P}$**: belief             | Observations become timed, framed state estimates          | A fresh map publication hides an old voxel or an unseen object remains unknown | Check per-cell evidence epochs, free vs. occupied rays, and frame transforms; use a separately validated collision layer                         |
+| **${P}\cap {A}$**: motion             | A proposal becomes an admitted, state-matched trajectory   | A seam requests a torque transient or the stop suffix no longer fits clearance | Check entry state, derivatives, lease, and clearance; reject an infeasible seam; retain valid active authority until its fallback-start deadline |
+| **${A}\cap {S}$**: feedback           | Actuation changes the state that sensors report            | Contact force rises before the next useful sample or an actuator saturates     | Measure command-to-force and sensor-return delay; choose a local reflex and passive limit where justified                                        |
+| **${S}\cap {P}\cap {A}$**: permission | The independent gate turns a proposal into physical action | Compute, memory, power, or clock interference delays refusal                   | Measure response under contention; revoke tracking and qualify isolation or relocate the path if its bound fails                                 |
+
+Table 4: **The S·P·A intersection taxonomy**: Four handoffs locate the earliest broken physical contract and the evidence required to repair it; the axis reference in [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-components-ref|table 3]] links to the underlying chapters.
+
+^tbl-spa-intersections
+
+### ${S} \cap {P}$ Spatial Belief and Epistemic Handoffs
+
+^sec-appendix-spa-belief
+
+A planner that treats an unmapped blind corner behind a stacked pallet as traversable free space can accelerate into an obstacle before the range sensor ever clears the corner. The Sense–Plan (${S} \cap {P}$) intersection formalizes the **epistemic handoff**. It translates raw, asynchronous, multimodal sensor observations into a metric spatial belief state with bounded age and uncertainty, which planning algorithms and affordance models can query without executing ungrounded actions. This handoff bridges Part II and Part III of the book, taking sensor calibration and domain bounds from the provenance record (**[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/05 Physical Data/V4-05 Physical Data#^sec-data|Physical Data]]**) and observation streams from the observation contract (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08 Sensor Perception#^sec-perception|Sensor Perception]]**) to populate the belief record (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/09 Spatial Memory/V4-09 Spatial Memory#^sec-memory|Spatial Memory]]**).
+
+In an embodied machine, the primary handoff contract requires that every spatial cell or bounding volume ${\mathbf{p}} \in \mathbb{R}^3$ in the volumetric occupancy representation ${\mathcal{M}}$ carries an explicit evidence epoch ${t_0}$ and a tri-state classification:
+
+$$
+{\mathcal{M}}({\mathbf{p}}) \in \{\text{Observed Free } ({\mathcal{M}_{\text{free}}}), \text{Observed Occupied } ({\mathcal{M}_{\text{occ}}}), \text{Unobserved Unknown } ({\mathcal{M}_{\text{unknown}}})\}
+$$
+
+For an occupancy grid, let ${p}_t({\mathbf{p}})$ denote the probability that cell ${\mathbf{p}}$ is occupied and ${L}_t({\mathbf{p}})=\log[{p}_t({\mathbf{p}})/(1-{p}_t({\mathbf{p}}))]$. With the usual conditional-independence approximation, the update from range measurement ${z}_t$ is
+
+$$
+{L}_t({\mathbf{p}})={L}_{t-1}({\mathbf{p}})+\log\frac{{p}(\text{occupied at }{\mathbf{p}}\mid {z}_t)}{1-{p}(\text{occupied at }{\mathbf{p}}\mid {z}_t)}-{L}_0({\mathbf{p}}),
+$$
+
+ where ${L}_0$ is the prior log-odds. Raycasting identifies the cells traversed before a surface return and the cell containing the hit (**[[05 Reference/Volume IV - Physical AI/V4 Machine Learning Background#^sec-appendix-ml-voxels|Log-odds occupancy and signed-distance fusion]]**). A valid range return supplies free-space evidence along the ray before its surface hit, subject to the sensor model. A missing return alone does not establish free space. The permission path enforces a strict epistemic invariant before any trajectory planner may claim clearance through a spatial volume:
+
+$$
+{t_{\text{age}}} = {t_{\text{curr}}} - {t_0} + {\epsilon_{\text{sync}}} \le {T_{\text{inv}}}
+$$
+
+ where ${\epsilon_{\text{sync}}}$ bounds clock-conversion uncertainty (**[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-ptp|Clock Synchronization and Network Timestamps]]**). If ${t_{\text{age}}} > {T_{\text{inv}}}$, the cell’s status degrades from currently supported free space (${\mathcal{M}_{\text{free}}}$) to unknown space (${\mathcal{M}_{\text{unknown}}}$).
+
+Unknown space supplies no clearance evidence for ordinary motion admission. Planning algorithms must never equate unobserved space with traversable free space. The age-based expansion in the Sense-axis test applies to previously localized obstacles under a speed bound; it does not locate an obstacle hidden in never-observed space. Diagnostic testing for ${S} \cap {P}$ failures begins by inspecting raw sensor-to-map latency, comparing the per-voxel evidence epoch against ground-truth measurements, and validating raycast eviction queues. Failures to preserve these distinctions have three characteristic forms:
+
+1.  *Epistemic blindness*: The planner plans aggressive trajectories through unobserved space, treating unmapped blind spots behind occluding pallets or walls as empty. If an obstacle or human steps from behind a blind corner, the machine cannot stop within its remaining sensing margin.
+2.  *Phantom obstacles and stale log-odds*: When dynamic obstacles vacate a region, failure to project negative evidence along sensor optical rays (due to beam divergence, dark surface absorption, or missed returns) leaves elevated occupancy log-odds in voxel memory (**[[05 Reference/Volume IV - Physical AI/V4 Machine Learning Background#^sec-appendix-ml-voxels|Log-odds occupancy and signed-distance fusion]]**). The permission path can stop the machine even though a separate view shows a clear aisle.
+3.  *Extrinsic calibration drift and spatial skew*: Mechanical vibration or thermal warping alters the coordinate frame transform ${\mathbf{T}_{bc}} \in {SE(3)}$ between sensors and the mobile base. A pitch error ${\delta}{\theta_{\text{pitch}}}$ produces a height error of approximately ${r}{\delta}{\theta_{\text{pitch}}}$ at range ${r}$ for small angles in radians, potentially turning the floor into an apparent obstacle and corrupting affordance preconditions (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10 Grounded Intent#^sec-intent|Grounded Intent]]**).
+
+### ${P} \cap {A}$ Admitted Motion and Kinetic Seam Feasibility
+
+^sec-appendix-spa-motion
+
+Splicing a newly decoded action chunk directly onto an active joint trajectory can command an instantaneous velocity or acceleration jump that rings the drivetrain or overruns the remaining stopping distance. The Plan–Act (${P} \cap {A}$) intersection governs the **kinetic handoff**: admitting candidate trajectory setpoints proposed by statistical neural policies (Brain) and converting them into continuous, dynamically feasible joint commands executed by motor drives (Body). This interface bridges the intent lease (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10 Grounded Intent#^sec-intent|Grounded Intent]]**), policy manifest (**[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/06 Policy Training/V4-06 Policy Training#^sec-training|Policy Training]]**), and trajectory record (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning|Trajectory Planning]]**) against the physical plant ceilings recorded in the limit record (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body|The Physical Body]]**).
+
+Modern generative policies, such as diffusion decoders and vision-language-action (VLA) models, propose actions in discrete horizons or chunks (${H}$ waypoints spanning duration ${H} {\Delta} {t}$). The permission path cannot admit a raw chunk as an open-loop actuator reference. Instead, the seam connecting the currently executing trajectory to the incoming proposal must preserve the required reference continuity and remain compatible with the measured entry-state bounds. For a ${C}^2$ reference handover:
+
+$$
+{\mathbf{q}}({t}_0^+) = {\mathbf{q}}({t}_0^-), \quad {\dot{\mathbf{q}}}({t}_0^+) = {\dot{\mathbf{q}}}({t}_0^-), \quad {\ddot{\mathbf{q}}}({t}_0^+) = {\ddot{\mathbf{q}}}({t}_0^-)
+$$
+
+ where ${t}_0$ is the handover epoch. A quintic polynomial can match the endpoint position, velocity, and acceleration constraints (**[[05 Reference/Volume IV - Physical AI/V4 Control and Dynamics#^sec-appendix-control-splines|Smooth Trajectories and Bumpless Transfer]]**) over blend interval ${\tau_{\text{blend}}}$:
+
+$$
+{\mathbf{s}}({\hat{t}}) = {\mathbf{a}}_0 + {\mathbf{a}}_1 {\hat{t}} + {\mathbf{a}}_2 {\hat{t}}^2 + {\mathbf{a}}_3 {\hat{t}}^3 + {\mathbf{a}}_4 {\hat{t}}^4 + {\mathbf{a}}_5 {\hat{t}}^5, \quad {\hat{t}} = \frac{{t} - {t}_0}{{\tau_{\text{blend}}}}
+$$
+
+ The entire admitted chunk must also satisfy componentwise limits $|{\dot{q}}_i| \le {\dot{q}_{i,\max}}$, $|{\ddot{q}}_i| \le {\ddot{q}_{i,\max}}$, and $|\dddot{{q}}_i| \le {j_{\max}}$ for every joint ${i}$. Derivatives of the normalized polynomial require factors of $1/{\tau_{\text{blend}}}$, $1/{\tau_{\text{blend}}}^2$, and $1/{\tau_{\text{blend}}}^3$, respectively. Endpoint continuity alone does not establish those bounds.
+
+A further admission condition is an executable stopping suffix (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning|Trajectory Planning]]**). For straight-line motion toward a stationary obstacle, constant speed ${v}$ during response delay ${\tau_{\text{delay}}}$, and constant braking deceleration ${a_{\text{brake}}} > 0$ afterward, a screening calculation is
+
+$$
+{d_{\text{stop}}}({v}) = {v}\,{\tau_{\text{delay}}} + \frac{{v}^2}{2{a_{\text{brake}}}} \le {D_{\text{clear}}}({t}).
+$$
+
+ This expression is not generally equivalent to a jerk-limited or ${C}^2$ stop. Admission must use the actual profile, uncertainty margins, and load-dependent braking limits; **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.04 Stopping Envelopes#^sec-enforcement-stopping-envelopes|Stopping Envelopes]]** develops that budget. A multidimensional path also needs collision checks over its swept volume, not only a scalar endpoint distance.
+
+At a chunk seam, compare the requested acceleration change with the joint-side inertia and measured current response. A discontinuity can exceed torque limits or excite flexible modes, but the failure magnitude is machine-specific. Along the chunk, check whether a fallback remains feasible from each admitted state. Rejecting a late or invalid successor does not itself revoke the active command. The executor preserves valid active authority and starts its fallback by the commitment deadline, allowing for the earlier admission and response cutoff. A measured latency percentile helps size proposal service; it does not guarantee that the next update will arrive before the admission cutoff. Diagnostic action therefore combines synchronized current and encoder traces at chunk boundaries, lease-expiration telemetry, and an explicit check of the stopping profile from the measured transfer state.
+
+### ${A} \cap {S}$ Physical Feedback, Contact Dynamics, and Reflex Latency
+
+^sec-appendix-spa-feedback
+
+When a stiff gripper strikes a steel fixture at $0.2\text{ m/s}$, contact force can climb past the wrist sensor’s overload rating in a few milliseconds, long before the next $30\text{ Hz}$ camera frame finishes exposure. The Act–Sense (${A} \cap {S}$) intersection closes the causal loop across the **causal boundary**: actuator forces move joints and exert contact forces against the environment, altering physical reality, which is then captured by sensors and fed back into the control loop. Governed by the limit record (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body|The Physical Body]]**), handoff record (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04 The Nervous System#^sec-nervous|The Nervous System]]**), and evaluation record (**[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/07 Closed-Loop Evaluation/V4-07 Closed-Loop Evaluation#^sec-evaluation|Closed-Loop Evaluation]]**), this boundary embodies the first law, irreversibility (**[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.11 The Four Bedrock Laws#^sec-boundary-bedrock-laws|The Four Bedrock Laws]]**). Energy delivered into a physical contact cannot be recalled.
+
+Passivity and phase margin provide two ways to assess contact feedback ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-hogan1985impedance|Hogan 1985]]). With force and velocity signs chosen so that ${F} {v}$ is power entering the system, a passive interaction port satisfies
+
+$$
+\int_0^{t} {F}({t'}){v}({t'})\,d{t'} \ge -{E}(0),
+$$
+
+ where ${E}(0)$ is the initially stored energy. This energy bound is not a force limit; a passive system can still deliver a damaging impact.
+
+For a simple mass–spring contact model, effective mass ${m_{\text{eff}}}$ and stiffness ${k_{\text{contact}}}$ define the natural time scale
+
+$$
+{T_{\text{contact}}}=\sqrt{\frac{{m_{\text{eff}}}}{{k_{\text{contact}}}}}.
+$$
+
+ It indicates how quickly contact dynamics can evolve, not a universal maximum stable delay. Stability also depends on damping, controller gains, sampling, actuator dynamics, and saturation. In a linearized single-crossover loop, an added pure delay consumes approximately ${\omega_c} {T_d}$ radians of phase margin at crossover ${\omega_c}$. **[[05 Reference/Volume IV - Physical AI/V4 Control and Dynamics#^sec-appendix-control-passivity|Passivity and Energy-Bounded Interaction]]** develops energy-based checks, while **[[05 Reference/Volume IV - Physical AI/V4 Control and Dynamics#^sec-appendix-control-zoh|Discrete-time sampling and zero-order hold phase lag]]** treats sampling delay.
+
+Contact hunting can result from delayed feedback, excessive gain, friction, or mechanical backlash. Measuring force rise against command-to-force and sensor-return delay distinguishes these causes. For a locally linear contact, ${F_{\text{contact}}}\approx {k_{\text{contact}}}{\Delta} {x}$ relates penetration to force; approach speed and effective mass determine how much motion and energy accumulate before correction. A low-rate planner may set a contact goal, but the feedback path that regulates force must meet the contact-specific response budget.
+
+Local impedance or admittance control and passive compliance can reduce contact sensitivity. A target impedance can take the form
+
+$$
+{\mathbf{M}_d} ({\ddot{\mathbf{x}}}-{\ddot{\mathbf{x}}_d})+{\mathbf{D}_d}({\dot{\mathbf{x}}}-{\dot{\mathbf{x}}_d})+{\mathbf{K}_d}({\mathbf{x}}-{\mathbf{x}_d})={\mathbf{F}_{\text{ext}}},
+$$
+
+ where the desired inertia, damping, and stiffness shape the response to external force. Realizing this relation requires adequate sensing and actuator authority; it does not establish stability for arbitrary delay or contact. Qualify the combined controller, tooling, and surface over the admitted operating conditions.
+
+### ${S} \cap {P} \cap {A}$ Independent Permission Decisions and Silicon Isolation
+
+^sec-appendix-spa-permission
+
+If a vision-backbone DMA burst stalls the shared memory fabric or droops the supply rail while the safety filter is evaluating a braking barrier, the motor drives continue executing the prior velocity command toward the obstacle. At the center of the triad sits the tripartite intersection where Sense, Plan, and Act converge: the **independent permission decision**. This is the physical realization of the third law, *proposal is not permission* (**[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.11 The Four Bedrock Laws#^sec-boundary-bedrock-laws|The Four Bedrock Laws]]**). The statistical Brain proposes candidate trajectories; the Nervous System arbitrates permission against hard physical invariants; the Body actuates only what is admitted.
+
+The permission path needs bounded response time under the admitted workload. Isolation can use dedicated hardware or a qualified partition; a processor label alone proves neither timing nor independence. One possible filter is a control barrier function quadratic program (CBF-QP, **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12 Safety Enforcement#^sec-enforcement|Safety Enforcement]]**, **[[05 Reference/Volume IV - Physical AI/V4 Control and Dynamics#^sec-appendix-control-cbf|Safety and Control Barrier Functions]]**):
+
+$$
+\min_{{\mathbf{u}}} \frac{1}{2}\lVert{\mathbf{u}}-{\mathbf{u}_{\text{nom}}}\rVert^2 \quad \text{s.t.}\quad {L_{\mathbf{f}} h}({\mathbf{x}}) + {L_{\mathbf{g}} h}({\mathbf{x}}){\mathbf{u}} + {\kappa}({h}({\mathbf{x}})) \ge 0, \quad {\mathbf{u}} \in {\mathcal{U}_{\text{adm}}}.
+$$
+
+ Here ${\dot{\mathbf{x}}} = {\mathbf{f}}({\mathbf{x}}) + {\mathbf{g}}({\mathbf{x}}){\mathbf{u}}$ is the modeled dynamics, ${h}$ defines the candidate safe set ${\mathcal{C}} = \{{\mathbf{x}} : {h}({\mathbf{x}}) \ge 0\}$, ${L_{\mathbf{f}}} {h} = \nabla {h} \cdot {\mathbf{f}}$ and ${L_{\mathbf{g}}} {h} = \nabla {h} \cdot {\mathbf{g}}$, and ${\kappa}$ is an extended class ${\mathcal{K}}$ function. This first-order form applies when the chosen barrier has the required control dependence and regularity. Position constraints on acceleration-controlled systems may require a higher-order or kinetic barrier.
+
+A feasible QP result is one admission condition. Forward invariance additionally depends on the model, initial state, feasible inputs, state-estimation margins, and implementation timing. Sampled execution must account for behavior between checks. If evidence is missing or the solver misses its deadline, the permission path must invoke a validated fallback without waiting for the Brain. If no feasible safety-preserving action remains, solver failure does not create one; emergency response can limit harm without restoring the lost invariant claim.
+
+Three measurements distinguish common failures at this intersection:
+
+- **Shared-memory interference**: Measure acquisition, validation, and dispatch under the worst admitted DMA and inference traffic. A compute-only WCET excludes delays on the path to the actuator.
+- **Electrical interference**: Measure supply voltage during accelerator load changes. Parasitic inductance contributes droop with magnitude $|{\Delta} {V}|\approx {L_{\text{parasitic}}}|d{I}/d{t}|$, while capacitance, resistance, and regulator response also shape the transient. Compare the waveform and duration with the supervisor’s operating limits.
+- **Premise invalidation**: Compare the assumed braking or contact bound with achieved response. A filter based on dry-floor friction can remain feasible in its model while an unobserved oil spill makes its command physically unrealizable.
+
+Candidate repairs include local memory, bounded bus arbitration, separate power domains, and narrower operating limits. Each repair needs remeasurement; no single isolation technique resolves all interference or model errors. **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18 Engineering Physical AI#^sec-frontier|Engineering Physical AI]]** records premises that the deployed machine cannot establish from its current evidence.
+
+## Architectural Record Chain
+
+^sec-appendix-spa-lineage
+
+The records from **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body|The Physical Body]]** through **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18 Engineering Physical AI#^sec-frontier|Engineering Physical AI]]** connect plant limits, proposed behavior, runtime decisions, and release evidence (**[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.12 The Architecture of This Book#^sec-boundary-book-architecture|The Architecture of This Book]]**). [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-lineage|Table 5]] maps each record to its main S·P·A responsibility; **[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-record-register|The record register]]** gives what each record binds. A record makes assumptions and evidence inspectable; its presence alone does not enforce an invariant or certify a machine. The table groups records by their teaching role, not by wire-message order. Configuration and qualification records constrain runtime decisions; an emitted admitted command records a particular permission decision.
+
+| Chapter and title                                                                                                                             | Record                                     | S·P·A locus             | Constraint or evidence recorded                                                                                                                                    | Primary failure mode diagnosed                                                                                                      |
+|:----------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------|:------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body\|The Physical Body]]**: The Physical Body                                           | Limit record                               | Act, ${A} \cap {S}$     | Motor torque ${\tau_{\text{motor}}} \le {\tau_{\max}}$, thermal dissipation ${I_{\text{phase}}} \le {I_{\text{cont}}}$, stopping distance ${d_{\text{stop}}}({v})$ | Inverter thermal trip, rotor resonance, structural yield                                                                            |
+| **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/03 The Cognitive Brain/V4-03 The Cognitive Brain#^sec-brain\|The Cognitive Brain]]**: The Cognitive Brain                                    | Proposer limits (enter the handoff record) | Plan                    | Chunk horizon ${H}$, candidate setpoint bounds, proposer lease request                                                                                             | Unbounded candidate setpoints, unconstrained sampling cadence                                                                       |
+| **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04 The Nervous System#^sec-nervous\|The Nervous System]]**: The Nervous System                                | Handoff record                             | ${S} \cap {P} \cap {A}$ | Bus cycle time ${T_{\text{bus}}}$, qualified jitter bound, chunk lease ceiling ${T_{\text{lease}}}$                                                                | Fieldbus priority inversion, seqlock torn read, lease expiration overrun                                                            |
+| **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/05 Physical Data/V4-05 Physical Data#^sec-data\|Physical Data]]**: Physical Data                                                   | Provenance record                          | Sense, ${S} \cap {P}$   | Dataset calibration bounds, ODD operational envelope limits                                                                                                        | Covariate shift, out-of-distribution actuation commands                                                                             |
+| **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/06 Policy Training/V4-06 Policy Training#^sec-training\|Policy Training]]**: Policy Training                                   | Policy manifest                            | Plan                    | Denoising evaluation count ${N_{\text{eval}}}$, chunk horizon ${H}$, Lipschitz bound ${L_{\text{lip}}}$ if established                                             | Multimodal mode-averaging collapse, explosive policy Lipschitz constant                                                             |
+| **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/07 Closed-Loop Evaluation/V4-07 Closed-Loop Evaluation#^sec-evaluation\|Closed-Loop Evaluation]]**: Closed-Loop Evaluation               | Evaluation record                          | ${A} \cap {S}$          | Closed-loop task performance, intervention outcomes, collision evidence, and test-domain coverage                                                                  | Open-loop loss deception, unmodeled closed-loop yaw drift                                                                           |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08 Sensor Perception#^sec-perception\|Sensor Perception]]**: Sensor Perception                         | Observation contract                       | Sense                   | Observation age ${t_{\text{age}}}$, bounded clock-conversion error ${\epsilon_{\text{sync}}}$, bounding covariance ${\boldsymbol{\Sigma}_{\text{body}}}$           | Rolling shutter distortion, timestamp skew, camera extrinsic calibration drift                                                      |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/09 Spatial Memory/V4-09 Spatial Memory#^sec-memory\|Spatial Memory]]**: Spatial Memory                                           | Belief record                              | ${S} \cap {P}$          | Per-cell evidence epoch ${t_0}$, tri-state classification (free/occupied/unknown), raycasting eviction                                                             | Phantom obstacle emergency stops, stale voxel retention, unobserved space mistaken for free space                                   |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10 Grounded Intent#^sec-intent\|Grounded Intent]]**: Grounded Intent                                         | Intent lease                               | Plan                    | Task tolerance bounds ${\mathbf{r}}$, affordance predicate validity, terminal mode admissibility                                                                   | Affordance hallucination, ungrounded task goal selection                                                                            |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning\|Trajectory Planning]]**: Trajectory Planning                           | Trajectory record                          | ${P} \cap {A}$          | ${C}^2$ quintic polynomial seam continuity, componentwise jerk ceilings, stopping suffix guarantee                                                                 | Seam velocity/acceleration discontinuity, reflected rotor inertia shock, stop suffix exhaustion                                     |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12 Safety Enforcement#^sec-enforcement\|Safety Enforcement]]**: Safety Enforcement                    | Enforcement record                         | ${S} \cap {P} \cap {A}$ | Admission checks and their premises, response-time budget, resident state-matched fallback ownership                                                               | Infeasible QP projection, enforcer deadline overrun, unsafe command leakage to motor registers                                      |
+| **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13 Workload Placement#^sec-placement\|Workload Placement]]**: Workload Placement                          | Placement record                           | ${S} \cap {P} \cap {A}$ | Silicon partitioning, dedicated TCM memory, AXI QoS priorities, qualified supply-voltage envelope                                                                  | Shared memory bus contention, DRAM bank conflict, power rail brownout during NPU bursts                                             |
+| **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14 Supervisory Intervention#^sec-intervention\|Supervisory Intervention]]**: Supervisory Intervention     | Authority record                           | ${S} \cap {P} \cap {A}$ | Four-phase bumpless transfer, supervisory token state machine, contact-force relaxation                                                                            | Intervention takeover jerk, operator authority lock-out, transfer state discontinuity                                               |
+| **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/15 Adversarial Verification/V4-15 Adversarial Verification#^sec-verification\|Adversarial Verification]]**: Adversarial Verification     | Fault record                               | ${S} \cap {P} \cap {A}$ | Tail-risk estimates and their assumptions, hardware fault injection coverage, sim-to-real gap                                                                      | Rare-event tail collision, undetected hardware bit-flip, unmodeled contact compliance gap                                           |
+| **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/16 Deployment Release/V4-16 Deployment Release#^sec-release\|Deployment Release]]**: Deployment Release                                | Release manifest                           | ${S} \cap {P} \cap {A}$ | Goal Structuring Notation (GSN) warrant validity, applicable assurance requirements, signed operational envelope                                                   | Operating outside qualified ODD, unsupported claim warrants, sign-off on unvalidated assumptions                                    |
+| **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/17 Responsible Physical AI/V4-17 Responsible Physical AI#^sec-responsibility\|Responsible Physical AI]]**: Responsible Physical AI | Approval record                            | System-wide             | A named owner for each decision behind an admitted action, the feasibility of each human role, per-group detection and exposure, declared records about people     | An unowned decision, a human role no person can perform, an unmeasured group of people, records used outside their declared purpose |
+| **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18 Engineering Physical AI#^sec-frontier\|Engineering Physical AI]]**: Engineering Physical AI                   | Residual-claims register                   | System-wide             | Explicit uncertified premise register (such as friction floor ${\mu} \ge {\mu_{\min}}$), epistemic ceiling recognition                                             | Premise invalidation (such as uninspected floor oil slick), catastrophic failure beyond epistemic ceiling                           |
+
+Table 5: **The S·P·A architectural record chain**: Named records link physical limits, proposals, permission decisions, and release evidence. The record contents require validation against the deployed machine.
+
+^tbl-spa-lineage
+
+The four governing laws organize this evidence chain. Irreversibility requires budgets for delay, force, and fallback. Endogenous data requires evaluating the states that the policy itself induces. Proposal is not permission assigns admission authority independently of proposal quality. Permission must be earned requires the release case to state where those checks apply and which premises remain unresolved. Together, the chain helps locate missing evidence when a symptom crosses several chapters.
+
+## Physical AI Production Troubleshooting Matrix
+
+^sec-appendix-spa-troubleshooting
+
+When an operational machine violates physical limits or software invariants, [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-troubleshooting|table 6]] links the symptom to a discriminating measurement. Software traces can carry physical telemetry, but a CPU profile alone cannot establish a force or current transient. The records need a common time basis so that a physical event can be aligned with the command and evidence that preceded it.
+
+Current probes and encoder traces help resolve chunk-seam events. Motor phase measurements require the rotor angle and the appropriate coordinate transform to recover ${i_q}$ and ${i_d}$; a probe does not measure those rotating-frame components directly. Protocol analyzers reveal frame timing, while available system-on-chip (SoC) performance counters and controlled contention tests help attribute delays. Solver telemetry should include status, residuals, constraint margins, and fallback selection. Those fields can expose numerical or modeled infeasibility, but identifying a friction-premise failure also requires measured physical response.
+
+| Observable symptom                                                  | Candidate boundary    | Discriminating measurement                                                                                | Candidate response                                                                                                                                                                                      |
+|:--------------------------------------------------------------------|:----------------------|:----------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Contact hunting while the arm opens the spring-latched cage door    | ${A}\cap {S}$         | Measure phase margin and force rise against the sensor-to-torque delay under the actual contact stiffness | Qualify a local impedance loop, approach-speed limit, and passive compliance for that contact                                                                                                           |
+| Torque or current transient at an action-chunk seam                 | ${P}\cap {A}$         | Compare encoder, phase-current, and requested acceleration traces at the measured entry state             | Admit a state-matched ${C}^2$ bridge and reserve a stopping suffix; the reduction in **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning\|Trajectory Planning]]** is profile-specific |
+| Phantom obstacle stop in an aisle                                   | ${S}\cap {P}$         | Distinguish observed free, occupied, and unknown rays; inspect per-voxel evidence age                     | Clear only observed free space and retest the occupancy-to-permission conversion                                                                                                                        |
+| Enforcer misses its configured deadline during camera ingress       | ${S}\cap {P}\cap {A}$ | Correlate response-time misses with bus queue, bank switches, cache misses, and DMA ownership             | Qualify QoS bypass or a coherent local safety snapshot; remeasure under contention                                                                                                                      |
+| Link or workpiece yields during contact                             | ${A}$                 | Compare measured force and displacement with the tested material and tooling limits                       | Reduce admitted speed or force and qualify a compliant load path                                                                                                                                        |
+| Policy update arrives after its admitted chunk horizon              | ${P}\cap {A}$         | Measure the update tail, lease expiry, and fallback transfer state                                        | Shorten the admitted action or use a stop the permission path owns; do not extend permission from a percentile alone                                                                                    |
+| Safety microcontroller (MCU) rail droops during accelerator bursts  | ${S}\cap {P}\cap {A}$ | Measure rail waveform, path slack, supervisor threshold, and resulting response time                      | Characterize decoupling, current slew, or physical power isolation                                                                                                                                      |
+| Base drifts toward a rack face despite low offline prediction error | ${A}\cap {S}$         | Compare closed-loop yaw bias, lateral clearance, and surface-dependent braking                            | Test closed-loop rollouts and impose a feasible corridor and stop bound                                                                                                                                 |
+
+Table 6: **Physical AI production troubleshooting matrix**: Each row is a hypothesis, measurement, and candidate remedy; acceptance depends on the machine’s declared limits.
+
+^tbl-spa-troubleshooting
+
+## The S·P·A Systems Scorecard
+
+^sec-appendix-spa-scorecard
+
+Before physical release, use [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^tbl-spa-scorecard|table 7]] to connect verification gates to declared acceptance criteria across the three axes and their handoffs. Aggregate task success is useful evidence, but it can conceal rare severe outcomes and does not by itself justify a release. Each check needs the actual limits, operating envelope, confidence or hard-bound semantics, and validated fallback for the machine.
+
+Hardware-in-the-loop tests can exercise these checks in continuous integration. Passing the suite supports the tested claims; it does not turn sampled observations into a deterministic guarantee over untested conditions.
+
+| Boundary                                  | Example acceptance check for a declared machine                                                                                                                                                                                                              | Response if the check fails                                                                                                                                            |
+|:------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Sense**: capture clock                  | Bound capture-to-MCU conversion error and include it in evidence age                                                                                                                                                                                         | Resynchronize or withhold motion when the bound expires                                                                                                                |
+| **Sense**: ingestion                      | Measure worst admitted sensor/DMA queue occupancy, drop rate, and transfer time under concurrent load                                                                                                                                                        | Reserve capacity or reduce sensing load; dropped frames do not renew belief                                                                                            |
+| **Plan**: chunk horizon                   | Admit a successor before the admission/response cutoff so fallback can start by the commitment deadline                                                                                                                                                      | Retain still-valid active authority and start the owned fallback by the commitment deadline or earlier validity expiry; measured update tails do not extend permission |
+| **Plan**: dynamics                        | Check position, velocity, acceleration, torque, and stopping suffix against the actual joint and path limits                                                                                                                                                 | Reject or replan an infeasible chunk                                                                                                                                   |
+| **Act**: brake and contact                | Validate achieved deceleration and force response for load, wear, surface, and temperature                                                                                                                                                                   | Derate speed, change tooling, or refuse the untested state                                                                                                             |
+| **Act**: thermal                          | Keep measured winding and drive temperature inside device ratings under the duty cycle                                                                                                                                                                       | Reduce duty or enter the validated stop/hold mode                                                                                                                      |
+| **${S}\cap {P}$**: spatial evidence       | Preserve each cell’s evidence epoch and distinguish observed free, occupied, and unknown                                                                                                                                                                     | Refuse unknown clearance or obtain a new observation                                                                                                                   |
+| **${P}\cap {A}$**: seam                   | Check the matched entry state, derivative limits, and full stopping clearance before commit                                                                                                                                                                  | Retain still-valid active authority; start the owned fallback by its commitment deadline or earlier if evidence, state, or lease validity expires                      |
+| **${A}\cap {S}$**: reflex                 | Bound sensing-to-force response against a contact-specific harm deadline                                                                                                                                                                                     | Reduce approach energy or add a validated passive limit                                                                                                                |
+| **${S}\cap {P}\cap {A}$**: compute        | Qualify the permission path’s WCET against its deadline in the cycle budget of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12 Safety Enforcement#^sec-enforcement\|Safety Enforcement]]**, with acquisition, validation, write, and dispatch budgeted separately | Revoke tracking permission before the cycle overrun consumes stopping margin                                                                                           |
+| **${S}\cap {P}\cap {A}$**: shared silicon | Measure enforcer response under worst admitted bus, rail, and thermal contention                                                                                                                                                                             | Qualify QoS/local snapshots or relocate the path if isolation cannot be shown                                                                                          |
+| **${S}\cap {P}\cap {A}$**: permission     | Verify model/state assumptions, feasible CBF input, clock and estimate margins, and a state-matched fallback                                                                                                                                                 | Refuse the proposal when a premise is missing; a QP result alone proves no path safety                                                                                 |
+
+Table 7: **The S·P·A physical AI systems scorecard**: Example release checks across the three axes and their handoffs. Each row requires a case-specific threshold and evidence.
+
+^tbl-spa-scorecard
+
+Back to top
+
+## Source References
+
+^source-references
+
+Moravec, Hans. 1988. *Mind Children: The Future of Robot and Human Intelligence*. Harvard University Press.
+
+^ref-moravec1988mind
+
+Brooks, Rodney. 1986. “A Robust Layered Control System for a Mobile Robot.” *IEEE Journal on Robotics and Automation* 2 (1): 14–23.
+
+^ref-brooks1986robust
+
+Brooks, Rodney A. 1991. “Intelligence Without Representation.” *Artificial Intelligence* 47 (1–3): 139–59.
+
+^ref-brooks1991intelligence
+
+Brohan, Anthony, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, et al. 2023. “RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control.” *arXiv Preprint arXiv:2307.15818*.
+
+^ref-brohan2023rt2
+
+Chi, Cheng, Zhenjia Xu, Siyuan Feng, Eric Cousineau, Yilun Du, Benjamin Burchfiel, Russ Tedrake, and Shuran Song. 2025. “Diffusion Policy: Visuomotor Policy Learning via Action Diffusion.” *The International Journal of Robotics Research* 44 (10-11): 1684–704. https://doi.org/10.1177/02783649241273668.
+
+^ref-chi2024diffusionpolicy
+
+Ross, Stéphane, Geoffrey Gordon, and J. Andrew Bagnell. 2011. “A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning.” *Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics (AISTATS)* 15: 627–35.
+
+^ref-ross2011reduction
+
+Hogan, Neville. 1985. “Impedance Control: An Approach to Manipulation: Part i–Theory, Part II–Implementation, Part III–Applications.” *Journal of Dynamic Systems, Measurement, and Control* 107 (1): 1–24.
+
+^ref-hogan1985impedance
+
+## Footnotes
+
+^footnotes
+
+<sup>1</sup> **Shakey and deliberative robotics**: Shakey is an early example of integrating perception, symbolic planning, and mobile execution; Moravec ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-moravec1988mind|Moravec 1988]]) discusses this period of robotics. The diagnostic use of Sense–Plan–Act here does not require reproducing its execution schedule.
+
+^fn1
+
+<sup>2</sup> **Brooks’ subsumption architecture**: Brooks ([[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-brooks1986robust|Brooks 1986]]; [[05 Reference/Volume IV - Physical AI/V4 The Sense–Plan–Act Paradigm#^ref-brooks1991intelligence|Brooks 1991]]) organized behavior into asynchronous layers with suppression and inhibition. The finite-state modules could retain internal state, so subsumption should not be equated with a memoryless sensor-to-action map.
+
+^fn2
+
+<sup>3</sup> **The proposal boundary**: The authority boundary separating candidate behavior from permission to execute it. A learned proposal acquires actuation authority only through the qualified permission path; qualification remains conditional on the machine’s stated assumptions.
+
+^fn3
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol4/backmatter/appendix_spa.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol4/backmatter/appendix_spa.html#sec-appendix-spa). Rendering provenance is recorded in the import manifest.

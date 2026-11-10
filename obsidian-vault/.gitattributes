@@ -1,0 +1,2 @@
+# Preserve byte-identical imported SVG path data and provenance hashes.
+*.svg -whitespace
