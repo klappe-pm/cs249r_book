@@ -1,0 +1,155 @@
+[
+  {
+    "math": 22,
+    "mathErrors": [],
+    "images": [],
+    "tables": 1,
+    "bodyWidth": 1140,
+    "viewport": 1440,
+    "source": "01 Books/Volume III - Agentic Systems/04 The Agent Runtime/13 Agent Evaluation/V3-13.08 Summary.md",
+    "pageErrors": []
+  },
+  {
+    "math": 197,
+    "mathErrors": [],
+    "images": [
+      {
+        "loaded": true,
+        "width": 749,
+        "height": 376
+      },
+      {
+        "loaded": true,
+        "width": 771,
+        "height": 490
+      },
+      {
+        "loaded": true,
+        "width": 616,
+        "height": 217
+      },
+      {
+        "loaded": true,
+        "width": 903,
+        "height": 663
+      },
+      {
+        "loaded": true,
+        "width": 903,
+        "height": 213
+      },
+      {
+        "loaded": true,
+        "width": 772,
+        "height": 450
+      },
+      {
+        "loaded": true,
+        "width": 184,
+        "height": 86
+      },
+      {
+        "loaded": true,
+        "width": 335,
+        "height": 199
+      },
+      {
+        "loaded": true,
+        "width": 313,
+        "height": 182
+      },
+      {
+        "loaded": true,
+        "width": 754,
+        "height": 317
+      },
+      {
+        "loaded": true,
+        "width": 691,
+        "height": 164
+      },
+      {
+        "loaded": true,
+        "width": 609,
+        "height": 187
+      },
+      {
+        "loaded": true,
+        "width": 812,
+        "height": 499
+      }
+    ],
+    "tables": 4,
+    "bodyWidth": 1140,
+    "viewport": 1440,
+    "source": "01 Books/Volume I - Foundations/03 Optimization/10 Model Compression/V1-10.03 Structural Optimization Changing What the Model Computes.md",
+    "pageErrors": []
+  },
+  {
+    "math": 102,
+    "mathErrors": [],
+    "images": [
+      {
+        "loaded": true,
+        "width": 3735,
+        "height": 2898
+      },
+      {
+        "loaded": true,
+        "width": 3913,
+        "height": 2965
+      },
+      {
+        "loaded": true,
+        "width": 3659,
+        "height": 3266
+      },
+      {
+        "loaded": true,
+        "width": 3008,
+        "height": 2000
+      },
+      {
+        "loaded": true,
+        "width": 3655,
+        "height": 2452
+      }
+    ],
+    "tables": 1,
+    "bodyWidth": 1168,
+    "viewport": 1440,
+    "source": "01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.04 Stopping Envelopes.md",
+    "pageErrors": []
+  },
+  {
+    "math": 57,
+    "mathErrors": [],
+    "images": [
+      {
+        "loaded": true,
+        "width": 3659,
+        "height": 4144
+      },
+      {
+        "loaded": true,
+        "width": 208,
+        "height": 150
+      },
+      {
+        "loaded": true,
+        "width": 300,
+        "height": 106
+      },
+      {
+        "loaded": true,
+        "width": 262,
+        "height": 150
+      }
+    ],
+    "tables": 3,
+    "bodyWidth": 1140,
+    "viewport": 1440,
+    "source": "01 Books/Volume IV - Physical AI/03 Running the Machine/09 Spatial Memory/V4-09.07 Certified Spatial Assertions in Scene Memory.md",
+    "pageErrors": []
+  }
+]

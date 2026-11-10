@@ -1,0 +1,46 @@
+---
+title: V2 A Note on AI Assistance
+type: Frontmatter
+volume: 2
+chapter: 0
+publication_status: Preview
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol2/frontmatter/ai_use.qmd
+source_anchor: a-note-on-ai-assistance
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Frontmatter
+- Book/Volume_2
+rendered_source_url: https://mlsysbook.ai/vol2/frontmatter/ai_use.html
+---
+
+# V2 A Note on AI Assistance
+
+[[Home|Home]] · [[01 Books/Volume II - Scaling/Volume 2 Overview|Volume Overview]]
+
+^a-note-on-ai-assistance
+
+Every chapter of this book was researched, written, and rewritten by me. I also used artificial intelligence tools throughout the process. What follows is more than the disclosure MIT Press requires of authors who use AI. It is an honest statement of how AI assisted in navigating fleet-scale systems engineering, and the rigorous human verification standard applied to the result.
+
+In an era of generative AI, defining what authorship really means has become genuinely difficult. When tools can draft prose, crunch cluster arithmetic, unearth research papers, and generate visual sketches, where does the machine end and the author begin?
+
+In developing this text, AI tools served as an accelerator across computation, literature review, and drafting. On the infrastructure side, this involved extending the [MLSysIM](https://mlsysbook.ai/mlsysim) infrastructure modeling engine from single-node execution to the fleet level: modeling 3D parallelism (tensor, pipeline, and data parallel strategies), collective communication fabrics, cluster network topologies, and fault-tolerance protocols. AI helped formulate complex cluster-level equations, write executable Python cells, and implement automated pre-commit checks.
+
+AI proved especially valuable in digging into the vast literature of distributed systems, unearthing seminal, classical papers and historical foundations that modern AI literature often overlooks. In the writing itself, I used AI to draft initial chapter outlines, generate preliminary explanations, and synthesize dense research papers into first-pass text, which I then evaluated, restructured, and substantially rewrote to ensure conceptual rigor.
+
+Beyond code and prose, AI fundamentally shifted how I developed the book’s visual language. In previous work, sketching architectural diagrams was a slow, manual bottleneck. For this book, I used generative AI to produce initial conceptual drafts and rough schematics of cluster topologies. While these AI-generated sketches were far from publication-ready, they served as an effective conceptual boilerplate, helping clarify and communicate the architectural concepts and communication patterns for the ongoing illustration and refinement process.
+
+Yet mechanical computation, literature synthesis, and AI-assisted drafting are only the starting point. The most critical and time-intensive phase of writing this book was human validation. To ensure that the analytical models reflect the reality of warehouse-scale computing rather than idealized abstractions, I conducted extensive one-on-one review meetings with domain experts: distributed systems researchers, ML fleet operators, and hardware architects. In these sessions, we walked through chapters, stress-tested assumptions, scrutinized performance equations, and debated design trade-offs. This human feedback loop is the longest and most demanding part of the authoring process, but it is indispensable. Without that expert review, a systems book risks teaching clean abstractions that fail on real silicon.
+
+Writing a textbook is an act of synthesis, not a claim of personal invention. The fundamental breakthroughs in distributed systems and hardware architecture belong to the researchers and engineers cited throughout these chapters. My name appears on the cover not out of ego, but because authorship is the assumption of human responsibility. It is the demanding process of vetting these ideas against real-world hardware, and it means providing a single human being whom readers, students, and engineers can hold accountable, someone to reach out to for clarifications, debates, and corrections.
+
+Machine learning systems cannot be certified the way deterministic logic can. That verification gap applies to AI-assisted authoring with equal force. The standard held here is the standard we must demand of every fleet we build: **the tool can propose, but only the human engineer can ratify and take responsibility.**
+
+Back to top
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol2/frontmatter/ai_use.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol2/frontmatter/ai_use.html#a-note-on-ai-assistance). Rendering provenance is recorded in the import manifest.

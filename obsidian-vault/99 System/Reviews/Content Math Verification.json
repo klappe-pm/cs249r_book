@@ -1,0 +1,7 @@
+{
+  "unique_math_expressions": 14283,
+  "errors": [],
+  "engine": "MathJax 3 Full TeX-to-SVG",
+  "engine_sha256": "a4354ff94fd868aea0cc6eaaa79a57fda0588646fc46ee3700a349ee0a11cbe6",
+  "method": "Unique Pandoc Math AST expressions from Books and Reference notes, rendered via MathJax.tex2svgPromise with equation state reset between expressions."
+}

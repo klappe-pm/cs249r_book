@@ -1,0 +1,2141 @@
+---
+title: V4 Systems and Hardware
+type: Reference
+volume: 4
+chapter: 0
+publication_status: In Development
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol4/backmatter/appendix_systems.qmd
+source_anchor: sec-appendix-systems
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Reference
+- Book/Volume_4
+rendered_source_url: https://mlsysbook.ai/vol4/backmatter/appendix_systems.html
+---
+
+# V4 Systems and Hardware
+
+[[Home|Home]] · [[01 Books/Volume IV - Physical AI/Volume 4 Overview|Volume Overview]]
+
+^sec-appendix-systems
+
+This appendix supplies reference models for the timing, memory, communication, and electrical limits that connect learned proposals to physical actuators. Its derivations and worked estimates help readers calculate response budgets, interpret hardware measurements, and implement the record formats used by the permission path. Each model states assumptions that must hold before its result can support a physical operating limit.
+
+## How to Use This Appendix
+
+^how-to-use-this-appendix
+
+Consult this appendix when diagnosing physical systems bottlenecks, timing jitter, electrical rail instability, or hardware interface boundaries across chapters in this book.
+
+| When you encounter this systems symptom                                                        | Consult                                                                                                        | For this quantitative tool                                                                                                                 |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| A real-time safety task misses periodic execution deadlines                                    | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-timers\|section 1.3]]          | Rate-monotonic and EDF schedulability, Response Time Analysis (RTA), and Priority Ceiling Protocol                                         |
+| Neural policy inference shows non-deterministic execution times or long latency tails          | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-timers\|section 1.3]]          | Execution-time analysis, static shape constraints, CUDA Graphs, and the limits of Extreme Value Theory (EVT) estimates                     |
+| Real-time OS threads suffer latency spikes from page faults, cache bouncing, or IRQ preemption | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-timers\|section 1.3]]          | Memory locking (`mlockall`), stack prefaulting, 64-byte cache alignment, and top-half/threaded IRQ partitioning                            |
+| A software deadlock or kernel panic freezes actuator control loops                             | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-timers\|section 1.3]]          | Windowed watchdog detection, rolling polynomial token checkpoints, and Safe Torque Off (STO) response                                      |
+| Inverter bridge MOSFETs burn out or trip overcurrent protections                               | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-inverters\|section 1.4]]       | Microcontroller PWM complementary timers, dead-time insertion, Miller clamps, and 6th harmonic torque ripple                               |
+| Heavy neural inference bursts induce compute brownout resets                                   | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-droop\|section 1.5]]           | Inductive voltage droop (${L_{\text{parasitic}}} d{I}/d{t}$), multi-tier decoupling hierarchies, and alpha-power gate delay                |
+| High-rate sensor DMA streams cause safety threads to miss deadlines                            | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-dram\|section 1.6]]            | DRAM bank-conflict penalties, row buffer thrashing, FR-FCFS starvation, and AXI QoS arbitration                                            |
+| Sensor fusion streams suffer temporal registration skew under motion                           | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-ptp\|section 1.7]]             | IEEE 1588 / 802.1AS PTP hardware PHY timestamping, PI clock servos, and bounded clock conversion uncertainty                               |
+| Shared memory queues between Linux and the safety microcontroller return torn or stale data    | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-ipc\|section 1.8]]             | Zero-copy IPC, POSIX shm, lockless ring buffers, triple-buffering, and CUDA IPC for multi-accelerator pipelines                            |
+| Joint actuators fail to track sudden torque reversals, chatter, or overheat                    | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-actuators\|section 1.9]]       | Stator ${L_{\text{phase}}}/{R_{\text{phase}}}$ constants, lumped thermal ODE networks, reflected rotor inertia, and analytical jerk limits |
+| Emergency braking spikes DC bus voltage and damages power silicon                              | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-power\|section 1.10]]          | Regenerative capacitive energy surges, dynamic brake choppers, and bus decoupling sizing                                                   |
+| Shared serial buses or Ethernet networks experience queuing delay and frame jitter             | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-fieldbus\|section 1.11]]       | CAN 2.0B vs CAN FD priority blocking, EtherCAT on-the-fly cycle budgets, TSN Time-Aware Shapers, and seqlocks                              |
+| Monocular 3D bounding boxes distort and depth covariance diverges                              | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-vision\|section 1.12]]         | Pinhole intrinsic projection, Zhang’s calibration, and metric unprojection covariance                                                      |
+| A mobile base breaches clearance buffers under surface wetness                                 | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-stopping\|section 1.13]]       | Kinematic stopping envelopes, information age lag breakdown, and velocity clamps                                                           |
+| A calculation needs a value of the running machine, or a record needs its canonical name       | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-data-sheet\|section 1.14]]     | The machine data sheet with evidence categories and MLSysIM fields, and the register of the sixteen records                                |
+| A record must be laid out for a fixed-size mailbox or log                                      | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-formats\|section 1.15]]   | Zero-allocation layouts, natural alignment, proposal/record byte tables, and register field orders                                         |
+| A handover, fault trial, or release gate must be implemented step by step                      | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-formats\|section 1.15]]   | Authority-transfer, fault-injection, and release-gate protocols beside their records                                                       |
+| You need rapid order-of-magnitude physical anchors across time, kinetics, thermal, and risk    | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-numbers-to-know\|section 1.2]] | Rate hierarchy, blind travel conversions, thermal constants, and exposure walls                                                            |
+
+## Numbers to Know in Physical AI
+
+^sec-appendix-systems-numbers-to-know
+
+Physical AI requires quantitative intuition across computation, motion, and heat. The latency hierarchy popularized by Jeff Dean[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn1|¹]] provides a useful starting point, but a delayed physical command also consumes clearance. The tables below separate representative rates and scenario calculations from bounds that require qualification on the actual machine.
+
+The fastest events are transistor switching and local memory access. Operating-system dispatch and communication add scheduling and queueing delays. Actuator current then changes over an electrical time constant, while braking and heat accumulation unfold over longer intervals. These scales overlap; a task’s assigned deadline comes from its physical consequence, not from its location in this hierarchy.
+
+**Systems Perspective 1.1: Three physical numbers that matter most**
+
+- **Kinetic equivalence: $1\text{ ms} = 1\text{ mm}$ (at $1\text{ m/s}$)**: At a nominal robotic speed of $1\text{ m/s}$, every millisecond of perception, inference, or fieldbus latency translates into exactly $1\text{ mm}$ of blind travel before retarding torque can be applied. At highway velocity ($30\text{ m/s}$), each millisecond is $3\text{ cm}$. In physical systems, software latency is not waiting time; it is physical displacement.
+- **Thermal divergence: ${\tau_{\text{th,silicon}}} \sim 1\text{ ms}$ vs. ${\tau_{\text{th}}} \sim 100\text{ s}$**: Semiconductor junctions heat adiabatically within milliseconds during deep neural network bursts, potentially triggering thermal throttling before heat spreaders react. Electrical rail droop is a separate response to changing current demand. In contrast, electromagnetic stator windings heat over tens to hundreds of seconds, tolerating transient overcurrent for aggressive maneuvers but accumulating thermal energy that eventually limits sustained torque.
+- **The exposure wall: ${T} = 3 / {\lambda}$**: Under a stationary Poisson model, zero observed failures gives an approximate one-sided 95 percent upper rate bound of $3/{T}$ after ${T}$ operational hours ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-hanley1983nothing|Hanley and Lippman-Hand 1983]]). Very small target rates demand correspondingly large exposure. Runtime barriers can support a broader assurance argument, but neither a barrier nor a finite test proves the absence of failure.
+
+### Rate and Latency Hierarchy Across Machine Levels
+
+^rate-and-latency-hierarchy-across-machine-levels
+
+Control rates in physical AI rise steeply from the deliberative brain down to the physical body ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-rate-hierarchy|table 1]]). Deliberative multimodal models (VLAs) operate at human reaction scales ($1\text{--}5\text{ Hz}$). Action chunking models emit future trajectory waypoints at $10\text{--}50\text{ Hz}$. Beneath the proposal boundary, the permission path enforces safety barriers at $1\text{ kHz}$. At the lowest levels, power electronic current loops and PWM switching operate at tens to hundreds of kilohertz to maintain electromagnetic flux and drive torque. For real-time timer schedulability and response-time analysis, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-timers|section 1.3]]; for inverter gate switching and dead-time modeling, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-inverters|section 1.4]].
+
+| Machine Level                   | Frequency Band | Cycle Period | Blind Travel at 1 m/s | Architectural Mechanism & Bound                                                     |
+|:--------------------------------|:---------------|:-------------|:----------------------|:------------------------------------------------------------------------------------|
+| **Brain (Deliberation)**        | 1–5 Hz         | 200–1,000 ms | 200–1,000 mm          | Multimodal VLA reasoning; memory- and compute-bound                                 |
+| **Brain (Action Chunking)**     | 10–50 Hz       | 20–100 ms    | 20–100 mm             | Action chunk diffusion/transformer decoding; amortized                              |
+| **Nervous System (Permission)** | 1 kHz          | 1 ms         | 1 mm                  | Control barrier certificates, stopping envelopes, lease watchdog                    |
+| **Body (Current Loop)**         | 10–25 kHz      | 40–100 µs    | 40–100 µm             | Field-oriented current control (FOC), torque tracking, stator flux                  |
+| **Body (Inverter Switching)**   | 50–200 kHz     | 5–20 µs      | 5–20 µm               | Power MOSFET gate drive, dead-time insertion (${t_{\text{dead}}}$), inductive droop |
+
+Table 1: **Rate and Latency Hierarchy Across the Five Machine Levels**: Representative rates from inverter switching to foundation-model deliberation. The reciprocal period and travel during that period at nominal speed ($1\text{ m/s}$) are scale comparisons, not independently established deadlines or evidence-age bounds.
+
+^tbl-numbers-rate-hierarchy
+
+### Kinetic Translation and Safe Stopping Envelopes
+
+^kinetic-translation-and-safe-stopping-envelopes
+
+Total stopping distance ${d_{\text{stop}}} = {v} \cdot {\tau_{\text{delay}}} + {v}^2 / (2 {a_{\text{brake}}})$ combines the linear blind travel accrued during computational delay and the quadratic mechanical braking distance ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-kinematics|table 2]]). As platform speed increases, absolute blind travel expands rapidly, consuming entire clearance margins before deceleration can begin. [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-stopping|Section 1.13]] derives the information-age and braking terms; [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-rotor-jerk|section 1.9.3]] relates joint jerk to electrical limits.
+
+| Platform Archetype               | Nominal Velocity ${v}$ | Braking Decel ${a_{\text{brake}}}$ | Blind Travel (${\tau_{\text{delay}}}=50\text{ ms}$) | Blind Travel (${\tau_{\text{delay}}}=200\text{ ms}$) | Total Stop (${\tau_{\text{delay}}}=200\text{ ms}$) |
+|:---------------------------------|:-----------------------|:-----------------------------------|:----------------------------------------------------|:-----------------------------------------------------|:---------------------------------------------------|
+| **Humanoid / Quadruped**         | 1 m/s (3.6 km/h)       | 4 m/s² (0.41 g)                    | 50 mm                                               | 200 mm                                               | 325 mm (61.5%)                                     |
+| **Warehouse Mobile Manipulator** | 1.5 m/s (5.4 km/h)     | 2 m/s² (0.20 g)                    | 75 mm                                               | 300 mm                                               | 863 mm (34.8%)                                     |
+| **Urban Delivery Robot**         | 6 m/s (21.6 km/h)      | 4.5 m/s² (0.46 g)                  | 300 mm                                              | 1.2 m                                                | 5.2 m (23.1%)                                      |
+| **Autonomous Vehicle (Highway)** | 30 m/s (108 km/h)      | 7 m/s² (0.71 g)                    | 1.5 m                                               | 6 m                                                  | 70.3 m (8.5%)                                      |
+
+Table 2: **Kinetic Translation Across Platform Archetypes**: Pre-brake delay converts into unrecoverable physical travel before braking force begins. These illustrative archetypes assume constant speed during delay and constant braking afterward; they are not the running machine’s qualified profiles. Parenthesized percentages give blind travel as a share of the modeled total.
+
+^tbl-numbers-kinematics
+
+### Edge Memory Bandwidth and Action Chunk Amortization
+
+^sec-appendix-systems-memory-bound
+
+For ${O}$ operations and ${D_{\text{vol}}}$ bytes transferred from memory, an idealized execution-time lower bound is $\max({O}/{R_{\text{peak}}},{D_{\text{vol}}}/{\text{BW}})$, where ${R_{\text{peak}}}$ is peak arithmetic throughput and ${\text{BW}}$ is available memory bandwidth. The equivalent roofline throughput bound is $\min({R_{\text{peak}}},({O}/{D_{\text{vol}}}){\text{BW}})$. The ratio ${O}/{D_{\text{vol}}}$ is arithmetic intensity. This model identifies whether compute or memory transfer binds; synchronization, contention, and incomplete overlap increase actual time.
+
+At small batch sizes, autoregressive generation can be limited by memory bandwidth. [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-edge-compute|Table 3]] divides weight storage by the assumed sustained bandwidth to obtain a streaming-only lower bound on execution time. A chunk decoder that produces all ${H}$ waypoints in one weight pass can amortize that transfer; one that makes multiple denoising or token-generation passes cannot claim the same amortization. The resulting waypoint rate is an output-throughput ceiling, not a fresh-observation feedback rate. [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-dram|Section 1.6]] explains how competing traffic reduces the bandwidth available to the decoder.
+
+| Model & Precision  | Parameters | Memory Footprint | DRAM Read Time ($140\text{ GB/s}$) | Single-Step Max Rate | Chunk Rate (${H}=16$) |
+|:-------------------|:-----------|:-----------------|:-----------------------------------|:---------------------|:----------------------|
+| **VLA-7B (FP16)**  | 7.0B       | 14 GB            | 100 ms                             | 10 Hz                | 160 Hz equivalent     |
+| **VLA-7B (INT8)**  | 7.0B       | 7 GB             | 50 ms                              | 20 Hz                | 320 Hz equivalent     |
+| **VLA-7B (INT4)**  | 7.0B       | 3.5 GB           | 25 ms                              | 40 Hz                | 640 Hz equivalent     |
+| **VLA-14B (INT8)** | 14.0B      | 14 GB            | 100 ms                             | 10 Hz                | 160 Hz equivalent     |
+
+Table 3: **Edge Memory Bandwidth and Action Chunk Amortization**: Weight-only streaming estimates under the stated bandwidth and precision assumptions. The chunk column assumes one weight pass produces the whole chunk; activations, decoder passes, and contention add work. More waypoints do not imply more frequent observation or replanning.
+
+^tbl-numbers-edge-compute
+
+### Thermal Time Constants Across Compute and Electromechanics
+
+^thermal-time-constants-across-compute-and-electromechanics
+
+For a constant heat input and a single thermal node initially at ambient, the temperature rise above ${T_{\text{amb}}}$ follows ${\Delta T}({t}) = {\Delta T_{\max}} (1 - e^{-{t}/{\tau_{\text{th}}}})$ with steady-state rise ${\Delta T_{\max}}$ and time constant ${\tau_{\text{th}}}$ ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-thermal|table 4]]). Local silicon temperature can change rapidly during a computational burst, requiring thermal qualification of the workload and cooling path. Electrical droop has a separate current-transient timescale. In contrast, electromagnetic stator windings heat over minutes, allowing transient torque overdrive if bounded by an ${I_{\text{phase}}}^2 {t}$ thermal watchdog. For first-order thermal differential equations and stator winding degradation limits, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-actuators|section 1.9]]; for regenerative energy absorption on DC power buses, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-power|section 1.10]].
+
+| Subsystem Component         | Physical Mechanism                                                         | Thermal Time Constant ${\tau_{\text{th}}}$ | Critical Failure Mode                                     | Safety Mitigation                                               |
+|:----------------------------|:---------------------------------------------------------------------------|:-------------------------------------------|:----------------------------------------------------------|:----------------------------------------------------------------|
+| **Silicon Junction (Die)**  | Transistor channel self-heating                                            | 1–10 ms                                    | Gate delay change, leakage rise, thermal trip             | Thermal monitoring and frequency throttling                     |
+| **SoC Heat Sink / Package** | Convective heat spreader dissipation                                       | 10–60 s                                    | Package thermal saturation, sustained throttling          | Active fan modulation, workload migration                       |
+| **Motor Stator Windings**   | Copper resistive Joule heating (${I_{\text{phase}}}^2 {R_{\text{phase}}}$) | 30–180 s                                   | Insulation breakdown (Class H $180^\circ\text{C}$), short | ${I_{\text{phase}}}^2 {t}$ thermal protection, current derating |
+| **Motor Frame / Housing**   | Bulk metallic casing heat conduction                                       | 10–30 min                                  | Structural deformation, bearing grease loss               | Natural convection, passive cooling fins                        |
+| **Traction Battery Pack**   | Electrochemical cell internal resistance                                   | 5–20 min                                   | Chemistry-dependent overheating and thermal runaway       | Liquid cooling loop, charge/discharge cutoff                    |
+
+Table 4: **Thermal Time Constants Across Compute and Electromechanical Subsystems**: Thermal response spans several orders of magnitude. The listed ranges are representative scales, not universal device limits. Heating rates, thermal trips, and sustained torque require the actual thermal network and initial temperature.
+
+^tbl-numbers-thermal
+
+### Statistical Safety Bounds and Exposure Walls
+
+^statistical-safety-bounds-and-exposure-walls
+
+For zero observed failures in stationary Poisson exposure, the one-sided 95 percent upper rate bound is approximately $3/{T}$, where ${T}$ is total operating time ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-hanley1983nothing|Hanley and Lippman-Hand 1983]]). [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-safety|Table 5]] shows the exposure needed to put that bound at three illustrative target rates. These are statistical calculations, not a mapping from a whole-system accident rate to a safety integrity level. In particular, ISO 26262 random-hardware-failure metrics do not describe every cause of a learned system’s failure ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-iso26262|International Organization for Standardization 2018]]). Correlated trials, changing operating conditions, and unobserved failures invalidate a naive accumulation of hours.
+
+| Illustrative target rate ${\lambda}$ | Required failure-free exposure ${T} \approx 3/{\lambda}$ | Interpretation                                          |
+|:-------------------------------------|:---------------------------------------------------------|:--------------------------------------------------------|
+| $10^{-8}/\text{hour}$                | 300,000,000 hours                                        | Upper rate bound under the declared Poisson model       |
+| $10^{-7}/\text{hour}$                | 30,000,000 hours                                         | Same confidence level and observation assumptions       |
+| $10^{-6}/\text{hour}$                | 3,000,000 hours                                          | A rate alone does not establish a safety classification |
+
+Table 5: **Statistical Testing Exposure**: Approximate exposure for a one-sided 95 percent upper rate bound after zero observed failures. A system assurance argument also needs evidence about failure mechanisms and operating conditions.
+
+^tbl-numbers-safety
+
+### Fieldbus Latencies, Jitter, and Determinism
+
+^fieldbus-latencies-jitter-and-determinism
+
+Communication buses differ sharply in latency and jitter ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-numbers-buses|table 6]]). Whereas distributed cluster fabrics (such as RoCEv2 or InfiniBand) prioritize aggregate bandwidth using credit-based flow control and statistical multiplexing, onboard physical AI buses must guarantee bounded delivery times. Industrial fieldbuses such as EtherCAT combine hardware forwarding with scheduled exchange and clock synchronization. A specific jitter claim requires the configured system’s evidence. Classical serial buses like Controller Area Network (CAN) 2.0B provide low-overhead bitwise arbitration for up to 8 bytes, but saturate rapidly under multi-joint control traffic. The Flexible Data-Rate variant, CAN FD, expands payloads to 64 bytes with accelerated data bit rates. Meanwhile, switched IEEE Time-Sensitive Networking (TSN) uses scheduled transmission gates to multiplex gigabit vision streams with hard real-time actuator commands. In contrast, non-deterministic best-effort Ethernet and shared wireless channels introduce tail latencies that exceed the reaction deadlines of high-speed electromechanical machines. For IEEE 1588 PTP hardware timestamping bounds, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-ptp|section 1.7]]; for CAN 2.0B vs. CAN FD priority arbitration and EtherCAT cycle budgets, see [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-fieldbus|section 1.11]].
+
+| Bus / Network Technology       | Nominal Transit Latency                       | Illustrative Jitter                   | Determinism Mechanism                               | Primary Machine Role                                                |
+|:-------------------------------|:----------------------------------------------|:--------------------------------------|:----------------------------------------------------|:--------------------------------------------------------------------|
+| **EtherCAT (ETG.1000)**        | $100\,{\text{µ}}\text{s}\text{--}1\text{ ms}$ | $< 1\,{\text{µ}}\text{s}$             | Hardware cut-through on-the-fly frame processing    | Synchronous joint servo drive & sensor feedback (Body/Nervous)      |
+| **CAN FD (ISO 11898-1)**       | $100\text{--}500\,{\text{µ}}\text{s}$         | $50\text{--}200\,{\text{µ}}\text{s}$  | Bitwise non-destructive priority arbitration (64 B) | Distributed sensors, multi-axis actuator controllers (Nervous/Body) |
+| **CAN 2.0B (ISO 11898-1)**     | $200\,{\text{µ}}\text{s}\text{--}1\text{ ms}$ | $100\text{--}400\,{\text{µ}}\text{s}$ | Bitwise non-destructive priority arbitration (8 B)  | Legacy sensors, low-rate auxiliary controllers (Nervous/Body)       |
+| **TSN Ethernet (802.1Qbv)**    | $10\text{--}100\,{\text{µ}}\text{s}$          | $< 5\,{\text{µ}}\text{s}$             | Time-aware shaper with scheduled transmission gates | High-bandwidth sensor ingress (lidar/cameras) to SoC (Boundary)     |
+| **Standard IP / UDP Ethernet** | $0.5\text{--}5\text{ ms}$                     | $1\text{--}20\text{ ms}$              | Switched full-duplex links; best-effort queueing    | Asynchronous logging, inter-node telemetry (Brain)                  |
+| **Shared Wi-Fi telemetry**     | $5\text{--}20\text{ ms}$                      | $10\text{--}500\text{ ms}$ (RF fade)  | Wireless packet retransmission, contention window   | High-level fleet dispatch, cloud mission updates (World/Governance) |
+
+Table 6: **Communication Bus Latencies, Jitter, and Real-Time Determinism**: Representative scales for configured networks, not protocol-level worst-case guarantees. Required jitter follows the plant and deadline; bounded control does not universally require sub-microsecond jitter. Delivery guarantees require a traffic model, topology, arbitration analysis, and measured implementation behavior.
+
+^tbl-numbers-buses
+
+## Real-Time Timers, Watchdogs, and Schedulability
+
+^sec-appendix-systems-timers
+
+A real-time task is correct only if it computes the required result before its deadline. Average inference latency and throughput do not establish that property. A permission task needs a bound that includes its own execution, blocking on shared resources, and interference from other work. The following single-core scheduling models separate those contributions. Their guarantees apply only under their stated task assumptions; operating-system configuration and loaded measurements must establish whether the implementation satisfies them.
+
+### Real-Time Task Schedulability Under Rate-Monotonic and Earliest-Deadline-First Scheduling
+
+^real-time-task-schedulability-under-rate-monotonic-and-earliest-deadline-first-scheduling
+
+In contrast to general-purpose Linux time-sharing, real-time operating systems schedule tasks based on deterministic timing contracts rather than dynamic heuristics. A periodic real-time task ${i}$ is characterized by its worst-case execution time (WCET) ${C}_i$, relative deadline ${D}_i$, and period ${T}_i$. When multiple real-time tasks share a single core, schedulability depends on the priority assignment discipline:
+
+Under **Rate-Monotonic Scheduling (RMS)**, fixed-priority preemptive scheduling assigns priority inversely proportional to task period (${T}_i < {T}_j \implies \text{priority}({i}) > \text{priority}({j})$) ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-liu1973scheduling|Liu and Layland 1973]]). For a set of ${n}$ independent periodic tasks, with negligible scheduling overhead, no blocking or release jitter, and implicit deadlines (${D}_i = {T}_i$), a sufficient condition for schedulability is the Liu and Layland utilization bound:
+
+$$
+{U} = \sum_{i=1}^{n} \frac{{C}_i}{{T}_i} \le {n} \left( 2^{1/{n}} - 1 \right)
+$$
+
+ As ${n} \to \infty$, the bound converges monotonically to $\lim_{n \to \infty} {n}(2^{1/{n}}-1) = \ln 2 \approx 0.693$ (69.3 percent). If total processor utilization does not exceed 69.3 percent, the task set is guaranteed to meet all deadlines under RMS. Task periods may instead form a harmonic set, in which every period is an exact integer multiple of every shorter period (${T}_j = {m} \cdot {T}_i$ for integer ${m} \ge 1$, such as $1\text{ ms}$, $5\text{ ms}$, $10\text{ ms}$, and $100\text{ ms}$). For a harmonic set, the utilization bound rises to 100 percent. In physical AI architectures, rate hierarchies are purposefully engineered with harmonic cadences to maximize processor utilization without sacrificing determinism.
+
+When processor utilization exceeds the conservative Liu and Layland bound (${U} > \ln 2$), or when relative deadlines are constrained (${D}_i \le {T}_i$), **Response Time Analysis (RTA)** evaluates exact schedulability from the worst-case **response time** ${R}_i$ ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-liu1973scheduling|Liu and Layland 1973]]; [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-kopetz2011real|Kopetz 2011]]):
+
+$$
+{R}_i = {C}_i + {B}_i + {I}_i \le {D}_i
+$$
+
+ where ${B}_i$ is the maximum blocking duration induced by lower-priority tasks holding shared resources, and ${I}_i$ is the interference from higher-priority tasks. The response time is computed via the fixed-point recurrence. The sum runs over the higher-priority task set. The ceiling counts how many releases of each such task can interfere during the current response-time estimate. An enlarged estimate may expose another release and therefore require another iteration:
+
+$$
+{R}_i^{({\ell}+1)} = {C}_i + {B}_i + \sum_{j \in {hp}(i)} \left\lceil \frac{{R}_i^{({\ell})}}{{T}_j} \right\rceil {C}_j
+$$
+
+ For fixed priorities, bounded blocking, no self-suspension, and zero release jitter, start with ${R}_i^{(0)} = {C}_i + {B}_i$ and iterate until ${R}_i^{({\ell}+1)} = {R}_i^{({\ell})} \le {D}_i$ (establishing schedulability) or ${R}_i^{({\ell}+1)} > {D}_i$ (signaling deadline violation). See **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.06 Real-Time Command Transport and Bus Determinism#^sec-nervous-schedulability-analysis|Comparing bus occupancy on CAN FD and EtherCAT]]** and **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.06 Real-Time Command Transport and Bus Determinism#^sec-nervous-rta-variance|Response time analysis and execution variance]]** for the role of response time variance in the nervous system.
+
+In dynamic-priority systems, **Earliest Deadline First (EDF)** assigns highest priority to the active task with the closest absolute deadline ${d}_{i,k} = {r}_{i,k} + {D}_i$. For independent jobs on a single-core preemptive processor with no blocking and negligible scheduling overhead, EDF is optimal: if a task set is schedulable by any scheduling algorithm, it is schedulable by EDF ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-liu1973scheduling|Liu and Layland 1973]]). For periodic tasks with ${D}_i = {T}_i$, EDF guarantees schedulability if and only if:
+
+$$
+\sum_{i=1}^{n} \frac{{C}_i}{{T}_i} \le 1
+$$
+
+ achieving 100 percent theoretical utilization without requiring harmonic periods. When relative deadlines are strictly less than periods (${D}_i < {T}_i$), schedulability requires the processor demand criterion over the Demand Bound Function (DBF):
+
+$$
+\text{dbf}({t}) = \sum_{i=1}^{n} \max\left( 0, \left\lfloor \frac{{t} - {D}_i}{{T}_i} \right\rfloor + 1 \right) {C}_i \le {t}, \quad \forall {t} \ge 0
+$$
+
+ evaluating whether cumulative execution demand exceeds available physical time across all time intervals ${t}$. Under Linux, EDF is exposed via the `SCHED_DEADLINE` policy implementing the Constant Bandwidth Server (CBS) algorithm. A CBS task declares its runtime ${Q}_i$, deadline ${D}_i$, and period ${T}_i$ via `sched_setattr()`. If a task attempts to execute beyond its declared runtime ${Q}_i$ within period ${T}_i$, the kernel dynamically throttles the task until its next period, protecting co-located real-time threads from execution overruns.
+
+In standard multi-threaded Linux, mutual exclusion primitives (such as futex-backed mutexes) assume threads will eventually yield the processor. When real-time tasks share data structures (such as seqlock mailboxes or actuator command queues) protected by naive mutual exclusion, they suffer from **unbounded priority inversion** ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-sha1990priority|Sha et al. 1990]]; [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-reeves1997pathfinder|Reeves 1997]]). A low-priority task L acquires a lock; a high-priority task H becomes ready and blocks waiting for the lock; intermediate-priority tasks M that do not need the lock preempt task L, delaying task H for an arbitrary duration. To bound blocking time ${B}_i$ in the RTA recurrence, real-time operating systems use formal synchronization protocols:
+
+1.  **Priority Inheritance Protocol (PIP)**: When task H blocks on a lock held by task L, the operating system temporarily elevates task L’s active priority to task H’s priority, preventing preemption by task M. Under `PREEMPT_RT` Linux, standard in-kernel spinlocks are converted to sleeping `rt_mutex` locks that enforce PIP automatically, while user-space threads configure `PTHREAD_PRIO_INHERIT`. While PIP eliminates unbounded inversion, it permits transitive blocking chains (${B}_i \le \sum_{k} {C}_k$) and potential deadlock.
+2.  **Priority Ceiling Protocol (PCP)**: Each lock is assigned a static priority ceiling equal to the highest priority of any task that may lock it. A task ${i}$ can lock a resource only if its priority is strictly higher than the priority ceilings of all locks currently held by other tasks. PCP prevents mutual-exclusion deadlocks and guarantees that a task is blocked at most once by at most one lower-priority critical section ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-sha1990priority|Sha et al. 1990]]):
+
+$$
+{B}_i = \max_{k \in {lp}(i), {s} \in {cs}(k)} {{C^{\text{cs}}}}_{k,{s}}
+$$
+
+ where ${lp}({i})$ is the set of tasks with priority lower than task ${i}$, and ${cs}({k})$ is the set of critical sections executed by task ${k}$ with a priority ceiling at or above the priority of task ${i}$.
+
+### Worst-Case Execution Time Analysis for Physical ML Pipelines
+
+^worst-case-execution-time-analysis-for-physical-ml-pipelines
+
+In classical embedded systems, the worst-case execution time ${C}_i$ is determined via Static Timing Analysis (STA) ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-hennessy2019computer|Hennessy and Patterson 2019]]). STA parses binary machine instructions, constructs a Control Flow Graph (CFG), and solves an Integer Linear Program via the Implicit Path Enumeration Technique (IPET) using cycle-accurate microarchitectural models of processor pipelines, branch predictors, and cache sets. In physical AI systems, evaluating ${C}_i$ for learned vision-language-action (VLA) and diffusion policies presents three distinct architectural challenges:
+
+1.  **Microarchitectural opacity**: Modern neural accelerators (GPUs, NPUs, Tensor Processing Unit (TPU) hardware) feature multi-level shared caches, dynamic frequency scaling (DVFS), out-of-order warp schedulers, and memory crossbar contention that make a sound static bound difficult without detailed timing and interference models.
+2.  **Algorithmic execution variance**: Learned pipelines follow dynamic execution paths, including adaptive denoising loops in diffusion models, variable sequence lengths in autoregressive decoders, and data-dependent sparse attention kernels.
+3.  **Software runtime overhead**: Deep learning runtimes (e.g., PyTorch, TensorRT, Open Neural Network Exchange (ONNX) Runtime) introduce non-deterministic host-to-device kernel launch queueing, unified memory migration, and internal memory allocation locks. Launch overhead and jitter depend on the runtime, driver, submission path, and load; a per-kernel constant is not portable across systems.
+
+To constrain execution variability for neural policies that cross the proposal boundary, physical AI systems enforce deterministic execution contracts and hybrid measurement bounds:
+
+- **Static shape contracts**: Action chunk horizons (${H}$), token context lengths, and sensor input tensors are locked to fixed maximum dimensions. Dynamic input padding replaces variable-length tensors, ensuring constant compute graph geometry and eliminating dynamic kernel recompilation.
+
+- **Zero runtime allocation**: All execution buffers, KV caches, scratchpad memory, and direct memory access (DMA) descriptors are preallocated during initialization. Dynamic memory calls (`malloc`, `cudaMalloc`, `free`) are strictly forbidden on cyclic control paths.
+
+- **Reduced host dispatch overhead via CUDA Graphs**: Fixing denoising iterations bounds one source of algorithmic work. Capturing and instantiating a reusable graph reduces repeated per-kernel host setup, as the [CUDA Graphs documentation](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html) explains. Graph launch still uses the runtime and driver, and device scheduling, frequency changes, and shared-resource contention remain. A graph does not by itself provide deterministic execution.
+
+- **Extreme Value Theory (EVT) tail bounds**: Because finite empirical profiling cannot expose the true maximum execution time under worst-case hardware interference, engineers apply Extreme Value Theory ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-coles2001introduction|Coles 2001]]). Under the Pickands–Balkema–de Haan theorem, execution time exceedances over a high operational threshold ${u}$ converge asymptotically to a Generalized Pareto Distribution (GPD):
+
+$$
+{F_{\text{GPD}}}({y}) = 1 - \left( 1 + \frac{{\xi} {y}}{{\tilde{\sigma}}} \right)^{-1/{\xi}}
+$$
+
+ on the support $1+{\xi} {y}/{\tilde{\sigma}}>0$, with the exponential limit at ${\xi}=0$. Here ${y} = {x} - {u} > 0$, ${\tilde{\sigma}} > 0$ is the scale parameter, and ${\xi}$ is the shape parameter (tail index). The shape parameter characterizes the tail behavior:
+
+  - ${\xi} < 0$ (Weibull domain): Bounded upper tail with a finite model endpoint ${x_F} = {u} - {\tilde{\sigma}}/{\xi}$, under the fitted model; an estimated finite endpoint is not proof of a hardware ceiling.
+  - ${\xi} = 0$ (Gumbel domain): Light, exponential tail.
+  - ${\xi} > 0$ (Fréchet domain): Heavy, polynomial tail. The fitted sign alone neither identifies a hardware failure mechanism nor determines whether a deadline can be defended.
+
+For an acceptable target exceedance probability ${\epsilon}$ (such as $10^{-6}$ or $10^{-8}$ per invocation), a model-based execution-time quantile ${z_\epsilon}({\epsilon})$ is computed as:
+
+$$
+{z_\epsilon}({\epsilon}) = {u} + \frac{{\tilde{\sigma}}}{{\xi}} \left[ \left( \frac{{N}}{{N_u}} {\epsilon} \right)^{-{\xi}} - 1 \right]
+$$
+
+ where ${N}$ is total sample count and ${N_u}$ is the count of observations exceeding threshold ${u}$. For ${\xi}=0$, the continuous limit is ${u}-{\tilde{\sigma}}\ln({N}{\epsilon}/{N_u})$. These are fitted quantiles, conditional on the sampling regime, threshold choice, tail model, and parameter uncertainty. They do not certify a deterministic WCET. A placement record must distinguish measured maxima, probabilistic estimates, and justified execution bounds; the permission path must remain schedulable when the proposer exceeds its estimate.
+
+### Operating-System Determinism Through Interrupt Handling, Memory Locking, and Cache Locality
+
+^operating-system-determinism-through-interrupt-handling-memory-locking-and-cache-locality
+
+On a heterogeneous robotics system on chip (SoC), the nervous system and safety monitors execute under real-time operating systems (RTOS) or real-time Linux kernels (such as Linux patched with `PREEMPT_RT`). Interrupts and non-preemptible kernel critical sections can delay user-space tasks. A hard response bound requires bounding those intervals on the chosen kernel and hardware. In physical AI pipelines where control loops govern physical momentum, operating-system determinism requires eliminating non-preemptible kernel sections, bounding interrupt preemption latency, isolating execution cores, locking virtual memory, and enforcing cache locality.
+
+Linux fair scheduling balances CPU service among runnable tasks. Its historical CFS implementation accounts for weighted execution time; newer kernels use [EEVDF](https://docs.kernel.org/scheduler/sched-eevdf.html), which also considers eligibility and virtual deadlines. Neither policy establishes the physical deadline guarantee needed by the permission task. In physical AI systems, real-time control threads must instead be configured with POSIX static priority scheduling policies (`SCHED_FIFO` or `SCHED_RR`) across priority levels 1 to 99 (or `SCHED_DEADLINE` implementing Earliest Deadline First). Under `SCHED_FIFO`, the highest-priority runnable thread executes immediately and runs until it blocks on I/O, yields voluntarily, or is preempted by a strictly higher-priority real-time thread.
+
+In mainline Linux kernels, disabling preemption during spinlock acquisition (`preempt_disable()`), executing non-preemptible softirqs, and servicing asynchronous workqueues can delay user-space execution by tens of milliseconds. When an unprivileged machine learning process or device driver holds an in-kernel spinlock, a high-priority 1 kHz real-time safety task cannot preempt the CPU, even if its timer has expired. A kernel configured with `PREEMPT_RT` reduces non-preemptible execution through four mechanisms, while hardware, drivers, and remaining critical sections still require timing qualification:
+
+1.  *Sleeping Spinlocks (`rt_mutex`)*: Standard in-kernel spinlocks (`spinlock_t` and `rwlock_t`) are replaced by sleeping mutexes backed by `rt_mutex` with Priority Inheritance Protocol (PIP) support. When a high-priority thread waits for an `rt_mutex`, the waiter sleeps and the lock owner inherits its priority until it can release the lock. Raw spinlocks remain non-preemptible; interrupt masking depends on the primitive used. Their maximum hold times must be included in the platform timing analysis.
+2.  *Preemptible Read-Copy Update (`CONFIG_PREEMPT_RCU`)*: RCU read-side critical sections (`rcu_read_lock()` / `rcu_read_unlock()`) become preemptible, preventing deferred memory reclamation from stalling real-time threads.
+3.  *Forced Interrupt Threading*: Hardware interrupt service routines (ISRs) are split into minimal top-half handlers and prioritized kernel threads (`irq/<irq>-<name>`) scheduled under `SCHED_FIFO`.
+4.  *High-Resolution Timers (`hrtimers`)*: Traditional Linux timer ticks execute at coarse periodic jiffies ($1\text{ ms}$ or $4\text{ ms}$ granularity), introducing substantial quantization error and timer slack. `PREEMPT_RT` binds the timer subsystem to hardware per-CPU clock event devices (such as the ARM Generic Timer or x86 Local APIC), enabling sub-microsecond timer resolution. Real-time cyclic threads invoke `clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL)` using absolute monotonic deadlines, avoiding cumulative drift from relative sleeps. Wake-up jitter remains part of the response-time bound.
+
+When an external hardware peripheral (such as an IMU, joint encoder counter, or fieldbus controller) asserts an interrupt request (IRQ), the processor halts user execution and saves register context. It then vectors to the hardware ISR via the interrupt controller (such as an ARM Generic Interrupt Controller GICv3 or x86 APIC). The worst-case interrupt latency ${t_{\text{irq,lat}}}$ to enter the hardware interrupt handler can be budgeted as:
+
+$$
+{t_{\text{irq,lat}}} = {t_{\text{irq\_disabled,max}}} + {t_{\text{hw\_pipe}}} + {t_{\text{context\_save}}} + \sum_{j \in {hp}(\text{irq})} {{t_{\text{ISR}}}}_{j}
+$$
+
+ This expression does not include threaded-handler work or the subsequent scheduling delay before a user-space task runs. Here ${t_{\text{irq\_disabled,max}}}$ is the longest duration during which CPU interrupts were disabled across the kernel, ${t_{\text{hw\_pipe}}}$ is the processor pipeline flush delay, ${t_{\text{context\_save}}}$ is the hardware register preservation time, and $\sum {{t_{\text{ISR}}}}_{j}$ represents the execution duration of higher-priority ISRs.
+
+To prevent high-bandwidth sensor streams (such as GigE Vision cameras or 3D lidars streaming gigabits of packet traffic) from generating an *interrupt storm* that starves the 1 kHz permission path, real-time architectures strictly enforce top-half and bottom-half partitioning:
+
+- **Top-half (Hardware ISR)**: Executes in hard-interrupt context with CPU interrupts masked. It executes the absolute minimum hardware operations: reading the peripheral interrupt status register, clearing the physical interrupt line, latching high-resolution hardware counter timestamps, and waking the associated threaded IRQ. The handler’s maximum execution time must be bounded on the target.
+- **Bottom-half (Threaded IRQ)**: In `PREEMPT_RT` and RTOS environments, complex packet deserialization, frame CRC verification, and data copies are deferred to dedicated kernel threads (`irq/<irq>-<name>`). By configuring these threaded IRQs under `SCHED_FIFO` with priorities lower than the 1 kHz safety monitor (e.g., setting camera IRQ threads to priority 50 and the motor permission thread to priority 90), the scheduler prevents those lower-priority threads from preempting the control task. Hard-interrupt top halves and shared-memory traffic still contribute interference.
+
+Heterogeneous multi-core robotics SoCs must also isolate deterministic control threads from background operating-system disturbances. Kernel boot parameters and memory layout rules establish strict CPU shielding and cache locality:
+
+- `isolcpus=2,3`: Removes cores 2 and 3 from the general kernel scheduler balancing domain, reducing automatic load balancing onto those cores; explicit affinity, cpusets, and kernel work still require configuration.
+- `nohz_full=2,3`: Enables full dynamic tickless operation. When an isolated core runs a single real-time thread, the kernel can suppress the periodic scheduling timer tick ($100\text{--}1000\text{ Hz}$), removing that source of periodic interruption while other interrupts and scheduling delays remain.
+- `rcu_nocbs=2,3`: Offloads RCU callback processing from isolated cores to housekeeping cores (cores 0 and 1).
+- *IRQ Affinity Partitioning*: Peripheral hardware interrupts are directed away from real-time cores by writing CPU bitmasks to `/proc/irq/<id>/smp_affinity`. High-rate camera MSI-X vectors and Ethernet controller interrupts are pinned exclusively to housekeeping cores, reducing controllable interrupt interference. Nonmaskable events, local timers, and platform firmware disturbances still require accounting.
+- *Cache Line Alignment and False Sharing Elimination*: Cache-line size is architecture dependent; the examples here assume 64-byte lines. When multiple CPU cores access independent variables that reside within the same 64-byte line, hardware cache coherency protocols (MESI/MOESI) repeatedly invalidate the line across core private caches upon every store, a phenomenon known as **false sharing** or *cache line bouncing*. A single false sharing interaction can stall a real-time core for 50 to 100 clock cycles. Separating independently written state into aligned, padded cache-line slots avoids false sharing; merely aligning the beginning of a larger structure does not isolate every member. The target’s remaining cache misses and contention still need timing bounds. Furthermore, real-time control paths pre-warm L1 instruction and data caches during initialization by executing a dummy pass over critical control tables before arming actuators.
+
+Virtual memory subsystems rely on demand paging, so deterministic execution also requires locking virtual memory and eliminating page faults. When a process accesses an unmapped virtual address, the CPU raises an architectural page fault exception (`#PF`) and suspends execution. The kernel page-table handler then allocates a physical page frame, updates translation lookaside buffer (TLB) entries, and zeroes the memory (a *minor page fault*, requiring $10\text{--}50\,{\text{µ}}\text{s}$). If the requested page was swapped to secondary flash storage, the thread blocks on disk I/O (a *major page fault*, requiring $10\text{--}50\text{ ms}$). Furthermore, Transparent Huge Pages (THP) memory compaction (`khugepaged`) can asynchronously stall threads for tens of milliseconds while defragmenting physical memory pages. A page fault can consume the remaining response-time margin; its mere occurrence does not imply that every deadline is missed.
+
+The following Linux/glibc sketch illustrates initialization and absolute-period sleeping. It assumes the shown page and cache-line sizes. Production code must also validate limits and privileges, measure completion against the deadline, and enter the assessed fallback on an overrun. A late absolute sleep can return immediately; it must not trigger an uncontrolled series of catch-up actuator writes.
+
+``` c
+// Real-time process initialization, memory locking, and cyclic execution
+#define _GNU_SOURCE
+#include <sys/mman.h>
+#include <sched.h>
+#include <pthread.h>
+#include <malloc.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+
+#define REALTIME_PRIORITY   90
+#define CONTROL_CPU_CORE    2
+#define STACK_PREFAULT_SZ   (256 * 1024)       // 256 KB stack
+#define HEAP_PREALLOC_SZ    (16 * 1024 * 1024) // 16 MB pre-allocated arena
+#define PERIOD_NS           1000000ULL         // 1 ms period (1 kHz)
+
+// 64-byte cache-aligned telemetry slot to prevent false sharing
+typedef struct __attribute__((aligned(64))) {
+    uint64_t sequence_id;
+    uint64_t timestamp_ns;
+    float joint_torques[8];
+    uint32_t status_flags;
+    uint8_t reserved[12];
+} realtime_telemetry_t;
+
+static realtime_telemetry_t g_telemetry;
+static volatile uint8_t *g_realtime_heap_arena = NULL;
+
+void configure_realtime_process(int target_cpu, int rt_priority, size_t stack_size) {
+    // 1. Bind execution to dedicated isolated CPU core (isolcpus / nohz_full)
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(target_cpu, &cpuset);
+    if (sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) != 0) {
+        perror("sched_setaffinity failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // 2. Configure POSIX static real-time priority (SCHED_FIFO)
+    struct sched_param sp = { .sched_priority = rt_priority };
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) != 0) {
+        perror("sched_setscheduler SCHED_FIFO failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // 3. Lock all current and future virtual address mappings into physical RAM
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
+        perror("mlockall failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // 4. Disable glibc dynamic heap trimming and anonymous mmap allocation
+    mallopt(M_TRIM_THRESHOLD, -1);
+    mallopt(M_MMAP_MAX, 0);
+
+    // 5. Pre-allocate and prefault the dedicated heap arena
+    g_realtime_heap_arena = (uint8_t *)malloc(HEAP_PREALLOC_SZ);
+    if (!g_realtime_heap_arena) {
+        perror("malloc heap arena failed");
+        exit(EXIT_FAILURE);
+    }
+    // Touch every 4 KB page to force physical page frame allocation and TLB population
+    for (size_t i = 0; i < HEAP_PREALLOC_SZ; i += 4096) {
+        g_realtime_heap_arena[i] = 0;
+    }
+
+    // 6. Prefault the thread execution stack to its declared maximum depth
+    volatile char stack_buffer[stack_size];
+    for (size_t i = 0; i < stack_size; i += 4096) {
+        stack_buffer[i] = 0; // Trigger minor page fault and populate TLB entry
+    }
+}
+
+void run_periodic_control_loop(void) {
+    struct timespec next_period;
+    clock_gettime(CLOCK_MONOTONIC, &next_period);
+
+    // A real implementation warms the actual control code and data before arming.
+
+    while (1) {
+        // Compute next absolute wake epoch (eliminates cumulative drift)
+        next_period.tv_nsec += PERIOD_NS;
+        while (next_period.tv_nsec >= 1000000000L) {
+            next_period.tv_nsec -= 1000000000L;
+            next_period.tv_sec  += 1;
+        }
+
+        // High-resolution absolute sleep
+        int ret;
+        do {
+            ret = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL);
+        } while (ret == EINTR);
+        if (ret != 0) {
+            fprintf(stderr, "clock_nanosleep: %s\n", strerror(ret));
+            break;
+        }
+
+        // ZERO-ALLOCATION CYCLIC CONTROL LOGIC
+        // 1. Ingest sensor state from lock-free shared memory
+        // 2. Evaluate Control Barrier Functions (CBFs)
+        // 3. Dispatch admitted setpoints to EtherCAT master
+        g_telemetry.sequence_id++;
+    }
+}
+```
+
+Beyond address space locking and stack prefaulting, the cyclic 1 kHz control loop operates under a strict **zero dynamic allocation invariant**. In general-purpose systems programming, developers routinely rely on dynamic memory managers (`malloc`, `free`, C++ `new`, `delete`) or standard container expansions (`std::vector::push_back`). In a real-time control loop, however, dynamic allocation introduces three catastrophic failure modes:
+
+1.  *Arena Mutex Contention*: Modern allocators (such as `ptmalloc` in `glibc`) partition memory into multiple heap arenas protected by mutual-exclusion mutexes. If another thread in the same process acquires an arena lock, a high-priority 1 kHz real-time control thread calling `malloc` blocks on that mutex, suffering from priority inversion and waiting milliseconds.
+2.  *Kernel Syscall Invocations*: When an allocator exhausts its active arena chunk, it issues `brk()` or anonymous `mmap()` system calls. These kernel entries acquire the process’s `mmap_lock` (or `mmap_sem`), which is shared with background kernel threads such as `khugepaged` performing transparent huge page compaction or memory defragmentation, stalling user-space execution for tens of milliseconds.
+3.  *Heap Fragmentation*: Repeated cyclic allocations and deallocations fragment the heap, degrading allocation search times across segregated free lists into non-deterministic search loops.
+
+Consequently, all message structures, matrix workspace buffers, trajectory buffers, and seqlock mailbox slots must be statically allocated at startup or drawn from fixed-size, lock-free memory pools (such as slab allocators). Furthermore, `mlockall(MCL_FUTURE)` must be paired with explicit memory pre-allocation and page prefaulting. Linux uses optimistic memory allocation (overcommit), so virtual address ranges returned by `malloc()` are not backed by physical page frames until the thread actually writes to each 4 KB page. Touching an uninitialized buffer for the first time inside the control loop triggers a minor page fault exception (`#PF`). The kernel page-fault handler must then allocate physical memory, zero the page, and update the MMU page table and TLB entries, a stall of $10\text{--}50\,{\text{µ}}\text{s}$ that jeopardizes sub-millisecond control deadlines. Prefaulting and successful memory locking establish page residency before arming actuators. TLB and cache entries can still be evicted, so their miss costs remain in the execution budget; copy-on-write faults and later mapping changes must also be excluded.
+
+### Hardware Watchdogs and Fault Response
+
+^hardware-watchdogs-and-fault-response
+
+In distributed computing clusters, node liveness and consensus are managed via software heartbeats and distributed leases (such as Raft heartbeats, ZooKeeper leases, or Kubernetes node probes) operating over second-scale intervals. If a worker node crashes, the cluster orchestrator reschedules containers onto alternative nodes. In physical AI systems, however, an autonomous machine traveling through physical space cannot wait seconds for a software orchestrator. If the GPU driver deadlocks, memory bus crossbars stall, or a kernel panic freezes the operating system, physical momentum continues unchecked. To detect a missed execution checkpoint, an embedded design uses a **hardware watchdog timer**. Its clock and response path must be independent of the monitored processor. An independent crystal oscillator or low-speed internal oscillator (`LSI`) completely decoupled from the main system phase-locked loop (PLL) is required.
+
+The hardware watchdog timer comprises an autonomous down-counter register ${W}({t})$ clocked at frequency ${f_{\text{wdg}}}$ (typically $32\text{ kHz}$ from an independent on-chip RC oscillator). At system initialization, the register is loaded with a threshold value ${W_{\text{init}}}$. Software execution threads must periodically refresh (or “kick”) the register before the count decrements to zero:
+
+$$
+{W}({t}) = {W_{\text{init}}} - \left\lfloor {f_{\text{wdg}}} \cdot {t} \right\rfloor
+$$
+
+ At expiry, the timer asserts its configured reset or fault output. A separately wired trip is required when processor reset alone is insufficient to de-energize the actuators.
+
+In safety-critical systems, simple down-counters are vulnerable to runaway execution bugs: if a corrupted control loop enters an infinite spin-loop that happens to execute the watchdog refresh instruction, the watchdog is continually fed despite the control failure. To prevent this, robust physical AI architectures employ a **Windowed Watchdog Timer (WWDG)**. A windowed watchdog defines both an upper counter threshold ${W_{\text{upper}}}$ and a lower counter threshold ${W_{\text{lower}}}$. The software refresh is valid only while the counter lies between them:
+
+$$
+{W_{\text{lower}}} \le {W}({t}_k) \le {W_{\text{upper}}}
+$$
+
+ Because the counter falls at the fixed rate ${f_{\text{wdg}}}$, the two counter thresholds convert to the time bounds ${T_{\text{lower}}}$ and ${T_{\text{upper}}}$ that **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.06 The Boundary Contract#^sec-placement-boundary-contract|The Boundary Contract]]** uses for the service window, measured from the last reload:
+
+$$
+{T_{\text{lower}}} = \frac{{W_{\text{init}}} - {W_{\text{upper}}}}{{f_{\text{wdg}}}}, \quad {T_{\text{upper}}} = \frac{{W_{\text{init}}} - {W_{\text{lower}}}}{{f_{\text{wdg}}}}
+$$
+
+ If software attempts to refresh the watchdog too early (${t}_k < {T_{\text{lower}}}$, equivalently ${W}({t}_k) > {W_{\text{upper}}}$), the early write indicates an abnormal loop short-circuit or clock glitch. Refreshing too early or failing to refresh before ${T_{\text{upper}}}$ trips the hardware watchdog controller immediately.
+
+Feeding the watchdog directly from a periodic timer interrupt is an unsafe anti-pattern, because the timer interrupt may continue firing even if the primary motion planning and safety monitor threads are deadlocked. To check completion of the expected software checkpoints, control software can implement **multi-stage token-passing checkpointing** using rolling polynomial accumulators:
+
+$$
+{T}_{k+1} = \text{CRC32}\left( {T}_k \oplus \text{Signature}_k \right)
+$$
+
+1.  At the beginning of the 1 kHz tick, a watchdog token ${T}_0$ is generated from the hardware monotonic cycle counter.
+2.  Stage 1 (Sensor Ingress): Validates camera, IMU, and joint telemetry timestamps, updating the token: ${T}_1 = \text{CRC32}({T}_0 \oplus \text{sensor\_valid\_signature})$.
+3.  Stage 2 (State Estimation & Tracking): Computes joint tracking errors, updating ${T}_2 = \text{CRC32}({T}_1 \oplus \text{tracking\_valid\_signature})$.
+4.  Stage 3 (Permission Enforcer): Validates Control Barrier Functions and stopping distance envelopes, computing ${T}_3 = \text{CRC32}({T}_2 \oplus \text{enforce\_valid\_signature})$.
+5.  Stage 4 (Actuator Dispatch): Transmits admitted setpoints across the fieldbus, computing ${T_{\text{final}}} = \text{CRC32}({T}_3 \oplus \text{dispatch\_valid\_signature})$.
+
+Only if ${T_{\text{final}}}$ matches the expected value for this tick may the watchdog refresh routine service the timer. The token detects omitted or misordered checkpoints under its fault model; a CRC is neither authentication nor proof that the computed state or command is physically correct.
+
+A watchdog timeout must reach a validated hardware fail-safe response path independently of the processor it monitors. A CPU reset or non-maskable interrupt alone does not establish that connection. When the assessed response includes **safe torque off (STO)**, a separately wired output disables the gate drive that generates motor torque; the wiring, response time, and diagnostic coverage require device-specific qualification. Gate disable does not establish an instantaneous mechanical stop. Winding current takes time to decay, moving axes may coast, and a gravity-loaded axis may require a holding brake or a powered stop before torque removal. The complete watchdog-to-plant response belongs in the stopping budget.[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn2|²]]
+
+## Inverter Timers and Power Electronics Gate Drive
+
+^sec-appendix-systems-inverters
+
+In machine learning control frameworks (such as reinforcement learning policies, imitation learning, or model predictive control pipelines), actuator actions are formulated as continuous numerical setpoints, such as commanded joint torques ${\boldsymbol{\tau}}^*$ or angular velocities ${\dot{\mathbf{q}}}^*$. In physical realization, however, torque is generated by synthesizing rotating electromagnetic stator flux through high-frequency switching of power semiconductor bridges (typically at $20\text{ kHz}$ to $100\text{ kHz}$). Actuator motor drives employ three-phase half-bridge inverters to convert DC bus voltage into alternating stator currents.
+
+### Microcontroller Timer Dead-Time Insertion
+
+^microcontroller-timer-dead-time-insertion
+
+Bridging the digital software domain with physical power silicon requires strict microarchitectural timing interlocks. Each inverter phase comprises a half-bridge with a high-side power MOSFET (or GaN FET / IGBT) and a low-side power MOSFET connected across the DC supply rail ${V_{\text{bus}}}$. Microcontroller timer peripherals generate complementary pulse-width-modulated (PWM) drive signals with hardware-enforced **dead-time insertion** ${t_{\text{dead}}}$:
+
+$$
+{t_{\text{dead}}} \ge {t_{\text{off, max}}} + {t_{\text{prop, skew}}} - {t_{\text{on, min}}} + {t_{\text{margin}}}
+$$
+
+ where ${t_{\text{off, max}}}$ is the maximum turn-off delay of the power switch, ${t_{\text{on, min}}}$ is the minimum turn-on delay, ${t_{\text{prop, skew}}}$ is the propagation delay mismatch across isolated gate drivers, and ${t_{\text{margin}}}$ is an engineering safety buffer.[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn3|³]]
+
+Modern motor control microcontrollers (such as STM32 Advanced-control timers TIM1/TIM8 or TI C2000 ePWM modules) synthesize PWM waveforms using hardware up-down counting counters (`TIMx_CNT`). In **center-aligned mode**, the counter counts up from 0 to the auto-reload value (`TIMx_ARR`) and back down to 0, producing symmetrical PWM waveforms with period ${T_{\text{pwm}}} = 2 \cdot \text{ARR} \cdot {T_{\text{timer\_clk}}}$. Center-aligned PWM provides symmetric switching and repeatable ADC trigger opportunities. Ripple reduction and valid sampling windows depend on duty cycle, modulation, current-sensing topology, and settling time. Synchronization alone does not remove switching noise.
+
+The timer’s hardware Dead-Time Generator (DTG) monitors the compare match outputs (`TIMx_CCRx`) and inserts dead-time delay cycles ${N_{\text{dtg}}}$ using an autonomous digital delay line:
+
+$$
+{t_{\text{dead}}} = {N_{\text{dtg}}} \cdot {T_{\text{dtg}}}
+$$
+
+ By latching the DTG configuration behind hardware register lock bits (`BDTR.LOCK`), the microcontroller guarantees that the dead-time delay cannot be altered by runaway firmware or memory corruption. Once locked at boot, the register ignores subsequent software writes until the next hardware reset.
+
+A power MOSFET or GaN FET switch possesses input capacitance ${C_{\text{iss}}} = {C_{\text{gs}}} + {C_{\text{gd}}}$, where ${C_{\text{gd}}}$ is the non-linear reverse transfer (Miller) capacitance. During gate turn-on and turn-off, charge transfer follows:
+
+$$
+{Q_g} = \int_0^{{t_{\text{sw}}}} {I_g}({t}) d{t} = {Q_{\text{gs}}} + {Q_{\text{gd}}}
+$$
+
+ During turn-off, the gate driver sinks current through gate resistance ${R_{g,\text{off}}}$. The gate-source voltage ${V_{\text{gs}}}$ drops to the **Miller plateau voltage** ${V_{\text{plateau}}}$, where it dwells while the drain-to-source voltage ${V_{\text{ds}}}$ traverses the entire DC rail:
+
+$$
+{t_{\text{plateau}}} = \frac{{Q_{\text{gd}}}}{{I_{g,\text{off}}}} = \frac{{Q_{\text{gd}}} \cdot {R_{g,\text{off}}}}{{V_{\text{plateau}}} - {V_{\text{ee}}}}
+$$
+
+ Turn-on and turn-off times depend on gate resistance, driver strength, load, and device charge. Neither is universally longer; dead time must use the measured worst-case mismatch.
+
+If dead time is insufficient, both high-side and low-side switches conduct simultaneously (**shoot-through**), creating a low-impedance short circuit directly bridging the DC rail to ground:
+
+$$
+{I_{\text{shoot-through}}} = \frac{{V_{\text{bus}}}}{2 {R_{\text{ds(on)}}} + {R_{\text{trace}}}}
+$$
+
+ This resistive expression gives a prospective current, not its instantaneous value. Loop inductance limits the initial rise, and the resulting device stress depends on switching overlap, protection delay, and the circuit safe operating area.
+
+Even when dead time is configured correctly, half-bridge legs face **parasitic Miller cross-conduction**. When the high-side MOSFET turns on, the phase node voltage slews at high speed ($d{V_{\text{ds}}}/d{t} \sim 10\text{--}50\text{ V/ns}$ in modern SiC and GaN bridges). This steep voltage transient forces displacement current through the low-side switch’s Miller capacitance:
+
+$$
+{I_{\text{miller}}} = {C_{\text{gd}}} \frac{d{V_{\text{ds}}}}{d{t}}
+$$
+
+ This current flows through the low-side gate resistor ${R_{g,\text{off}}}$ back to ground, inducing a parasitic gate voltage rise:
+
+$$
+{V_{\text{gs,induced}}} = {I_{\text{miller}}} \cdot {R_{g,\text{off}}} = {C_{\text{gd}}} \frac{d{V_{\text{ds}}}}{d{t}} {R_{g,\text{off}}}
+$$
+
+ If ${V_{\text{gs,induced}}}$ exceeds the gate threshold voltage ${V_{\text{th}}}$ (typically $1.5\text{--}3.0\text{ V}$ in GaN FETs), the low-side switch turns on spuriously while the high-side switch is conducting, inducing catastrophic shoot-through. Power electronics gate drivers counter this using **Active Miller Clamps (AMC)**, an internal low-impedance switch that clamps the gate directly to the negative rail whenever ${V_{\text{gs}}}$ drops below $1.0\text{ V}$, or split gate drives (${R_{g,\text{on}}} / {R_{g,\text{off}}}$) with antiparallel Schottky diodes.
+
+While necessary for silicon survival, dead time introduces non-linear voltage distortion into stator windings. During the dead-time interval ${t_{\text{dead}}}$, both active MOSFETs are commanded off, and signed instantaneous phase current ${i_{\text{phase}}}$ (positive from the inverter node into the winding) is forced to freewheel through antiparallel body diodes. The sign of the phase current determines whether the inverter phase node clamps to ${V_{\text{bus}}}$ or ground, producing an average phase voltage error:
+
+$$
+{\Delta V_{\text{phase}}} = -\operatorname{sgn}({i_{\text{phase}}}) \cdot \frac{{t_{\text{dead}}}}{{T_{\text{pwm}}}} {V_{\text{bus}}}
+$$
+
+ In three-phase synchronous machines, this square-wave error injects 5th and 7th harmonic voltages into the stationary reference frame. When transformed into the rotor synchronous ${d}{q}$ reference frame via Park’s transformation, these odd harmonics combine into a **6th harmonic voltage disturbance**. The amplitudes and phases follow the harmonic coefficients of the phase-voltage error and the chosen transformation convention. They are not equal to the fundamental square-wave coefficient. The current loop filters these voltage harmonics before they become torque ripple, creating a corresponding **6th harmonic torque ripple**:
+
+$$
+{\tau_{\text{ripple}}}(6{\theta_e}) = \frac{3}{2} {N_{\text{poles}}} \, {\lambda_{\text{pm}}} \cdot {\Delta} {i_q}(6{\theta_e})
+$$
+
+ Left uncompensated, this hardware-induced torque ripple produces high-frequency torque chatter that excites mechanical drivetrain resonances. Modern motor drives implement dead-time compensation algorithms in low-level firmware that inject feedforward voltage vectors opposite to ${\Delta V_{d,q}}$, linearizing the actuator response for high-level ML policies.
+
+## Inductive Voltage Droop and Gate Delay Stretch
+
+^sec-appendix-systems-droop
+
+In data center machine learning clusters, power delivery networks (PDNs) are supported by large rack-level voltage regulator modules (VRMs) and extensive decoupling capacitor planes. On embedded physical AI compute platforms, deep learning accelerators (such as tensor cores and systolic array matrix engines) share tightly constrained power rails with CPU cores and real-time safety microcontrollers. When a deep neural network transitions from idle to full execution, current draw increases by tens of amperes within nanoseconds.
+
+### Power Delivery Network Impedance and Rail Droop
+
+^power-delivery-network-impedance-and-rail-droop
+
+A power delivery network (PDN) has parasitic resistance and inductance in each source path. For a lumped branch with resistance ${R_{\text{PDN}}}$, inductance ${L_{\text{parasitic}}}$, and branch current ${I_{\text{branch}}}$, its voltage drop is:
+
+$$
+{V_{\text{source}}}-{V_{\text{rail}}} = {L_{\text{parasitic}}} \frac{d{I_{\text{branch}}}}{d{t}} + {I_{\text{branch}}} {R_{\text{PDN}}}
+$$
+
+ The accelerator’s load current need not equal this branch current during a transient: local decoupling supplies their difference. The rail response follows the coupled source-path and capacitor equations of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-power|section 1.10]]. Substituting the full load-current slew into every upstream inductance would ignore that buffering.
+
+To prevent rail excursions from exceeding allowable voltage tolerances $\pm {\Delta V_{\max}} = {V_{\text{nom}}} \times {\delta_{\text{tol}}}$ (typically $\pm 5\text{ percent}$, or $45\text{ mV}$ on a $0.9\text{ V}$ digital core rail), the power delivery network must maintain an impedance profile strictly below the **target impedance** ${Z_{\text{target}}}$ across the entire operational frequency band:
+
+$$
+{Z_{\text{target}}} = \frac{{V_{\text{nom}}} \cdot {\delta_{\text{tol}}}}{{\Delta I_{\max}}}
+$$
+
+ For a $0.9\text{ V}$ accelerator drawing a $50\text{ A}$ step transient with $5\text{ percent}$ allowable ripple, ${Z_{\text{target}}} = 45\text{ mV} / 50\text{ A} = 0.90\text{ m}{\Omega}$ from DC up to gigahertz frequencies. Exceeding this impedance at any excitation frequency permits transient load steps to pull the supply rail outside its timing-qualified window.
+
+Switched-mode power supplies (VRMs) have limited feedback control loop bandwidth ($100\text{ kHz}$ to $1\text{ MHz}$) and cannot supply charge during nanosecond current transitions. Energy must be buffered across a **multi-tier decoupling capacitor hierarchy** structured by frequency response:
+
+1.  *On-Die Decoupling ($> 100\text{ MHz}$)*: Deep trench and metal-insulator-metal (MIM) capacitors fabricated directly on the silicon die (${C_{\text{die}}} \sim 10\text{--}100\text{ nF}$, parasitic loop inductance $< 10\text{ pH}$, response time $< 0.5\text{ ns}$) supply charge during the initial clock cycles.
+2.  *Package Decoupling ($10\text{--}100\text{ MHz}$)*: Land-side capacitors (LSC) mounted under the BGA package (${C_{\text{pkg}}} \sim 1\text{--}10\,{\text{µ}}\text{F}$, loop inductance $\sim 50\text{--}200\text{ pH}$, response time $1\text{--}5\text{ ns}$).
+3.  *Board-Level High-Frequency MLCCs ($100\text{ kHz}\text{--}10\text{ MHz}$)*: Low-ESL surface-mount multi-layer ceramic capacitors (0201/0402 case sizes, ${C} \sim 0.1\text{--}10\,{\text{µ}}\text{F}$, loop inductance $\sim 0.5\text{--}2\text{ nH}$, response time $10\text{--}100\text{ ns}$).
+4.  *Bulk Decoupling ($\text{DC}\text{--}100\text{ kHz}$)*: Polymer tantalum or aluminum electrolytic capacitors (${C_{\text{bulk}}} \sim 100\text{--}1000\,{\text{µ}}\text{F}$, response time $1\text{--}10\,{\text{µ}}\text{s}$) sustain the rail until the active VRM regulation loop stabilizes.
+
+Parasitic inductance and parallel capacitor branches can also create **anti-resonance** impedance peaks between their resonances. A simple LC frequency scale is ${f_0}=1/(2\pi\sqrt{{L_{\text{parasitic}}} {C}})$, but the peak magnitude requires the complete network, including capacitor equivalent series resistance and inductance. Excitation near a poorly damped peak can amplify supply excursions. A target-impedance check therefore needs the measured or modeled impedance spectrum, not capacitance alone.
+
+### Digital Logic Gate Delay and the Alpha-Power Law
+
+^digital-logic-gate-delay-and-the-alpha-power-law
+
+When a $0.90\text{ V}$ core rail sags by $60\text{ mV}$ during an accelerator burst, transistor drive current drops and every logic gate along a critical path switches more slowly, eating into register setup slack. In sub-micron CMOS silicon, logic gate propagation delay ${t_{\text{prop}}}$ is governed by the Sakurai-Newton **alpha-power law**:[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn4|⁴]]
+
+$$
+{t_{\text{prop}}}({V}) \propto \frac{{C} \cdot {V}}{({V} - {V_{\text{th}}})^{\alpha}}
+$$
+
+ where ${C}$ is the gate load capacitance, ${V_{\text{th}}}$ is the transistor threshold voltage, and ${\alpha} \in [1.2, 1.5]$ is the velocity saturation index (contrasting with ${\alpha} = 2.0$ in long-channel theory).
+
+When rail voltage droops from ${V_{\text{nom}}}$ to ${V_{\text{droop}}}$, propagation delay stretches according to:
+
+$$
+\frac{{t_{\text{prop}}}({V_{\text{droop}}})}{{t_{\text{prop}}}({V_{\text{nom}}})} = \frac{{V_{\text{droop}}}}{{V_{\text{nom}}}} \left( \frac{{V_{\text{nom}}} - {V_{\text{th}}}}{{V_{\text{droop}}} - {V_{\text{th}}}} \right)^{\alpha}
+$$
+
+ In a synchronous digital pipeline with clock period ${T_{\text{clk}}}$, setup time ${t_{\text{setup}}}$, and clock skew ${t_{\text{skew}}}$, timing closure requires:
+
+$$
+{t_{\text{prop}}} + {t_{\text{setup}}} + {t_{\text{skew}}} \le {T_{\text{clk}}}
+$$
+
+ The following illustrative calculation evaluates the delay ratio and remaining path slack with the same voltage-dependent model. A droop consumes setup margin; whether it causes a timing violation depends on the original slack, clock response, and characterized process corner.
+
+For a drop from 0.90 V to 0.81 V, with threshold 0.35 V and exponent 1.3, delay rises by 13.5 percent to 908.3 ps. Starting with 150 ps of slack leaves 41.7 ps. These assumptions therefore do not predict a setup violation. Some processors respond to droop with active clock stretching, increasing the clock period while the rail recovers. The supported response, detection delay, and resulting execution-time stretch require device-specific characterization. **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.05 Thermal and Timing Coupling#^sec-placement-thermal-timing-coupling|Thermal and Timing Coupling]]** connects rail disturbance to the permission task’s timing budget.
+
+## DRAM Contention and Interconnect Arbitration
+
+^sec-appendix-systems-dram
+
+In cloud machine learning clusters, GPUs use high-bandwidth memory (HBM) physically separated from host CPU memory. This separates some accelerator traffic from host DRAM, although accelerator clients still contend for those channels. In embedded robotics SoCs, however, system architectures rely on Unified Memory Architecture (UMA) to satisfy size, weight, and power (SWaP) constraints. Application CPU cores, neural accelerators, GPU cores, and high-rate PCIe or CSI camera DMA engines all share a single physical DRAM interface. In these shared-memory multi-core platforms, DMA transfers and vision prefetching compete directly with the permission path for memory controller command queues and physical DRAM banks.
+
+### DRAM Bank Organization and Conflict Latency
+
+^dram-bank-organization-and-conflict-latency
+
+DRAM organizes storage into channels, ranks, **bank groups**, and banks; their counts and timing depend on the memory standard and device organization. Each individual bank possesses an independent row buffer consisting of sense amplifiers. A read that changes the open row can require the following sequence:
+
+1.  **Row precharge** (${t_{\text{RP}}}$): Closes the active row and equalizes the bitlines for the next activation (18.75 ns per bank at LPDDR5-6400).
+2.  **Row activate** (${t_{\text{RCD}}}$): Reads an entire page of storage cells (e.g., 2 KB to 8 KB) across wordlines into the bank’s open row buffer (18.75 ns at LPDDR5-6400).
+3.  **Column access** (read latency, ${t_{\text{CL}}}$): Reads or writes data beats from the open row buffer onto the memory data bus. LPDDR5 specifies this latency in clock cycles that depend on the data rate, so a row hit pays only this step.
+
+To sustain high data rates, modern DRAM organizes banks into bank groups. An LPDDR5 channel offers three bank organizations: 16 banks divided into 4 bank groups for the higher data rates, 16 independent banks, or 8 larger banks formed by merging pairs ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-steiner2022lpddr5|Steiner et al. 2022]]). In bank-group mode, consecutive column commands to the same bank group must wait a longer column-to-column delay ${t_{\text{CCD\_L}}}$ than commands to different groups, which need only ${t_{\text{CCD\_S}}}$, because banks in one group share internal data paths. An address mapping that interleaves consecutive bursts across bank groups hides the longer spacing; one that keeps a stream inside a single group exposes it.
+
+When consecutive memory operations target different rows within the same physical bank (a **bank conflict**), the memory controller cannot immediately access the column. It must execute a precharge followed by an activate before issuing the column command, introducing a compulsory stall:
+
+$$
+{\Delta t_{\text{conflict}}} \approx {t_{\text{RP}}} + {t_{\text{RCD}}}
+$$
+
+ At LPDDR5-6400 that stall is 37.5 ns. The minimum time between consecutive row activations to the same bank is also governed by the row cycle time ${t_{\text{RC}}} = {t_{\text{RAS}}} + {t_{\text{RP}}}$, where ${t_{\text{RAS}}}$ is the minimum time a row must stay open. Repeated conflicts in one bank are therefore spaced at least ${t_{\text{RC}}}$ apart.
+
+Memory controllers select between an *open-page* or *closed-page* policy to balance row-buffer locality against thrashing. Under an open-page policy, row buffers remain active after access in anticipation of spatial locality. While this maximizes bandwidth for sequential streaming (such as dense general matrix multiplication (GEMM) weight fetching or linear camera DMA writes), sporadic random accesses (such as sensor fusion state lookups or 1 kHz safety monitor checks) frequently hit different rows in active banks. When a continuous camera DMA stream writes video frames to the same DRAM bank that holds real-time safety buffers, repeated row-buffer conflicts transform low-latency reads into multi-hundred-nanosecond stalls.[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn5|⁵]]
+
+Modern DRAM controllers employ **First-Ready First-Come-First-Served (FR-FCFS)** command scheduling. FR-FCFS prioritizes column read/write requests that hit currently open row buffers over older requests that require row precharge and activation, maximizing overall DRAM bus throughput. However, under high cognitive load, a continuous flood of vision DMA requests or matrix multiplication memory bursts will repeatedly hit open rows. FR-FCFS schedulers then systematically postpone isolated, latency-critical read requests issued by real-time safety threads, potentially starving those requests unless the controller enforces age or service bounds.
+
+### Interconnect Crossbars and Burst Contention
+
+^interconnect-crossbars-and-burst-contention
+
+On-chip interconnect fabrics (such as ARM CoreLink AXI4 crossbars or Network-on-Chip (NoC) meshes) split high-bandwidth accelerator and camera DMA transactions into bounded bursts of up to ${A_{\text{len}}} = 256$ beats. In a shared crossbar without real-time prioritization, transactions enter a FIFO or weighted round-robin queue. For ${K}$ competing accelerator transactions admitted ahead of a safety-critical permission request, the queuing transfer latency is:
+
+$$
+{t_{\text{queue,ideal}}} = \frac{\sum_{k=1}^{K} {{D_{\text{vol}}}}_{k}}{{\text{BW}_{\text{bus}}}}
+$$
+
+ Adding physical bank-switch penalties $\sum {\Delta t_{\text{conflict}}}$, device-specific refresh overhead, and bus turnaround penalties increases the safety read latency. Refresh mode, temperature, address mapping, and controller policy determine the bound. To protect real-time control paths against memory contention, embedded systems implement three structural defenses:
+
+1.  *AXI Quality of Service (QoS) Priority Elevation*: The `AxQOS` field communicates a requested priority. The interconnect and memory controller must implement a documented service policy; the field alone does not guarantee preemption or bounded latency. Already issued transactions and refresh can still block a safety read.
+2.  *DRAM Bank Partitioning and Page Coloring*: The operating system memory allocator allocates physical memory pages such that real-time safety code and high-rate camera DMA buffers map to strictly disjoint physical DRAM banks, removing those bank conflicts when the physical address mapping is known and enforced. Shared channels, refresh, and controller queues remain.
+3.  *On-Chip SRAM Isolation*: Critical safety states, barrier function parameters, and active trajectory splines bypass external DRAM entirely, executing exclusively out of static on-chip SRAM or Data Tightly Coupled Memory (DTCM).
+
+## Clock Synchronization and Network Timestamps
+
+^sec-appendix-systems-ptp
+
+In distributed machine learning clusters, nodes synchronize system clocks via Network Time Protocol (NTP) primarily for coarse event logging and telemetry, while parallel training algorithms synchronize execution through communication barriers (such as NCCL AllReduce). In physical AI systems, however, time directly maps to physical space: when a robot moves at $30\text{ m/s}$, a $1\text{ ms}$ synchronization error produces $3\text{ cm}$ of spatial displacement, warping sensor fusion point clouds and invalidating safety clearance buffers. Distributed perception pipelines must convert sensor timestamps into a common clock domain with a measured conversion-error bound.
+
+### Precision Time Protocol Message Exchange
+
+^precision-time-protocol-message-exchange
+
+The following end-to-end delay exchange illustrates IEEE 1588 Precision Time Protocol (PTP), synchronizing a follower clock (${S}$) to a leader clock (${M}$). IEEE 802.1AS uses a related timing architecture with peer-delay measurement; its exchange is not identical:
+
+1.  ${t}_1$: Master transmits a *Sync* frame, recording its local transmission timestamp.
+2.  ${t}_2$: Slave receives the *Sync* frame, recording its local arrival timestamp.
+3.  ${t}_3$: Slave transmits a *Delay_Req* frame, recording its local transmission timestamp.
+4.  ${t}_4$: Master receives the *Delay_Req* frame, recording its local arrival timestamp.
+
+Under the assumption of clock stability and symmetric forward and reverse propagation delay (${T_{\text{prop}, M \to S}} = {T_{\text{prop}, S \to M}} = {T_{\text{prop}}}$), the time relationships satisfy:
+
+$$
+{t}_2 = {t}_1 + {\theta_{\text{offset}}} + {T_{\text{prop}}}
+$$
+
+$$
+{t}_4 = {t}_3 - {\theta_{\text{offset}}} + {T_{\text{prop}}}
+$$
+
+ where ${\theta_{\text{offset}}}$ is the slave-minus-master clock offset. The estimated clock offset is:
+
+$$
+{\theta_{\text{offset}}} = \frac{({t}_2 - {t}_1) - ({t}_4 - {t}_3)}{2}
+$$
+
+ The one-way network propagation delay is:
+
+$$
+{T_{\text{prop}}} = \frac{({t}_2 - {t}_1) + ({t}_4 - {t}_3)}{2}
+$$
+
+Slave clocks adjust their local time base using a closed-loop digital **proportional-integral (PI) clock servo** filter. At synchronization step ${k}$, the measured offset ${\theta_{\text{offset}}}[{k}]$ drives frequency correction ${\Delta f}[{k}]$ applied to the hardware accumulator register:
+
+$$
+{\Delta f}[{k}] = -{K_p} {\theta_{\text{offset}}}[{k}] - {K_i} \sum_{j=0}^{k} {\theta_{\text{offset}}}[{j}]
+$$
+
+ Here ${\Delta f}$ is added to the follower frequency, ${K_p},{K_i}>0$, and the sampling interval is absorbed into ${K_i}$. A positive follower-minus-leader offset therefore slows the follower; using the opposite hardware correction convention reverses the sign.
+
+If forward and reverse path delays are asymmetric (${\Delta t_{\text{asym}}} = {T_{\text{prop}, M \to S}} - {T_{\text{prop}, S \to M}} \ne 0$), the calculated offset incurs an unobservable systematic bias of ${\Delta t_{\text{asym}}} / 2$. Residual clock uncertainty ${\epsilon_{\text{sync}}}$, combining asymmetric propagation, oscillator frequency drift between sync intervals, and hardware timestamp quantization, is explicitly bounded:
+
+$$
+{\epsilon_{\text{sync}}} \le \frac{|{\Delta t_{\text{asym}}}|}{2} + {\Delta t_{\text{interval}}} \cdot \left| \frac{{\Delta f_{\text{res}}}}{{f_{\text{nom}}}} \right| + 2 {T_{\text{quant}}}
+$$
+
+ Here ${\Delta f_{\text{res}}}$ bounds residual frequency error after servo correction, rather than the applied correction itself; ${T_{\text{quant}}}$ bounds timestamp quantization. Additional timestamp-reference and servo errors must be included if they are not covered by these terms. This conversion bound is stored directly in the proposal header’s `sync_error_ns` field ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-header|table 10]]) and added to every evidence-age calculation in the 1 kHz permission path:
+
+$$
+{t_{\text{age}}} = ({t_{\text{current}}} - {t_0}) + {\epsilon_{\text{sync}}}
+$$
+
+### Physical Layer Hardware Timestamping
+
+^physical-layer-hardware-timestamping
+
+Software-based timestamping captures timestamps inside the OS network socket layer or interrupt service routine. It suffers from variable kernel queueing, driver interrupt latency, and thread scheduling jitter, which inject $50\,{\text{µ}}\text{s}$ to $5\text{ ms}$ of non-deterministic timing error. To eliminate host dispatch error, physical AI hardware uses **Physical Layer (PHY) Hardware Timestamping**.[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn6|⁶]] Dedicated timestamping units in the Ethernet PHY or media access control (MAC) controller capture hardware counter values at the exact instant the physical Start of Frame Delimiter (SFD) crosses the Media Independent Interface (MII / RGMII). This removes software dispatch from the capture point. Timestamp resolution, reference-plane calibration, and residual error remain device-specific and must be measured.
+
+## Heterogeneous SoC Mailboxes, Memory Barriers, and Zero-Copy IPC
+
+^sec-appendix-systems-ipc
+
+Large sensor buffers can consume substantial shared-memory bandwidth when each pipeline stage makes another copy. A copy may generate both a read and a write of the payload, depending on cache residency and the transfer path. On a heterogeneous robotics SoC, that traffic can contend with a safety processor’s memory accesses. Shared buffers reduce copying, but require explicit ownership and publication ordering. Small proposal records may instead use a bounded copy into protected memory. The mechanisms below distinguish four contexts. A discrete safety microcontroller receives proposals over a board-level link. Application and safety cores on one die exchange platform-specific mailboxes. Linux processes share coherent memory. Supported GPU processes share device allocations. Their ordering and lifetime contracts are not interchangeable.
+
+### Board-Level Links into a Local Mailbox
+
+^board-level-links-into-a-local-mailbox
+
+The machine in this book keeps its safety microcontroller on a separate chip with its own memory (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.07 Silicon Isolation Decisions#^sec-placement-isolation-decisions|Silicon Isolation Decisions]]**), so no memory is shared with the application processor and nothing in this subsection depends on the host’s cache or interconnect.
+
+1.  The application processor serializes the proposal into a frame that carries a sequence number, the evidence and issue timestamps, and a CRC, and sends it over a board-level link such as SPI, a UART, or CAN FD.
+2.  The microcontroller’s link peripheral writes the incoming bytes into a receive buffer in its own SRAM by DMA. A double buffer lets the DMA fill one half while firmware reads the other.
+3.  The DMA-complete interrupt checks the frame’s length, CRC, and sequence number, then publishes the proposal into the seqlock mailbox of [algorithm 1](https://mlsysbook.ai/vol4/backmatter/appendix_systems.html#algo-lock-free-trajectory). The writer and the reader, the permission tick, both run on the microcontroller.
+4.  The permission tick makes one bounded read of that mailbox and checks age, expiry, and permission before using the payload.
+
+The link is a black channel in the sense of the functional-safety fieldbus profiles ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-iec61784-3-2021|International Electrotechnical Commission 2021]]). Corruption, repetition, loss, and delay are detected end to end by the frame’s CRC, sequence number, and timestamps and by the lease, so the link’s hardware and drivers need not be trusted for correctness. Its timing is another matter. Serialization at the link rate, DMA completion, and receive-interrupt latency age every newly admitted proposal and must be bounded and charged to the dispatch-to-admission interval.
+
+### Remote Processor Messaging Over Shared SRAM
+
+^remote-processor-messaging-over-shared-sram
+
+When one system-on-chip hosts both domains, the shared-die placement of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.03 Two Paths and the Resources They Share#^sec-placement-two-paths-one-die|Two Paths and the Resources They Share]]**, communication between Linux application cores and a real-time safety core relies on shared SRAM mailboxes signaled via hardware doorbells:
+
+1.  Core A (Application Processor) writes a message payload to a fixed buffer in shared SRAM.
+2.  Core A makes the payload visible to Core B using the platform’s coherent mapping or explicit cache maintenance and ordering.
+3.  Core A triggers an inter-processor interrupt (IPI) by writing to Core B’s hardware mailbox register.
+4.  Core B checks publication order, integrity, age, and permission before using the payload.
+
+Linux [RPMsg](https://docs.kernel.org/staging/rpmsg.html) is a virtio-based messaging framework that may use shared memory and a platform-specific kick. It provides standard transport abstraction but does not prescribe this fixed-buffer protocol or a universal latency bound. It applies only to this shared-die case; a discrete microcontroller shares no memory to message through.
+
+### CPU Pipeline Reordering and Memory Fences
+
+^cpu-pipeline-reordering-and-memory-fences
+
+In weakly ordered memory architectures (such as ARMv8-A and ARMv9-A), processors do not guarantee that memory writes will be observed by other cores in program order. Out-of-order execution engines and asynchronous write buffers can reorder stores to non-dependent addresses:
+
+``` c
+// Core A (Application Processor); q_target and q_cmd are joint_target_t structs
+shared_buffer->q_target = q_cmd; // Store 1: Payload (struct copy)
+mailbox_doorbell = 1;            // Store 2: Interrupt trigger
+```
+
+If the CPU reorders Store 2 ahead of Store 1, Core B receives the interrupt before the new joint target is committed to physical memory. The consumer then reads stale or partially written struct fields across the mailbox boundary.
+
+To enforce deterministic ordering across heterogeneous cores, developers must insert architectural **hardware memory barriers**:
+
+``` c
+shared_buffer->q_target = q_cmd; // Struct copy of the joint targets
+__asm__ volatile("dmb oshst" ::: "memory"); // Outer-shareable store barrier
+mailbox_doorbell = 1;            // Assert doorbell register
+```
+
+In ARM architectures, memory barriers and instructions are distinguished by scope and execution semantics:
+
+- `DMB` (Data Memory Barrier): Ensures that memory accesses specified before the barrier appear in memory before memory accesses specified after the barrier. It does not block execution of non-memory instructions.
+- `DSB` (Data Synchronization Barrier): Waits for completion of the memory accesses and maintenance operations covered by its type and scope before subsequent instructions execute.
+- `ISB` (Instruction Synchronization Barrier): Flushes the CPU instruction prefetch pipeline, ensuring subsequent instructions are fetched anew from cache or memory.
+
+Barriers operate across explicit architectural **shareability domains**:
+
+- `DMB ISHST` (Inner Shareable Store): Orders stores across cores within the local application CPU cluster sharing a coherent L2/L3 cache.
+- `DMB OSHST` / `DMB OSH` (Outer Shareable): Orders accesses in the configured outer-shareable domain; membership depends on the SoC, and ordering does not create coherence.
+- `DMB SY` (System): Enforces ordering across all system masters and peripherals on the SoC.
+
+Cache maintenance is necessary when the communicating agents do not share a coherent mapping. The producer cleans dirty payload lines, completes the required maintenance, and orders publication. The consumer invalidates stale lines before reading under the platform contract. A supported non-cacheable mapping can avoid those cache operations, but does not make barriers single-cycle or remove interconnect contention. Device memory has different access restrictions from Normal memory and is not an interchangeable choice for arbitrary structure copies. Alignment must match the actual cache-line size. **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.04 Multi-Rate Cadences#^sec-nervous-mailbox-exchanges|Lock-free and wait-free mailbox exchanges]]** and **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.03 Two Paths and the Resources They Share#^sec-placement-two-paths-one-die|Two Paths and the Resources They Share]]** connect these mechanisms to the proposal boundary.[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn7|⁷]]
+
+### POSIX Shared Memory and Lock-Free SPSC Ring Buffers
+
+^posix-shared-memory-and-lock-free-spsc-ring-buffers
+
+Within user-space Linux runtimes, independent operating system processes (such as a vision preprocessing daemon, a multimodal VLA policy inference server, and a high-rate state estimator) exchange telemetry and sensor streams. They avoid kernel socket copies by using **POSIX Shared Memory** (`shm_open` and `mmap`):
+
+1.  A producer process creates a POSIX shared memory object using `shm_open("/robot_telemetry", O_CREAT | O_RDWR, 0660)` located in the RAM-backed `tmpfs` filesystem (`/dev/shm`), bypassing physical storage media entirely.
+2.  Sizing the segment via `ftruncate(fd, sizeof(telemetry_ring_buffer_t))` establishes its length; physical backing is generally allocated when pages are faulted in.
+3.  Both producer and consumer processes map the memory into their respective virtual address spaces via `mmap(NULL, sizeof(...), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)`.
+4.  Each process prefaults and successfully locks its mapping with `mlock()` before cyclic execution. This prevents swapping of those pages; mapping changes and copy-on-write behavior still need explicit control.
+5.  *Position-Independent Memory Layout*: Because Address Space Layout Randomization (ASLR) and independent virtual memory spaces cause `mmap()` to return different base virtual addresses in each process, data structures placed in shared memory must never store absolute virtual pointers (`void*` or raw references). All references within shared buffers must be position-independent, structured as relative byte offsets, flat fixed-size arrays, or integer indices.
+
+When streaming sequential sensor frames or trajectory waypoints across processes, mutual-exclusion mutexes introduce non-deterministic blocking and priority inversion. A **lock-free single-producer single-consumer (SPSC) ring buffer** coordinates one producer and one consumer using acquire-release atomic indices. The following C++ sketch assumes lock-free atomics, bounded nonthrowing copies of `T`, and coherent memory. Cross-process use additionally requires a platform-supported shared atomic representation and one-time construction before either process accesses it:
+
+``` cpp
+#include <atomic>
+#include <cstdint>
+#include <cstddef>
+#include <new>
+
+template <typename T, size_t Capacity>
+class LockFreeSpscRingBuffer {
+    static_assert(Capacity > 0 && (Capacity & (Capacity - 1)) == 0,
+                  "Capacity must be a nonzero power of two");
+    static_assert(std::atomic<uint64_t>::is_always_lock_free,
+                  "Index atomics must be lock-free on this target");
+
+private:
+    // Align head and tail to distinct 64-byte cache lines to eliminate false sharing
+    alignas(64) std::atomic<uint64_t> write_index_{0};
+    alignas(64) std::atomic<uint64_t> read_index_{0};
+    alignas(64) T storage_[Capacity];
+
+public:
+    bool Push(const T& item) {
+        const uint64_t current_write = write_index_.load(std::memory_order_relaxed);
+        const uint64_t current_read = read_index_.load(std::memory_order_acquire);
+
+        if (current_write - current_read >= Capacity) {
+            return false; // Buffer full: non-blocking drop or backpressure
+        }
+
+        // Fast bitwise masking replacing expensive modulo division
+        storage_[current_write & (Capacity - 1)] = item;
+
+        // Release order ensures item stores are committed before advancing pointer
+        write_index_.store(current_write + 1, std::memory_order_release);
+        return true;
+    }
+
+    bool Pop(T& item) {
+        const uint64_t current_read = read_index_.load(std::memory_order_relaxed);
+        const uint64_t current_write = write_index_.load(std::memory_order_acquire);
+
+        if (current_read == current_write) {
+            return false; // Buffer empty
+        }
+
+        item = storage_[current_read & (Capacity - 1)];
+
+        // Release order publishes free slot back to producer
+        read_index_.store(current_read + 1, std::memory_order_release);
+        return true;
+    }
+};
+```
+
+Separating the indices onto different cache lines avoids false sharing between the two independently written counters on a target with the assumed line size. Each side still reads the other’s counter, and payload ownership still moves between cores, so coherence traffic remains. Power-of-two capacity permits masking for wraparound. Neither alignment nor this indexing choice establishes a cycle-time bound without target measurements.
+
+### Multi-Rate Synchronization: Double-Buffering Versus Triple-Buffering
+
+^multi-rate-synchronization-double-buffering-versus-triple-buffering
+
+In cyber-physical machines, producer and consumer tasks rarely execute at the same frequency. A multimodal vision-language-action policy may produce candidate trajectory chunks at $20\text{ Hz}$ ($50\text{ ms}$ period) with variable inference jitter ($\pm 15\text{ ms}$). The downstream safety permission filter and motor tracking loop, by contrast, execute strictly at $1\text{ kHz}$ ($1\text{ ms}$ period). Double-buffering separates a buffer being written from one being read, but it also needs an ownership protocol. If the producer finishes while the consumer still owns the old front buffer, the producer must wait, drop an update, or acquire another buffer. Rate mismatch alone does not make double-buffering incorrect. Allowing a writer to reuse a reader-owned buffer does.
+
+Triple-buffering provides a private producer buffer, a private consumer buffer, and an intermediate buffer holding the latest completed update. Publication atomically exchanges the producer buffer with the intermediate buffer. At a tick boundary, the consumer may exchange its private buffer with the intermediate buffer, then read its new private buffer without concurrent writes. The exchanged state must include the new-data flag so that publication and ownership remain one atomic operation.
+
+This is a latest-value channel: intermediate updates may be overwritten before the consumer acquires them. A queue is needed when every update must be retained. A compare-and-swap retry loop is lock-free only under its progress assumptions and is not automatically wait-free. The implementation must establish ordering, buffer lifetime, and a bounded reader attempt on the target. A failed attempt leaves the current record subject to its existing evidence and expiry checks.
+
+### CUDA Inter-Process Communication for Multi-Accelerator Pipelines
+
+^cuda-inter-process-communication-for-multi-accelerator-pipelines
+
+On high-throughput robotics platforms (such as autonomous mobile robots equipped with multiple GMSL2 camera clusters and lidar arrays), raw perception data streams into accelerator GPU memory for tensor processing. In modular physical AI software architectures, perception preprocessing (e.g., optical flow, spatial unprojection, and feature extraction) and foundation policy inference often execute in separate Linux processes for fault containment. Passing multi-gigabyte tensor buffers between processes via host system RAM consumes tens of gigabytes per second of shared DRAM bandwidth, precipitating memory bus contention.
+
+To eliminate host DRAM staging entirely, **CUDA Inter-Process Communication (CUDA IPC)** enables direct peer-to-peer GPU memory access across distinct Linux process address spaces:
+
+``` c
+// Process A (Perception Producer): Export GPU device memory handle
+float *d_camera_tensor;
+cudaMalloc((void **)&d_camera_tensor, TENSOR_BYTES);
+
+// Allocate and capture an opaque 64-byte IPC memory handle
+cudaIpcMemHandle_t ipc_mem_handle;
+cudaIpcGetMemHandle(&ipc_mem_handle, (void *)d_camera_tensor);
+
+// Send the 64-byte handle to Process B via POSIX shm or UNIX domain socket
+send_ipc_handle_to_consumer(&ipc_mem_handle);
+```
+
+In Process B (Policy Consumer), the exported handle is mapped directly into its local GPU virtual address space without copying:
+
+``` c
+// Process B (Policy Consumer): Map exported GPU memory directly
+cudaIpcMemHandle_t received_handle;
+receive_ipc_handle_from_producer(&received_handle);
+
+float *d_mapped_tensor;
+cudaIpcOpenMemHandle((void **)&d_mapped_tensor, received_handle,
+                     cudaIpcMemLazyEnablePeerAccess);
+
+// Wait on this publication's imported completion event before reading.
+// Launch inference kernel directly referencing Process A's physical GPU memory
+launch_vla_encoder_kernel<<<grid, block, 0, compute_stream>>>(d_mapped_tensor);
+
+// At shutdown, finish outstanding work before releasing the mapping.
+cudaStreamSynchronize(compute_stream);
+cudaIpcCloseMemHandle((void *)d_mapped_tensor);
+```
+
+CUDA IPC requires compatible devices, drivers, and operating-system support. An imported allocation must remain alive until every importer finishes and closes its mapping. Publication requires explicit synchronization, not just handle transfer. CUDA IPC relies on strict memory allocation invariants: exported memory must be allocated as device memory via `cudaMalloc()` within the GPU’s physical device memory. Managed memory (`cudaMallocManaged`) and host pinned memory are explicitly unsupported by the CUDA IPC subsystem. On supported same-host multi-accelerator topologies, an imported allocation may be accessed through peer-to-peer links. CUDA IPC is not a transport between arbitrary independent SoCs. Rather than copying tensor buffers through host DRAM, the GPU hardware memory management unit (MMU) routes memory transactions directly across high-speed interconnect links. This eliminates host CPU DRAM double-buffering and saves tens of gigabytes per second of shared bus bandwidth.
+
+To synchronize GPU execution across processes without round-tripping to host CPU threads, CUDA IPC exports **cross-process CUDA event** synchronization primitives via `cudaIpcGetEventHandle()` and `cudaIpcOpenEventHandle()`. Process A creates an interprocess event with timing disabled, records it after producing the buffer, and publishes the corresponding completion generation. The consumer must wait on that generation before using the data, and the producer must not reuse the buffer before the consumer finishes. Process B imports the event handle and enqueues a hardware barrier on its local stream:
+
+$$
+\text{cudaStreamWaitEvent}(\text{consumer\_stream}, \text{imported\_event}, 0)
+$$
+
+ Once the host has enqueued the dependency, later consumer-stream work waits for the recorded producer event without a host polling loop. Setup and submission still involve the CPU, and latency remains platform dependent. The [CUDA IPC documentation](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/inter-process-communication.html) specifies supported allocation and event types.
+
+## Actuator Electrical and Thermal Dynamics
+
+^sec-appendix-systems-actuators
+
+In reinforcement learning and simulation environments (such as MuJoCo or Isaac Gym), policy actions are typically abstracted as instantaneous torque or position commands applied at discrete simulation steps. In physical systems, however, actuators convert electrical energy into mechanical work through electromagnetic Lorentz forces, subject to coupled electrical, thermal, and kinematic constraints.
+
+### Stator Electrical Rise Time
+
+^stator-electrical-rise-time
+
+A brushless permanent-magnet synchronous motor (PMSM / BLDC) phase winding has phase resistance ${R_{\text{phase}}}$ and phase inductance ${L_{\text{phase}}}$. Applying terminal voltage ${V_{\text{terminal}}}$ against back-electromotive force ${e_{\text{bemf}}} = {K_e} {\omega_m}$ yields the first-order stator current ODE:
+
+$$
+{L_{\text{phase}}} \frac{d{i_{\text{phase}}}({t})}{d{t}} + {R_{\text{phase}}}\, {i_{\text{phase}}}({t}) = {V_{\text{terminal}}} - {K_e} {\omega_m}
+$$
+
+In three-phase synchronous machines under Field-Oriented Control (FOC), the stator currents are transformed from the three-phase ${a} {b} {c}$ frame into the orthogonal rotor synchronous ${d}{q}$ reference frame via the Clarke and Park transformations:
+
+$$
+{v_d} = {R_{\text{phase}}} {i_d} + {L_d} \frac{d{i_d}}{d{t}} - {\omega_e} {L_q} {i_q}
+$$
+
+$$
+{v_q} = {R_{\text{phase}}} {i_q} + {L_q} \frac{d{i_q}}{d{t}} + {\omega_e} {L_d} {i_d} + {\omega_e} {\lambda_{\text{pm}}}
+$$
+
+ The ${d}$ axis rotates with the rotor magnet flux, and the ${q}$ axis lies perpendicular to it. This separates flux and torque-producing current. Here ${\omega_e} = {N_{\text{poles}}} {\omega_m}$ is electrical angular velocity (${N_{\text{poles}}}$ pole pairs), ${\lambda_{\text{pm}}}$ is the rotor permanent-magnet flux linkage, and ${L_d}, {L_q}$ are direct and quadrature axis inductances. Under standard constant torque-angle control (${i_d} = 0$), electromagnetic torque is directly proportional to quadrature current:
+
+$$
+{\tau_{\text{motor}}} = \frac{3}{2} {N_{\text{poles}}} \, {\lambda_{\text{pm}}} {i_q} = {K_t} {i_q}
+$$
+
+For a commanded voltage step with the rotor held at rest (${\omega_m} = 0$) and zero initial current, quadrature current rises exponentially:
+
+$$
+{i_q}({t}) = \frac{{V_{\text{terminal}}}}{{R_{\text{phase}}}} \left( 1 - e^{-{t} / {\tau_e}} \right), \quad {\tau_e} = \frac{{L_q}}{{R_{\text{phase}}}}
+$$
+
+ where ${\tau_e}$ is the electrical time constant. Current, and therefore delivered torque, reaches approximately 63 percent of its steady-state value after one time constant ${\tau_e}$ (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02.05 Actuator Transmission Limits#^sec-body-electrical-time-constants|Electrical time constants, back-EMF, and current clamping]]** computes it for the running machine’s hub motors from their datasheet inductance and resistance). An unprivileged neural policy step command cannot produce an instantaneous step in physical torque.
+
+Furthermore, achievable current is constrained by inverter voltage saturation:
+
+$$
+\sqrt{{v_d}^2 + {v_q}^2} \le \frac{{V_{\text{bus}}}}{\sqrt{3}}
+$$
+
+ As rotor speed ${\omega_m}$ rises, back-EMF ${\omega_e} {\lambda_{\text{pm}}}$ increases, consuming available quadrature voltage ${v_q}$. At the actuator’s base speed, voltage headroom vanishes, and torque collapses unless negative direct-axis current (${i_d} < 0$, flux weakening) is commanded to oppose part of the magnet flux linkage, within current and magnet-demagnetization limits.
+
+### Lumped Thermal Networks and Stator Joule Heating
+
+^lumped-thermal-networks-and-stator-joule-heating
+
+Current flowing through stator windings dissipates resistive Joule heat:
+
+$$
+{P_{\text{loss}}}({t}) = \frac{3}{2} {i_q}^2({t}) {R_{\text{phase}}}({T_{\text{winding}}})
+$$
+
+ where copper electrical resistance increases linearly with temperature:
+
+$$
+{R_{\text{phase}}}({T_{\text{winding}}}) = {R_0} \left[ 1 + {\alpha_{\text{Cu}}} ({T_{\text{winding}}} - {T_0}) \right]
+$$
+
+ with temperature coefficient ${\alpha_{\text{Cu}}} \approx 0.00393\text{ K}^{-1}$ for copper. At an operating temperature of $150^\circ\text{C}$, stator copper resistance is approximately $50\text{ percent}$ higher than at room temperature ($25^\circ\text{C}$). To sustain the same commanded torque ${\tau_{\text{motor}}} = {K_t} {i_q}$, the motor requires identical current ${i_q}$ but generates $50\text{ percent}$ more thermal dissipation. This creates positive feedback between winding temperature and Joule heating that accelerates thermal degradation.
+
+In a physical motor, **multi-node lumped thermal networks** span multiple physical interfaces with disparate thermal masses:
+
+1.  *Stator Winding Copper*: Low thermal capacitance ${C_{\text{cu}}}$, rapid heating from Joule dissipation (${\tau_{\text{th,cu}}} \sim 10\text{--}30\text{ s}$).
+2.  *Stator Iron Laminations*: Moderate thermal capacitance ${C_{\text{iron}}}$, absorbing iron eddy-current and hysteresis losses ${P_{\text{iron}}}$ and heat conducted across winding insulation ${R_{\text{th,cu-iron}}}$. The iron losses depend on flux, frequency, and material.
+3.  *Motor Frame and Aluminum Housing*: Large thermal capacitance ${C_{\text{case}}}$, conducting heat into the robotic link structure and convecting to ambient air through ${R_{\text{th,case-amb}}}$ (${\tau_{\text{th,case}}} \sim 10\text{--}30\text{ min}$).
+
+The temperature dynamics across these nodes satisfy the coupled differential system:
+
+$$
+{C_{\text{cu}}} \frac{d{T_{\text{winding}}}}{d{t}} = {P_{\text{loss}}}({t}) - \frac{{T_{\text{winding}}} - {T_{\text{iron}}}}{{R_{\text{th,cu-iron}}}}
+$$
+
+$$
+{C_{\text{iron}}} \frac{d{T_{\text{iron}}}}{d{t}} = \frac{{T_{\text{winding}}} - {T_{\text{iron}}}}{{R_{\text{th,cu-iron}}}} + {P_{\text{iron}}} - \frac{{T_{\text{iron}}} - {T_{\text{case}}}}{{R_{\text{th,iron-case}}}}
+$$
+
+$$
+{C_{\text{case}}} \frac{d{T_{\text{case}}}}{d{t}} = \frac{{T_{\text{iron}}} - {T_{\text{case}}}}{{R_{\text{th,iron-case}}}} - \frac{{T_{\text{case}}} - {T_{\text{amb}}}}{{R_{\text{th,case-amb}}}}
+$$
+
+For initial temperature at ambient, a simplified single-node lumped thermal model uses effective thermal resistance to ambient ${R_{\text{th}}}$ (in $\text{K/W}$) and thermal heat capacity ${C_{\text{th}}}$ (in $\text{J/K}$). The temperature rise ${\Delta T}({t}) = {T_{\text{winding}}}({t}) - {T_{\text{amb}}}$ satisfies:[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn8|⁸]]
+
+$$
+{C_{\text{th}}} \frac{{d}{\Delta T}({t})}{d{t}} = {P_{\text{loss}}}({t}) - \frac{{\Delta T}({t})}{{R_{\text{th}}}}
+$$
+
+ Under constant power, temperature rises with thermal time constant ${\tau_{\text{th}}} = {R_{\text{th}}} {C_{\text{th}}}$:
+
+$$
+{\Delta T}({t}) = {P_{\text{loss}}} {R_{\text{th}}} \left( 1 - e^{-{t} / {\tau_{\text{th}}}} \right)
+$$
+
+Continuous torque capacity ${\tau_{\text{cont}}}$ is bounded by the maximum allowable winding temperature rise ${\Delta T_{\max}}$:
+
+$$
+{\tau_{\text{cont}}} \le {K_t} \sqrt{\frac{2{\Delta T_{\max}}}{3 {R_{\text{th}}} {R_{\text{phase}}}}}
+$$
+
+ The factor $2/3$ follows from the three-phase loss convention above; use the winding resistance at the limiting temperature. Other motor and inverter losses reduce the available thermal margin.
+
+Transient torque peaks ${\tau_{\text{peak}}} \approx 2\text{--}4 \times {\tau_{\text{cont}}}$ are permitted during aggressive dynamic maneuvers only if an active digital ${{I_{\text{phase}}}}^2 {t}$ thermal protection observer running on the safety microcontroller bounds the thermal integral:
+
+$$
+{\Delta T}[{k}+1] = {\Delta T}[{k}] e^{-{\Delta} {t} / {\tau_{\text{th}}}} + {R_{\text{th}}} {P_{\text{loss}}}[{k}] \left( 1 - e^{-{\Delta} {t} / {\tau_{\text{th}}}} \right)
+$$
+
+ The thermal class is an insulation service rating, not a sharp instantaneous breakdown temperature. Current derating must begin with margin below the winding and rotor limits, accounting for model error, initial temperature, and response time.
+
+### Reflected Rotor Inertia and Angular Jerk Limits
+
+^sec-appendix-systems-rotor-jerk
+
+Geared electromagnetic actuators amplify delivered motor torque while multiplying rotor inertia at the joint output. For a transmission with gear reduction ratio ${N_{\text{gear}}} = {\omega_m} / {\dot{q}}$, kinetic energy conservation dictates the reflected inertia acting at the output link:
+
+$$
+{E_k} = \frac{1}{2} {J_{\text{rotor}}} {\omega_m}^2 + \frac{1}{2} {J_{\text{load}}} {\dot{q}}^2 = \frac{1}{2} ({J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}}) {\dot{q}}^2
+$$
+
+ The effective rotational inertia seen at joint coordinate ${q}$ is:
+
+$$
+{J_{\text{eff}}} = {J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}}
+$$
+
+ The joint equation of motion under motor electromagnetic torque ${\tau_{\text{motor}}}$ is:
+
+$$
+{\ddot{q}} = \frac{{N_{\text{gear}}} {\tau_{\text{motor}}} - {\tau_{\text{ext}}}}{{J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}}}
+$$
+
+ Differentiating ${\ddot{q}}$ with respect to gear ratio ${N_{\text{gear}}}$ at zero external load yields:
+
+$$
+\frac{\partial {\ddot{q}}}{\partial {N_{\text{gear}}}} = \frac{{\tau_{\text{motor}}} ({J_{\text{load}}} - {N_{\text{gear}}}^2 {J_{\text{rotor}}})}{({J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}})^2}
+$$
+
+ Setting $\frac{\partial {\ddot{q}}}{\partial {N_{\text{gear}}}} = 0$ yields the **inertia-matching ratio** ${N^*} = \sqrt{{J_{\text{load}}} / {J_{\text{rotor}}}}$. When ${N_{\text{gear}}} > {N^*}$, counter-intuitively, increasing the gear ratio decreases delivered joint acceleration because the motor spends the majority of its torque accelerating its own rotor rather than the link.
+
+#### Dynamic Angular Jerk and Torque Slew Limits
+
+^dynamic-angular-jerk-and-torque-slew-limits
+
+For constant effective inertia and constant external torque, angular jerk ${j_{\text{joint}}}({t}) = \dddot{{q}}({t})$ measures the time rate of change of joint acceleration:
+
+$$
+{j_{\text{joint}}}({t}) = \frac{{N_{\text{gear}}}}{{J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}}} \frac{{d}{\tau_{\text{motor}}}({t})}{d{t}}
+$$
+
+ Electromagnetic torque relates to stator quadrature current via torque constant ${K_t}$: ${\tau_{\text{motor}}} = {K_t} {i_q}$. From the stator electrical dynamics in this section, current slew rate is bounded by winding inductance ${L_{\text{phase}}}$:
+
+$$
+\frac{{d}{\tau_{\text{motor}}}}{d{t}} = {K_t} \frac{d{i_q}}{d{t}} = \frac{{K_t}}{{L_{\text{phase}}}} \left( {V_{\text{terminal}}} - {K_e} {\omega_m} - {R_{\text{phase}}} {i_q} \right)
+$$
+
+ For a signed voltage constrained by $|{V_{\text{terminal}}}|\le {V_{\max}}$, a conservative magnitude bound in this scalar winding model is:
+
+$$
+|{j_{\text{joint}}}| \le \frac{{N_{\text{gear}}} {K_t} ({V_{\max}} + |{K_e} {\omega_m} + {R_{\text{phase}}} {i_q}|)}{{L_{\text{phase}}} ({J_{\text{load}}} + {N_{\text{gear}}}^2 {J_{\text{rotor}}})}
+$$
+
+ Positive and negative current slew have different available voltage headroom. A tighter directional bound retains the signs in the preceding current equation. Changing external torque, coupled joint motion, and inverter limits require additional terms.
+
+When a tracker requests a step torque discontinuity ${\Delta} {\boldsymbol{\tau}}$ across discrete timesteps, the commanded derivative $\frac{{d}{\tau}}{d{t}} \to \infty$ cannot be delivered instantaneously by physical silicon. The inverter enters hard voltage saturation, causing steep current slew ($d{I}/d{t}$), intense thermal stress on power MOSFETs, and shock loads across gear-tooth contact flanks (${\sigma_b} \propto {W_t} / ({b} {m} {Y})$). Synchronous pre-actuation invariant filters evaluate numerical torque derivatives $({\boldsymbol{\tau}}[{k}] - {\boldsymbol{\tau}}[{k}-1]) / {\Delta} {t}$ to ensure requested actions remain within allowable jerk envelopes before latching power stages.
+
+## DC Bus Power Distribution and Energy Absorption
+
+^sec-appendix-systems-power
+
+In data center machine learning clusters, electrical power is managed by high-capacity facility uninterruptible power supplies (UPS) and dedicated substation transformers. On mobile autonomous platforms, computational accelerators and mechanical actuators draw from a shared, finite DC power distribution network. A robotic platform’s electrical power distribution network must supply acceleration surges and absorb regenerative braking energy across finite bus capacitance and harness impedance.
+
+### Inductive Droop and Capacitive Decoupling
+
+^inductive-droop-and-capacitive-decoupling
+
+When multiple high-torque actuators accelerate simultaneously (such as a humanoid jumping or an articulated arm bracing against an unexpected payload), total load current steps by ${\Delta} {I_{\text{load}}} = \sum_{k=1}^{{N_{\text{axes}}}} {\Delta} {I}_k$ with steep current slew rates $d{I_{\text{load}}}/d{t} \sim 10^5\text{--}10^6\text{ A/s}$. The electrical wiring harness connecting the main battery to distributed joint inverters possesses parasitic loop inductance ${L_{\text{bus}}}$ (typically $1\text{--}5\,{\text{µ}}\text{H}$ for a 1-meter harness) and harness resistance ${R_{\text{bus}}}$. These parasitics impede source current delivery, producing instantaneous inductive rail droop at the actuator inverter terminals:
+
+$$
+{V_{\text{source}}}({t})-{V_{\text{bus}}}({t}) = {R_{\text{bus}}} {I_{\text{source}}}({t}) + {L_{\text{bus}}} \frac{d{I_{\text{source}}}}{d{t}}
+$$
+
+ The capacitor is connected across this same bus node; its voltage change is not another independent series drop. For an ideal capacitor, ${\Delta} {V_C}({t})={V_{\text{bus}}}(0)-{V_{\text{bus}}}({t})$. Local inverter bus capacitance ${C_{\text{bus}}}$ must supply the instantaneous charge deficit between load demand and battery source current:
+
+$$
+{\Delta} {V_C}({t}) = \frac{1}{{C_{\text{bus}}}} \int_0^{t} \left( {I_{\text{load}}}({s}) - {I_{\text{source}}}({s}) \right) d{s}
+$$
+
+If the DC bus terminal voltage drops below the drive’s configured **Under-Voltage Lockout (UVLO)** threshold ${V_{\text{UVLO}}}$ (e.g., $18\text{ V}$ on a $24\text{ V}$ nominal bus, or $36\text{ V}$ on a $48\text{ V}$ bus), the gate driver IC enters UVLO fault protection. It disables gate bias within microseconds to prevent power MOSFETs from operating in their linear resistive region. The resulting loss of commanded torque can let a gravity-loaded joint descend. Current decay and the holding-brake response determine the plant motion.
+
+If the current deficit starts at ${\Delta I_{\text{step}}}$ and decreases linearly to zero over ${\Delta t_{\text{step}}}$, integrating that triangular deficit gives:
+
+$$
+{C_{\text{bus}}} \ge \frac{{\Delta I_{\text{step}}} \cdot {\Delta t_{\text{step}}}}{2 {\Delta V_{\text{droop, max}}}}
+$$
+
+ A constant deficit over the same interval removes the factor of two in the denominator. The source dynamics and capacitor ESR must also satisfy the terminal-voltage limit. Local capacitor banks combine low-ESR multi-layer ceramic capacitors (MLCCs) for high-frequency ripple filtering ($20\text{--}100\text{ kHz}$ inverter switching) with bulk electrolytic or polymer capacitors for transient step energy buffering. The bank must also carry the RMS ripple current of the actual switching waveform. Equivalent-series-resistance losses scale with that current squared.
+
+### Regenerative Braking Surges and Chopper Sizing
+
+^regenerative-braking-surges-and-chopper-sizing
+
+During controlled regenerative deceleration or emergency stopping, mechanical kinetic energy ${E_k} = \frac{1}{2} {m} {v}^2$ (linear platform motion) or ${E_k} = \frac{1}{2} {J_{\text{eff}}} {\dot{q}}^2$ (articulated joint rotation) is converted back into electrical energy by the motor acting as a generator. Current flows back through the inverter bridge into the DC bus via active synchronous rectification or freewheeling body diodes.
+
+If the battery cannot accept this regenerative current (for example, when the battery pack reaches its chemistry-specific charge limit, when battery internal resistance rises at freezing temperatures, or when safety contactors open to isolate the pack), the returned electrical energy ${\eta_{\text{regen}}} {E_k}$ is forced into the local bus capacitor ${C_{\text{bus}}}$. The resulting terminal voltage surge follows the ideal capacitor relationship:
+
+$$
+{\Delta} {E_C} = \frac{1}{2} {C_{\text{bus}}} \left( {V_{\text{final}}}^2 - {V_{\text{initial}}}^2 \right) = {\eta_{\text{regen}}} {E_k}
+$$
+
+$$
+{V_{\text{final}}} = \sqrt{ {V_{\text{initial}}}^2 + \frac{2 {\eta_{\text{regen}}} {E_k}}{{C_{\text{bus}}}} }
+$$
+
+An overvoltage protection trip and semiconductor breakdown are different thresholds. Exceeding the configured trip requests the assessed protective response; exceeding device voltage ratings can cause avalanche stress or damage. Disabling gate commands does not by itself absorb returned energy.
+
+To prevent overvoltage destruction, motor drives incorporate an active **dynamic brake chopper**. When DC bus voltage crosses a hardware clamp threshold ${V_{\text{clamp,on}}}$, a high-power semiconductor switch (MOSFET or IGBT) modulates an auxiliary low-inductance braking resistor ${R_{\text{brake}}}$ with hysteresis:[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn9|⁹]]
+
+$$
+{R_{\text{brake}}} \le \frac{{V_{\text{clamp}}}^2}{{P_{\text{regen, peak}}}}
+$$
+
+$$
+{P_{\text{regen, peak}}} \approx {\eta_{\text{regen}}} \cdot {\tau_{\text{brake}}} \cdot {\omega_{\max}}
+$$
+
+ The chopper comparator switches the resistor on when ${V_{\text{bus}}} \ge {V_{\text{clamp,on}}}$ and turns off when ${V_{\text{bus}}} \le {V_{\text{clamp,off}}}$, preventing rapid oscillation. In addition to peak power sizing, the braking resistor must be rated for single-pulse adiabatic energy absorption:
+
+$$
+{E_{\text{pulse}}} \ge {\eta_{\text{regen}}} {E_k}
+$$
+
+ with a thermal cooldown time constant that prevents cumulative thermal failure during repeated stop-and-go duty cycles.
+
+## Real-Time Fieldbuses and Lock-Free Synchronization
+
+^sec-appendix-systems-fieldbus
+
+In distributed machine learning clusters, networks are built on high-bandwidth fabrics (such as 100/400 Gbps RoCEv2 or InfiniBand) optimized for aggregate data-parallel throughput via credit-based flow control. In physical AI systems, however, the onboard communication fabric must simultaneously multiplex two diametrically opposed traffic classes:
+
+1.  *High-bandwidth best-effort perception streams*: Multi-gigabit video from high-resolution GMSL2/GigE Vision cameras ($2\text{--}8\text{ Gbps}$) and 3D lidar point clouds ($100\text{--}1000\text{ Mbps}$) streaming into the AI accelerator’s unified memory for foundation model inference.
+2.  *Hard real-time periodic control traffic*: Deterministic 1 kHz joint setpoint commands and high-resolution torque/position feedback ($100\text{--}500\text{ kbps}$) exchanged with distributed motor inverters.
+
+If these two traffic classes share a naive best-effort Ethernet fabric with first-in, first-out (FIFO) queueing, multi-megabyte perception bursts cause severe queue congestion and buffer bloat. A burst of video frames can delay a motor control packet by $5\text{--}20\text{ ms}$, violating the 1 ms control deadline, starving the inverter current loop, and tripping hardware emergency stops. Coordinating distributed drives while ingesting perception streams requires an architectural separation of fabrics, deterministic bus schedules, and bounded lock-free publication protocols.
+
+### Fieldbus Serialization and Schedulability
+
+^fieldbus-serialization-and-schedulability
+
+On shared physical buses, ${N_{\text{axes}}}$ actuator drives transmit telemetry and receive setpoints cyclically. To prevent perception traffic from corrupting motor timing, physical AI architectures use dedicated deterministic fieldbuses (CAN 2.0B, CAN FD, or EtherCAT) or time-scheduled switched Ethernet (IEEE TSN).
+
+Classical **Controller Area Network (CAN 2.0B, ISO 11898-1)** uses differential signaling over a shielded twisted pair (${V_{\text{CANH}}} - {V_{\text{CANL}}} \approx 2.0\text{ V}$ for dominant logic 0, and $0\text{ V}$ for recessive logic 1):
+
+- *Arbitration Mechanics*: Nodes access the physical medium using non-destructive bitwise arbitration. When two nodes transmit simultaneously, a dominant bit overrides a recessive bit. A node transmitting a recessive bit that samples a dominant bit on the physical bus immediately ceases transmission and yields the bus to the higher-priority frame without message corruption.
+- *Framing and Payload Constraints*: Standard CAN 2.0B frames support either an 11-bit standard or 29-bit extended identifier, with payload length strictly capped at ${B_{\text{payload}}} \le 8\text{ bytes}$ via a 4-bit Data Length Code (DLC).
+- *Bit-Stuffing and Latency*: Classical CAN inserts an opposite bit after a run of five identical bits in the stuffed region. Serialization time includes the identifier format, payload, CRC, stuffing, and interframe spacing. Let ${B_{\text{wire},i}}$ be that complete bit count for frame ${i}$; then ${C}_i={B_{\text{wire},i}}/{R_{\text{bit}}}$. Extended identifiers consume more bits than standard identifiers.
+- *The Scalability Bottleneck*: The necessary load condition is $\sum_i {C}_i/{T}_i\le1$, but meeting deadlines also requires priority and blocking analysis. There is no universal utilization threshold at which CAN queueing diverges. Axis capacity depends on command and feedback packing, periods, identifiers, and tolerated retransmissions; one frame per axis is a workload assumption.
+
+Controller Area Network with Flexible Data-Rate (**CAN FD**, ISO 11898-1:2015) overcomes the payload and bandwidth limits of classical CAN through dual bit-rate switching and payload expansion up to 64 bytes:
+
+- *Arbitration Phase*: Transmitted at the nominal bit rate ${R_{\text{nom}}}$ (typically $500\text{ kbps}$ or $1\text{ Mbps}$). The bit time ${T_{\text{bit,nom}}} = 1/{R_{\text{nom}}}$ must accommodate physical cable propagation delays across the robot chassis and transceiver delays ($2 {t_{\text{prop}}} + {t_{\text{transceiver}}}$), allowing non-destructive bitwise priority arbitration. Nodes drive the bus using dominant or recessive states. If two nodes transmit simultaneously, the lower numerical message identifier (higher logical priority) overwrites recessive bits, winning the bus without collision or frame destruction.
+- *Data Phase*: Once arbitration is established, the winning node asserts the Bit Rate Switch (BRS) bit, accelerating transmission to the data bit rate ${R_{\text{data}}}$ (typically $2\text{--}8\text{ Mbps}$). The data phase no longer needs round-trip arbitration within each bit. Signal integrity, receiver sampling, and transceiver delay compensation still constrain its rate.
+- *Bit-Stuffing Overhead*: Dynamic stuff bits are inserted after 5 consecutive identical bits in arbitration, while the CRC field incorporates fixed stuff bits with an explicit stuff count. In the worst-case bit pattern, bit stuffing can inflate frame transmission duration by up to $20\text{ percent}$.
+
+The serialization duration for frame ${i}$ is:
+
+$$
+{t_{\text{frame},i}} \approx \frac{{B_{\text{arb},i}}}{{R_{\text{nom}}}} + \frac{{B_{\text{data},i}}}{{R_{\text{data}}}} + {t_{\text{stuff},i}} + {t_{\text{interframe},i}}
+$$
+
+ where ${B_{\text{arb},i}}$ is the arbitration field length (identifier, control bits), ${B_{\text{data},i}}$ is the payload and CRC length, ${t_{\text{stuff},i}}$ accounts for stuff bits, and ${t_{\text{interframe},i}}$ is the minimum 3-bit inter-frame spacing.
+
+In a **CAN FD response-time budget**, a higher-priority release cannot preempt a frame already transmitting. For a simplified error-free fixed-priority message set with no prior instance of frame ${i}$ pending, the following conservative recurrence charges higher-priority interference across the whole response window:
+
+$$
+{R}_i = {C}_i + {B}_i + \sum_{j \in {hp}(i)} \left\lceil \frac{{R}_i + {J}_j + {T_{\text{bit}}}}{{T}_j} \right\rceil {C}_j
+$$
+
+ Here ${C}_i={t_{\text{frame},i}}$, ${J}_j$ is higher-priority release jitter, and ${T_{\text{bit}}}$ accounts for arbitration at the boundary. Iterate from ${C}_i+{B}_i$ to convergence or a deadline overrun. Add the message’s own release jitter if its deadline starts before it becomes ready. The lower-priority blocking term is:
+
+$$
+{B}_i = \max_{k \in {lp}(i)} {C}_k
+$$
+
+ Set ${B}_i=0$ when no lower-priority frame exists. This simplified test is not an exact general CAN schedulability test: queued prior instances, controller transmit-buffer behavior, errors, and retransmissions require a matching busy-period analysis. A long CAN FD payload improves packing efficiency but can also increase the non-preemptive blocking seen by a short urgent command.
+
+For high-axis-count systems (such as humanoids with 30 to 50 degrees of freedom), **EtherCAT** (ETG.1000) achieves deterministic 1 kHz to 10 kHz cycle times over standard 100BASE-TX full-duplex Ethernet (${R_{\text{link}}} = 100\text{ Mbps}$). Rather than transmitting individual frames per axis, EtherCAT structures communication as an active logical ring:
+
+1.  The real-time master (executing on the safety microcontroller or `PREEMPT_RT` Linux host) transmits a single standard Ethernet frame (EtherType `0x88A4`) traversing all slave drives in a physical daisy chain.
+2.  Each drive integrates an EtherCAT Slave Controller (ESC) application-specific integrated circuit (ASIC) (such as Beckhoff ET1100 or field-programmable gate array (FPGA) IP). As the frame’s bits pass through the ESC’s physical shift registers, the ESC **processes data on the fly**:
+    - It reads commanded setpoints (joint target position, velocity, and feedforward torque) directly from its allocated byte offset in the datagram.
+    - It writes actual measured feedback (encoder position, phase current, and drive status flags) into the moving frame.
+3.  Each slave contributes a forwarding delay that depends on its controller and ports; the frame returns from the final slave along the return path. The example below assigns an illustrative delay per slave.
+
+The cycle must accommodate the following round-trip budget for ${S}$ slave drives, with ${B_{\text{frame}}}$ measured in bits and each delay bounded for the topology:
+
+$$
+{T_{\text{cycle}}} \ge \frac{{B_{\text{frame}}}}{{R_{\text{link}}}} + {t_{\text{master}}} + \sum_{{s}=1}^{S} {t_{\text{slave},s}} + {t_{\text{prop}}} + {t_{\text{guard}}}
+$$
+
+For 30 axes, the assumed command and feedback sizes give 600 bytes of process data. An illustrative 750 bytes frame takes 60 μs to serialize at 100 Mb/s. Charging 1 μs per slave adds 30 μs, so the subtotal is already 90 μs. Master processing, propagation, omitted wire overhead, and guard time must still fit the cycle. This partial sum is not a measured round-trip bound. EtherCAT distributed clocks align local device timers through measured offsets and propagation compensation. The qualified synchronization error and arrival deadline determine when a drive may use the frame. Clock synchronization does not remove frame transit time.
+
+### Time-Sensitive Networking and Scheduled Ethernet Gates
+
+^time-sensitive-networking-and-scheduled-ethernet-gates
+
+While EtherCAT processes frames on the fly through specialized slave controllers, modern multi-camera and lidar robotic systems require multi-gigabit Ethernet fabrics that transport high-bandwidth vision data alongside hard real-time actuator commands. IEEE **Time-Sensitive Networking (TSN)** provides deterministic Ethernet via standards that bound queuing jitter and reserve transmission windows:
+
+The **IEEE 802.1Qbv Time-Aware Shaper (TAS)** coordinates traffic transmission using hardware-controlled transmission gates associated with each priority egress queue (traffic classes 0 to 7). A cyclic **Gate Control List (GCL)**, synchronized across all network bridges via IEEE 802.1AS (generalized Precision Time Protocol), switches gates open or closed at precise physical time epochs. By reserving dedicated time windows exclusively for high-priority Scheduled Traffic (ST), TAS eliminates queuing interference from lower-priority Best-Effort (BE) traffic.
+
+Standard Ethernet frames are non-preemptive: once a transmission begins, it cannot be interrupted on physical copper or optical links. If a lower-priority best-effort packet begins transmission immediately before an ST time slice opens, the scheduled frame experiences transmission blocking of up to the maximum frame duration. To prevent this, TAS enforces a **guard band** before each scheduled traffic window:
+
+$$
+{t_{\text{guard}}} \ge \frac{{B_{\text{BE,wire}}}}{{R_{\text{link}}}}
+$$
+
+ Here ${B_{\text{BE,wire}}}$ is the maximum non-preemptible wire occupancy in bits, including the applicable framing overhead. A payload MTU in bytes cannot be divided directly by a bit rate. The configured guard must also cover clock error and implementation timing uncertainty. During it, a best-effort frame may start only if it can finish before the reserved window.
+
+IEEE 802.1Qbu and IEEE 802.3br frame preemption reduce blocking by interrupting eligible traffic at permitted fragment boundaries. The remaining bound includes the maximum non-preemptible fragment and its overhead, not merely a nominal minimum fragment size. Both the link partners and the schedule must support the mechanism. Preemption saves reserved idle time at the cost of fragmentation overhead and additional configuration obligations.
+
+The four primary real-time communication protocols differ in framing, arbitration, clock synchronization, and axis-count scaling ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-fieldbus-comparative-synthesis|table 7]]).
+
+| Attribute / Metric         | CAN 2.0B (ISO 11898-1)                   | CAN FD (ISO 11898-1:2015)                            | EtherCAT (ETG.1000)                           | IEEE TSN (802.1Qbv / 802.1Qbu)               |
+|:---------------------------|:-----------------------------------------|:-----------------------------------------------------|:----------------------------------------------|:---------------------------------------------|
+| **Physical Layer**         | Differential twisted pair                | Differential twisted pair                            | 100BASE-TX full-duplex Ethernet               | 1000BASE-T / 10GBASE-T switched Eth          |
+| **Physical Topology**      | Linear multidrop bus                     | Linear multidrop bus                                 | Daisy-chain / logical ring                    | Switched star / tree / mesh                  |
+| **Raw Line Bit Rate**      | $1\text{ Mbps}$ max                      | $1\text{ Mbps}$ arb / $2\text{--}8\text{ Mbps}$ data | $100\text{ Mbps}$ full-duplex                 | $1\text{--}10\text{ Gbps}$ full-duplex       |
+| **Maximum Payload (MTU)**  | $8\text{ bytes}$                         | $64\text{ bytes}$                                    | Up to $1486\text{ bytes}$ per datagram        | $1500\text{ bytes}$ ($9000\text{ B}$ jumbo)  |
+| **Arbitration Mechanism**  | Bitwise non-destructive priority         | Bitwise non-destructive with bit-rate switch         | Hardware on-the-fly ESC processing            | Time-Aware Shaper (GCL) + frame preemption   |
+| **Delay qualification**    | Frame priorities, load, blocking, errors | Nominal/data rates, packing, blocking, errors        | Frame size, topology, slave and master delays | Gate schedule, path, clock error, preemption |
+| **Hardware Clock Sync**    | No network clock service in CAN framing  | No network clock service in CAN FD framing           | Distributed Clocks; qualified residual error  | IEEE 802.1AS; qualified residual error       |
+| **Axis-count scaling**     | Per-axis frame count and period          | Payload packing and response deadlines               | Process-data bytes and number of slaves       | Reserved traffic windows and link capacity   |
+| **Primary Robotic Domain** | Auxiliary sensors, low-rate IO           | Quadruped leg clusters, gripper drives               | Multi-axis humanoids, surgical arms           | Sensor fusion ingress + safety backbone      |
+
+Table 7: **Comprehensive Architectural Synthesis of Real-Time Fieldbus Protocols**: Comparison of CAN 2.0B, CAN FD, EtherCAT, and IEEE TSN across physical layer, framing, arbitration, jitter, and multi-axis control capacity.
+
+^tbl-fieldbus-comparative-synthesis
+
+For either CAN variant, sum every command and feedback frame in the required cycle, then account for competing traffic, non-preemptive blocking, and the declared error model. EtherCAT avoids a separate frame for each axis, but its process-data size and forwarding delay still grow with the topology. TSN reserves service along a path. An end-to-end bound must include each hop’s schedule, serialization, forwarding, and synchronization uncertainty. These distinct budgets, rather than a protocol name or a universal axis count, support the selection in **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.06 Real-Time Command Transport and Bus Determinism#^sec-nervous-deterministic-fieldbuses|Real-Time Command Transport and Bus Determinism]]**.
+
+### Lock-Free Seqlocks for Multi-Rate Shared Memory
+
+^lock-free-seqlocks-for-multi-rate-shared-memory
+
+When a producer updates multiword state read by a deadline-bound enforcer, waiting on a producer-held mutex can violate the reader’s deadline. The single-slot mailbox in [algorithm 1](https://mlsysbook.ai/vol4/backmatter/appendix_systems.html#algo-lock-free-trajectory) uses a **sequence counter**, which marks a single writer’s publication in progress with an odd value and a completed publication with an even value:
+
+1.  **Writer Protocol**:
+    - Publish an odd sequence value, write the payload, and make it visible through the platform’s coherent or cache-maintained memory contract.
+    - Publish the next even value with release ordering.
+2.  **Reader Protocol**:
+    - Read ${S}_1$ with acquire ordering. If it is odd, reject this publication without waiting.
+    - Make one bounded copy to scratch memory using the platform’s required load ordering, then read ${S}_2$.
+    - Stage the candidate only if ${S}_1={S}_2$ and both are even, and the copied frame passes integrity, timestamp, and requested-expiry checks. Full admission remains separate. Retain the active command only while its own state, evidence, lease, and stopping margin permit; otherwise enter the state-matched fallback.
+
+The algorithm is platform pseudocode, not portable C++ with a non-atomic payload: racing ordinary C++ loads and stores would be undefined behavior even if the sequence check later rejects the copy. The platform must define safe concurrent copying, cache maintenance, aligned counter atomicity, and wraparound behavior. On the machine’s discrete microcontroller, the writer is the link-receive interrupt and the reader is the permission tick on the same core, so the counter protocol needs only compiler ordering between them. A data memory barrier matters where a DMA engine or a second master writes the same memory. Arm M-profile cores provide that barrier only as the full-system `DMB` ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-arm2012an321|ARM Limited 2012]]), so the `OrderingFence` steps below stand for whatever the target requires rather than an A-profile shareability option. The reader’s one-attempt execution time can be bounded on the target hardware; success probability depends on the writer’s schedule and cannot be inferred from payload size alone. Conventional Linux seqlock readers may retry, as the [kernel documentation](https://docs.kernel.org/locking/seqlock.html) shows, but a real-time permission gate cannot use an unbounded retry loop.
+
+$P$
+
+The proposal header and chunk payload of **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.05 Chunk Lease Sizing from the Stopping Budget#^sec-nervous-supervisory-timers|Supervisory timers and proposal wire contracts]]** cross the proposal boundary through this mailbox (**[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.04 Multi-Rate Cadences#^sec-nervous-cadences|Multi-Rate Cadences]]**). [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-header|Section 1.15.1]] gives their byte layout. A successful read yields a candidate in owned staging memory. Admission separately checks producer sequence and lineage, the complete trajectory and stop, and the current seam state before activation (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11.09 The Trajectory Record#^sec-planning-trajectory-contract|The Trajectory Record]]**). Scheduling that work must preserve the permission tick; the scratch slot cannot be reused while admission still reads it. At activation the MCU rereads its clock, rechecks evidence and deadlines, and records the successful admission time. A mailbox read neither renews the active lease nor resets the evidence epoch.
+
+## Camera Projective Geometry and Covariance Propagation
+
+^sec-appendix-systems-vision
+
+In computer vision for machine learning, neural models typically process normalized pixel tensors to predict 2D bounding boxes or semantic segmentation masks. In physical AI systems, however, visual observations must be grounded as physical objects in continuous Euclidean 3D metric space to evaluate spatial clearance buffers ${D_{\text{clear}}}$ and enforce collision-avoidance invariants. Perception pipelines map continuous Euclidean 3D scenes onto discrete 2D camera photosite grids, and unproject pixel detections back into metric space under quantified measurement uncertainty.
+
+### Intrinsic Projection Matrix and Radial Distortion
+
+^intrinsic-projection-matrix-and-radial-distortion
+
+Under the standard pinhole camera model, a 3D point ${\mathbf{p}_c} = [{X_c}, {Y_c}, {Z_c}]^\top$ in camera coordinates projects onto pixel coordinates $[{u}, {v}]^\top$ via the intrinsic calibration matrix ${\mathbf{K}}$:[[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^fn10|¹⁰]]
+
+$$
+{\tilde{\mathbf{m}}} = \begin{bmatrix} {u} \\ {v} \\ 1 \end{bmatrix} = \frac{1}{{Z_c}} {\mathbf{K}} {\mathbf{p}_c} = \frac{1}{{Z_c}} \begin{bmatrix} {f_x} & 0 & {c_x} \\ 0 & {f_y} & {c_y} \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} {X_c} \\ {Y_c} \\ {Z_c} \end{bmatrix}
+$$
+
+ where $({f_x}, {f_y})$ are focal lengths in pixel units and $({c_x}, {c_y})$ is the principal point. Non-linear radial lens distortion is modeled by distortion coefficients $({k}_1, {k}_2)$:
+
+$$
+{r}^2 = {x_n}^2 + {y_n}^2, \quad {x_d} = {x_n} (1 + {k}_1 {r}^2 + {k}_2 {r}^4), \quad {y_d} = {y_n} (1 + {k}_1 {r}^2 + {k}_2 {r}^4)
+$$
+
+ where $({x_n}, {y_n}) = ({X_c} / {Z_c}, {Y_c} / {Z_c})$ are normalized image coordinates.
+
+### Metric Unprojection and Spatial Covariance Propagation
+
+^metric-unprojection-and-spatial-covariance-propagation
+
+When unprojecting a 2D pixel observation $[{u}, {v}]^\top$ with measured depth ${Z_c}$ into 3D camera coordinates, photosite measurement noise ${\boldsymbol{\Sigma}_{\text{meas}}} = \text{diag}({\sigma_u}^2, {\sigma_v}^2, {\sigma_z}^2)$ propagates through the unprojection Jacobian ${\mathbf{J}_{\text{unproj}}}$:
+
+$$
+{\mathbf{p}_c} = \begin{bmatrix} ({u} - {c_x}) {Z_c} / {f_x} \\ ({v} - {c_y}) {Z_c} / {f_y} \\ {Z_c} \end{bmatrix}, \quad {\mathbf{J}_{\text{unproj}}} = \frac{\partial {\mathbf{p}_c}}{\partial [{u}, {v}, {Z_c}]} = \begin{bmatrix} \frac{{Z_c}}{{f_x}} & 0 & \frac{{u} - {c_x}}{{f_x}} \\ 0 & \frac{{Z_c}}{{f_y}} & \frac{{v} - {c_y}}{{f_y}} \\ 0 & 0 & 1 \end{bmatrix}
+$$
+
+ The propagated camera-frame spatial covariance is:
+
+$$
+{\boldsymbol{\Sigma}_c} = {\mathbf{J}_{\text{unproj}}} {\boldsymbol{\Sigma}_{\text{meas}}} {\mathbf{J}_{\text{unproj}}}^\top
+$$
+
+ Evaluating the diagonal terms shows that lateral positional variance along the camera ${X}$-axis scales with the square of depth:
+
+$$
+{\sigma_{x_c}}^2 \approx \left(\frac{{Z_c}}{{f_x}}\right)^2 {\sigma_u}^2 + \left(\frac{{u} - {c_x}}{{f_x}}\right)^2 {\sigma_z}^2
+$$
+
+ For fixed pixel noise, the first variance contribution scales with ${Z_c}^2$, so its standard deviation grows linearly with distance. The depth-error contribution follows the depth sensor’s own model. Transforming this 3D point into the robot body frame via rigid extrinsic transform ${\mathbf{T}_{bc}} = [{\mathbf{R}_{bc}}, {\mathbf{p}_{bc}}; {\mathbf{0}}^\top, 1]$ yields the spatial body covariance:
+
+$$
+{\boldsymbol{\Sigma}_{\text{body}}} = {\mathbf{R}_{bc}} {\boldsymbol{\Sigma}_c} {\mathbf{R}_{bc}}^\top + {\boldsymbol{\Sigma}_{\text{ext}}}
+$$
+
+ where ${\boldsymbol{\Sigma}_{\text{ext}}}$ models independent extrinsic uncertainty under this first-order approximation; correlations require the corresponding cross terms. A probabilistic clearance buffer may scale with $\sqrt{{\lambda_{\max}}({\boldsymbol{\Sigma}_{\text{body}}})}$ at a declared tail risk. A deterministic permission check instead needs a justified bounded-error envelope; covariance alone does not give a worst-case bound.
+
+### Zhang’s Planar Homography and Camera Calibration
+
+^zhangs-planar-homography-and-camera-calibration
+
+Zhang’s calibration technique computes the camera intrinsic matrix ${\mathbf{K}}$ by observing a planar calibration rig (such as a checkerboard pattern) across ${N} \ge 3$ distinct orientations ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-zhang2000flexible|Zhang 2000]]). Without loss of generality, assume the model plane lies on ${Z} = 0$ in world coordinates. A 3D model point ${\mathbf{M}} = [{X}, {Y}, 0, 1]^\top$ maps to a 2D image point ${\tilde{\mathbf{m}}} = [{u}, {v}, 1]^\top$ through a $3 \times 3$ planar homography matrix ${\mathbf{H}}$:
+
+$$
+{s} \begin{bmatrix} {u} \\ {v} \\ 1 \end{bmatrix} = {\mathbf{K}} \begin{bmatrix} {\mathbf{r}}_1 & {\mathbf{r}}_2 & {\mathbf{r}}_3 & {\mathbf{t}} \end{bmatrix} \begin{bmatrix} {X} \\ {Y} \\ 0 \\ 1 \end{bmatrix} = {\mathbf{K}} \begin{bmatrix} {\mathbf{r}}_1 & {\mathbf{r}}_2 & {\mathbf{t}} \end{bmatrix} \begin{bmatrix} {X} \\ {Y} \\ 1 \end{bmatrix} = {\mathbf{H}} \begin{bmatrix} {X} \\ {Y} \\ 1 \end{bmatrix}
+$$
+
+ where ${\mathbf{H}} = [{\mathbf{h}}_1 \; {\mathbf{h}}_2 \; {\mathbf{h}}_3] = {\lambda} {\mathbf{K}} [{\mathbf{r}}_1 \; {\mathbf{r}}_2 \; {\mathbf{t}}]$ with arbitrary nonzero scalar ${\lambda}$.
+
+#### Orthogonality Constraints on the Absolute Conic
+
+^orthogonality-constraints-on-the-absolute-conic
+
+Because the rotation vectors ${\mathbf{r}}_1$ and ${\mathbf{r}}_2$ are orthonormal columns of an ${SO(3)}$ matrix (${\mathbf{r}}_1^\top {\mathbf{r}}_2 = 0$ and $\|{\mathbf{r}}_1\| = \|{\mathbf{r}}_2\| = 1$), inverting ${\mathbf{K}}$ yields:
+
+$$
+{\mathbf{r}}_1 = \frac{1}{{\lambda}} {\mathbf{K}}^{-1} {\mathbf{h}}_1, \quad {\mathbf{r}}_2 = \frac{1}{{\lambda}} {\mathbf{K}}^{-1} {\mathbf{h}}_2
+$$
+
+ Imposing orthonormality on ${\mathbf{r}}_1$ and ${\mathbf{r}}_2$ defines two algebraic constraints per homography:
+
+$$
+{\mathbf{h}}_1^\top {\mathbf{K}^{-\top}} {\mathbf{K}}^{-1} {\mathbf{h}}_2 = 0
+$$
+
+$$
+{\mathbf{h}}_1^\top {\mathbf{K}^{-\top}} {\mathbf{K}}^{-1} {\mathbf{h}}_1 - {\mathbf{h}}_2^\top {\mathbf{K}^{-\top}} {\mathbf{K}}^{-1} {\mathbf{h}}_2 = 0
+$$
+
+ The symmetric matrix ${\mathbf{B}} = {\mathbf{K}^{-\top}} {\mathbf{K}}^{-1}$ represents the image of the absolute conic (IAC):
+
+$$
+{\mathbf{B}} = \begin{bmatrix} {B}_{11} & {B}_{12} & {B}_{13} \\ {B}_{12} & {B}_{22} & {B}_{23} \\ {B}_{13} & {B}_{23} & {B}_{33} \end{bmatrix}
+$$
+
+ Defining the 6-vector ${\mathbf{b}} = [{B}_{11}, {B}_{12}, {B}_{22}, {B}_{13}, {B}_{23}, {B}_{33}]^\top$, each quadratic term ${\mathbf{h}}_i^\top {\mathbf{B}} {\mathbf{h}}_j$ can be rewritten as the linear inner product ${\mathbf{v}}_{ij}^\top {\mathbf{b}}$, where:
+
+$$
+{\mathbf{v}}_{ij} = \begin{bmatrix} {h}_{i1}{h}_{j1} \\ {h}_{i1}{h}_{j2} + {h}_{i2}{h}_{j1} \\ {h}_{i2}{h}_{j2} \\ {h}_{i3}{h}_{j1} + {h}_{i1}{h}_{j3} \\ {h}_{i3}{h}_{j2} + {h}_{i2}{h}_{j3} \\ {h}_{i3}{h}_{j3} \end{bmatrix}
+$$
+
+ The two constraints per observed orientation become the linear system:
+
+$$
+\begin{bmatrix} {\mathbf{v}}_{12}^\top \\ ({\mathbf{v}}_{11} - {\mathbf{v}}_{22})^\top \end{bmatrix} {\mathbf{b}} = {\mathbf{0}}
+$$
+
+ Stacking ${N} \ge 3$ images forms the homogeneous system ${\mathbf{V}} {\mathbf{b}} = {\mathbf{0}}$, where ${\mathbf{V}} \in \mathbb{R}^{2{N} \times 6}$. The right singular vector of ${\mathbf{V}}$ corresponding to the smallest singular value provides ${\mathbf{b}}$ up to a scale factor. The intrinsic parameters $({f_x}, {f_y}, {c_x}, {c_y})$ and skew ${\gamma}$ are then extracted, after fixing the scale and sign, via a positive-definite factorization of ${\mathbf{B}}$. Degenerate views or measurement noise can make that factorization invalid. Distinct orientations alone do not guarantee a well-conditioned calibration. This closed-form linear solution initializes the non-linear Levenberg–Marquardt optimization minimizing reprojection residuals over all observed fiducial corners.
+
+## Kinematic Stopping Envelopes and Information Age Lag
+
+^sec-appendix-systems-stopping
+
+In distributed systems, pipeline latency represents elapsed waiting time or queuing delay. In physical AI, end-to-end software latency converts directly into irreversible physical displacement, uninspected “blind travel,” during which an embodied machine traverses space with undiminished momentum before actuators can begin retarding motion. Halting an embodied machine transporting mass ${m}$ at velocity ${v}$ requires balancing sensorimotor information freshness, neural compute budgets, and fieldbus dispatch against physical mechanical braking deceleration.
+
+### Sensorimotor Information Age and Lag Distance
+
+^sensorimotor-information-age-and-lag-distance
+
+For a stop triggered by a specified hazard detector and stop path, let ${\tau_{\text{delay}}}$ bound the time from the physical state represented by the evidence until validated braking deceleration begins (**[[05 Reference/Volume IV - Physical AI/V4 Control and Dynamics#^sec-appendix-control-teleop-leases|Watchdog validity leases and teleoperation latency bounds]]** gives the lease-expiry form, which charges the lease interval in place of recognition and compute):
+
+$$
+{\tau_{\text{delay}}} = {t_{\text{age}}} + {t_{\text{detect}}} + {T_{\text{compute}}} + {T_{\text{bus}}} + {T_{\text{act}}}
+$$
+
+ The five intervals partition the pre-brake timeline without overlap:
+
+- ${t_{\text{age}}}$ is the upper evidence age at a declared decision-start epoch, including capture/readout, completed processing and transport, and clock-conversion uncertainty.
+- ${t_{\text{detect}}}$ bounds any remaining recognition or expiry-detection interval after that epoch; work already included in evidence age is not charged twice.
+- ${T_{\text{compute}}}$ bounds subsequent stop-decision work and any still-required input transfer.
+- ${T_{\text{bus}}}$ bounds command dispatch and network queuing.
+- ${T_{\text{act}}}$ ends when the measured actuator begins delivering the specified deceleration, not when a command register is written.
+
+The intervals must be disjoint and ordered along the actual stop path. Clearance and motion must share a declared epoch: if the clearance is already propagated to current time, do not subtract historical travel a second time. Under the explicit simplifying assumption that speed cannot increase before brake onset, the blind travel is bounded by ${d_{\text{blind}}}={v}\,{\tau_{\text{delay}}}$. If propulsion or a slope can increase speed, use its validated acceleration bound in this interval instead.
+
+### Braking Dynamics and Friction Limits
+
+^braking-dynamics-and-friction-limits
+
+Tire-floor friction and actuator torque place upper limits on achievable deceleration. The bound ${a}\le{\mu} {g}$ does not establish what braking the machine will deliver. Let ${a_{\text{brake}}}>0$ be a validated lower bound on *achieved* deceleration throughout the stop, for the declared load, temperature, slope, brake condition, and surface. A justified friction floor ${\mu_{\min}}$ may support that bound, but does not replace brake tests. With constant or stronger braking after onset, a localization bound ${\delta_{\text{loc}}}$, a fixed protective clearance ${\delta_{\text{margin}}}$, and a tracking-error bound ${\epsilon_{\text{track}}}$,
+
+$$
+{d_{\text{stop}}}({v})={v}\,{\tau_{\text{delay}}}+\frac{{v}^2}{2{a_{\text{brake}}}}+{\delta_{\text{loc}}}+{\delta_{\text{margin}}}+{\epsilon_{\text{track}}}.
+$$
+
+ Motion is admitted only when ${d_{\text{stop}}}({v})\le {D_{\text{clear}}}$, where ${D_{\text{clear}}}$ is taken as a validated lower bound on available path clearance. This is a constant-deceleration reference model. The smooth stop in **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.04 Stopping Envelopes#^sec-enforcement-stopping-envelopes|Stopping Envelopes]]** ramps acceleration from and back to zero, so it does not satisfy a strictly positive deceleration floor throughout braking. For that profile, replace ${v}^2/(2{a_{\text{brake}}})$ with the integral of its validated speed trajectory and use its full duration. The sampled controller must reserve intersample travel and a state-matched stop before the viable region is lost.
+
+### Kinetic Energy Derating and Friction Collapse
+
+^kinetic-energy-derating-and-friction-collapse
+
+In an ideal friction-limited model, lowering ${\mu}$ from ${\mu_{\text{nom}}}$ to a positive ${\mu_{\text{fault}}}$ changes the braking-distance ratio to ${\mu_{\text{nom}}}/{\mu_{\text{fault}}}$. That ratio is illustrative; actual deceleration can also be limited by brake hardware or control. If surface friction is not sensed in time, derive ${a_{\text{brake}}}$ from a controlled surface condition and inspection schedule, exclude degraded surfaces, or withhold motion. For the constant-speed pre-brake model above, solving the clearance inequality gives
+
+$$
+{v_{\text{clamp}}}=-{a_{\text{brake}}}{\tau_{\text{delay}}}+\sqrt{({a_{\text{brake}}}{\tau_{\text{delay}}})^2+2{a_{\text{brake}}}\left({D_{\text{clear}}}-{\delta_{\text{loc}}}-{\delta_{\text{margin}}}-{\epsilon_{\text{track}}}\right)}.
+$$
+
+ This clamp is valid only when ${D_{\text{clear}}}$ exceeds the three fixed allowances, the braking lower bound and timing upper bounds hold, and the speed bound is enforced before entering the hazard corridor. No positive clamp follows if the available deceleration floor is unknown or zero.
+
+## Machine Data Sheet and Record Register
+
+^sec-appendix-systems-data-sheet
+
+Every calculation on the running machine draws its inputs from one registry entry, the warehouse mobile manipulator at its aisle site. This section collects those inputs in one place, so a chapter can cite a value by name rather than restate it. It also collects the records the chapters produce. The machine card of **[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.05 Defining the Causal Boundary#^sec-boundary-running-machine|The running machine]]** prints the parameters used most often; the data sheet below lists them all.
+
+### The Machine Data Sheet
+
+^sec-appendix-systems-machine-data-sheet
+
+Each running-machine input carries its evidence category in the reader guide’s vocabulary ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-data-sheet|table 8]]). A derived value inherits the weakest category among its inputs, so most derived rows remain illustrative evidence even though they are computed exactly. A row marked *needs source* names the measurement that would supply it; until that measurement exists, any claim that depends on the row is open, as the tip-over check on the credible deceleration is. The safety laser scanner carries the certified stop for a person at the rack end, while the perception LiDAR feeds only the permission path’s unrated admission checks above it. The safety scanner’s rows describe a representative certified unit, not a qualified selection, and the stopping budgets in this book are the permission path’s, not the scanner’s. A certified protective field is sized with the scanner’s own response time under ISO 13855 ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-iso13855|International Organization for Standardization 2024]]).
+
+| Quantity                                                              | Value        | Category     | MLSysIM field                                                          | Note                                                                                                                                                                                                                                                                                                  |
+|:----------------------------------------------------------------------|:-------------|:-------------|:-----------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Body: base, arm, and drivetrain**                                   |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Base mass                                                             | 300 kg       | Illustrative | `RM.base.mass`                                                         | Class-profile value, gross                                                                                                                                                                                                                                                                            |
+| Arm mass                                                              | 18 kg        | Datasheet    | `RM.arm.mass`                                                          | Panda-class arm                                                                                                                                                                                                                                                                                       |
+| Tote-rack payload capacity                                            | 50 kg        | Chosen       | `RM.onboard_payload_capacity`                                          |                                                                                                                                                                                                                                                                                                       |
+| Loaded mass ${m}$                                                     | 368 kg       | Derived      | `RM.loaded_mass`                                                       | Upper bound: base, arm, full tote rack                                                                                                                                                                                                                                                                |
+| Footprint width                                                       | 1 m          | Illustrative | `RM.footprint_width`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Drive limit ${v_{\max}}$                                              | 1.5 m/s      | Illustrative | `RM.base.max_velocity`                                                 | Class-profile value                                                                                                                                                                                                                                                                                   |
+| Credible deceleration ${a_{\text{brake}}}$                            | 2 m/s²       | Illustrative | `AISLE.a_brake`                                                        | Loaded, dry floor; checked against traction and drive torque                                                                                                                                                                                                                                          |
+| Friction ${a_{\text{brake}}}$ needs, all weight on driven wheels      | 0.204        | Derived      | `calc_required_friction(AISLE.a_brake)`                                |                                                                                                                                                                                                                                                                                                       |
+| Largest driven-wheel load share ${\varphi}$                           | 0.815        | Derived      | `RM.drive_wheel_load_share_max`                                        | Hub motors’ load rating over loaded mass                                                                                                                                                                                                                                                              |
+| Friction ${a_{\text{brake}}}$ needs at that share                     | 0.250        | Derived      | `calc_required_friction(AISLE.a_brake, RM.drive_wheel_load_share_max)` |                                                                                                                                                                                                                                                                                                       |
+| Measured driven-wheel load share                                      | needs source | Measured     | `RM.drive_wheel_load_share`                                            | *needs source*: corner-scale weighing of the loaded machine                                                                                                                                                                                                                                           |
+| Loaded center-of-gravity height ${h_{\text{cg}}}$                     | needs source | Measured     | `RM.cg_height`                                                         | *needs source*: tilt-table or corner-scale measurement; tip-over unchecked                                                                                                                                                                                                                            |
+| Center of gravity to leading support, arm stowed                      | needs source | Measured     | `RM.tip_arm_stowed`                                                    | *needs source*: measured with the center-of-gravity height                                                                                                                                                                                                                                            |
+| Stop jerk bound ${j_{\max}}$                                          | 7.11 m/s³    | Derived      | `calc_c2_stop_suffix(v_max, a_brake)['peak_jerk']`                     | Stipulated: the reference polynomial stop’s peak jerk                                                                                                                                                                                                                                                 |
+| Drive wheel radius                                                    | 133 mm       | Datasheet    | `RM.drive_unit.wheel_radius`                                           | Hub motor                                                                                                                                                                                                                                                                                             |
+| Driven wheels                                                         | 2            | Chosen       | `RM.drive_wheel_count`                                                 |                                                                                                                                                                                                                                                                                                       |
+| Hub-motor torque constant ${K_t}$                                     | 2.4 N·m/A    | Derived      | `RM.drive_unit.torque_constant`                                        | Datasheet peak torque over peak current                                                                                                                                                                                                                                                               |
+| Drive current limit                                                   | 25 A         | Chosen       | `RM.drive_current_limit`                                               | Set at the motor’s datasheet peak                                                                                                                                                                                                                                                                     |
+| Hub-motor rated current                                               | 8.5 A        | Datasheet    | `RM.drive_unit.rated_current`                                          |                                                                                                                                                                                                                                                                                                       |
+| Hub-motor load rating per pair                                        | 300 kg       | Datasheet    | `RM.drive_unit.load_rating_per_pair`                                   |                                                                                                                                                                                                                                                                                                       |
+| Hub-motor rotor inertia                                               | needs source | Datasheet    | `RM.drive_unit.rotor_inertia`                                          | *needs source*: not published; motor mass bounds ${J_{\text{rotor}}}/{r}^2$                                                                                                                                                                                                                           |
+| Arm repeatable peak joint torque                                      | 87 N·m       | Datasheet    | `RM.arm.max_torque`                                                    |                                                                                                                                                                                                                                                                                                       |
+| Arm free-space TCP speed limit                                        | 1 m/s        | Chosen       | `RM.tcp_speed_limit`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Servo axes on the fieldbus                                            | 9            | Chosen       | `RM.servo_axes`                                                        | Seven arm joints and two drive wheels                                                                                                                                                                                                                                                                 |
+| **Body: drive bus and permission rail**                               |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Drive bus, full charge                                                | 54 V         | Datasheet    | `RM.drive_bus_full_charge`                                             | 48 V-class pack                                                                                                                                                                                                                                                                                       |
+| Drive bus, nominal                                                    | 47.7 V       | Datasheet    | `RM.drive_bus_nominal`                                                 |                                                                                                                                                                                                                                                                                                       |
+| Drive bus, depleted                                                   | 42 V         | Datasheet    | `RM.drive_bus_battery_low`                                             |                                                                                                                                                                                                                                                                                                       |
+| Drive-bus source resistance ${R_{\text{bus}}}$                        | 60 mΩ        | Illustrative | `RM.drive_bus_resistance`                                              | Needs a measured cell, BMS, fuse, and harness value                                                                                                                                                                                                                                                   |
+| Converter input lockout                                               | 33 V         | Datasheet    | `RM.drive_bus_uvlo`                                                    | 48-to-24 V converter feeding the application processor                                                                                                                                                                                                                                                |
+| Converter continuous input maximum                                    | 67.2 V       | Datasheet    | `RM.drive_bus_converter_max`                                           |                                                                                                                                                                                                                                                                                                       |
+| Converter efficiency                                                  | 0.91         | Datasheet    | `RM.drive_bus_converter_efficiency`                                    |                                                                                                                                                                                                                                                                                                       |
+| Brake-chopper clamp                                                   | 60 V         | Chosen       | `RM.drive_bus_clamp`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Inverter switch rating                                                | 100 V        | Chosen       | `RM.drive_bus_switch_rating`                                           |                                                                                                                                                                                                                                                                                                       |
+| Coincident inference and drive current step                           | 70 A         | Illustrative | `AISLE.i_rail_transient`                                               |                                                                                                                                                                                                                                                                                                       |
+| Permission-rail hold-up                                               | 2 s          | Chosen       | `RM.permission_rail_holdup`                                            |                                                                                                                                                                                                                                                                                                       |
+| Permission-rail load                                                  | 70 W         | Illustrative | `RM.permission_rail_load`                                              |                                                                                                                                                                                                                                                                                                       |
+| Permission store, lowest charge                                       | 21.5 V       | Illustrative | `RM.control_rail_battery_low`                                          |                                                                                                                                                                                                                                                                                                       |
+| Permission-load regulator dropout                                     | 18 V         | Illustrative | `RM.control_rail_dropout`                                              |                                                                                                                                                                                                                                                                                                       |
+| Spring-brake engage time, fast end                                    | 30 ms        | Illustrative | `RM.spring_brake_engage_min`                                           |                                                                                                                                                                                                                                                                                                       |
+| Spring-brake engage time, slow end                                    | 80 ms        | Illustrative | `RM.spring_brake_engage_max`                                           |                                                                                                                                                                                                                                                                                                       |
+| **Brain: proposers and application processor**                        |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Application-processor memory bandwidth                                | 204 GB/s     | Datasheet    | `RM.brain_soc.memory.bandwidth`                                        |                                                                                                                                                                                                                                                                                                       |
+| Sustained fraction of that bandwidth                                  | 0.70         | Illustrative | `RM.dram_efficiency`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Intent-model parameters                                               | 7B           | Datasheet    | `RM.intent_model.parameters`                                           | OpenVLA-7B                                                                                                                                                                                                                                                                                            |
+| Intent-model stored weight precision                                  | 0.5 B/param  | Chosen       | `RM.intent_weight_bytes_per_param`                                     | INT4 weight-only quantization                                                                                                                                                                                                                                                                         |
+| Intent-model input tokens                                             | 288          | Illustrative | `RM.intent_input_tokens`                                               |                                                                                                                                                                                                                                                                                                       |
+| Intent-model prefill utilization                                      | 0.50         | Illustrative | `RM.intent_compute_utilization`                                        |                                                                                                                                                                                                                                                                                                       |
+| Intent-model latency                                                  | 336 ms       | Derived      | `RM.intent_inference_latency`                                          | Prefill plus decode                                                                                                                                                                                                                                                                                   |
+| Published intent-model latency, same board                            | 336 ms       | Measured     | `RM.intent_reference_latency`                                          | Published measurement, not this machine                                                                                                                                                                                                                                                               |
+| Intent-model rate                                                     | 2 Hz         | Chosen       | `RM.intent_rate`                                                       | Validated against the computed latency                                                                                                                                                                                                                                                                |
+| Chunk-policy parameters                                               | 80M          | Datasheet    | `RM.chunk_model.parameters`                                            | ACT                                                                                                                                                                                                                                                                                                   |
+| Chunk-policy inference, p99                                           | 40 ms        | Illustrative | `RM.chunk_inference_latency`                                           |                                                                                                                                                                                                                                                                                                       |
+| Chunk-policy renewal rate                                             | 20 Hz        | Chosen       | `RM.chunk_rate`                                                        |                                                                                                                                                                                                                                                                                                       |
+| Chunk renewal (replan) period                                         | 50 ms        | Derived      | `RM.chunk_period`                                                      | Whole number of setpoint steps                                                                                                                                                                                                                                                                        |
+| Setpoint step ${\Delta} {t}$                                          | 25 ms        | Chosen       | `RM.chunk_step`                                                        |                                                                                                                                                                                                                                                                                                       |
+| Chunk horizon ${H}$                                                   | 16           | Chosen       | `RM.chunk_horizon`                                                     |                                                                                                                                                                                                                                                                                                       |
+| **Nervous system: timing and leases**                                 |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Permission-loop rate                                                  | 1 kHz        | Chosen       | `RM.permission_rate`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Permission-loop period ${T_{\text{tick}}}$                            | 1 ms         | Derived      | `AISLE.t_tick`                                                         |                                                                                                                                                                                                                                                                                                       |
+| Drive current-loop rate                                               | 20 kHz       | Chosen       | `RM.current_loop_rate`                                                 |                                                                                                                                                                                                                                                                                                       |
+| Fieldbus cycle ${T_{\text{bus}}}$                                     | 1 ms         | Illustrative | `AISLE.t_bus`                                                          |                                                                                                                                                                                                                                                                                                       |
+| Chunk lease ${T_{\text{lease}}}$                                      | 60 ms        | Chosen       | `AISLE.t_lease`                                                        |                                                                                                                                                                                                                                                                                                       |
+| Brake onset ${T_{\text{act}}}$                                        | 20 ms        | Illustrative | `AISLE.t_brake_onset`                                                  |                                                                                                                                                                                                                                                                                                       |
+| Heartbeat rate                                                        | 100 Hz       | Chosen       | `AISLE.heartbeat_rate`                                                 |                                                                                                                                                                                                                                                                                                       |
+| Heartbeat timeout                                                     | 30 ms        | Chosen       | `AISLE.heartbeat_timeout`                                              |                                                                                                                                                                                                                                                                                                       |
+| Safety-MCU self-watchdog                                              | 5 ms         | Chosen       | `AISLE.mcu_self_watchdog`                                              |                                                                                                                                                                                                                                                                                                       |
+| Permission check, unloaded maximum                                    | 135 μs       | Illustrative | `AISLE.enforcer_unloaded`                                              |                                                                                                                                                                                                                                                                                                       |
+| Permission check, declared WCET                                       | 250 μs       | Chosen       | `AISLE.enforcer_wcet`                                                  |                                                                                                                                                                                                                                                                                                       |
+| Permission check deadline                                             | 400 μs       | Chosen       | `AISLE.enforcer_deadline`                                              |                                                                                                                                                                                                                                                                                                       |
+| Permission check, blocking allowance                                  | 50 μs        | Illustrative | `AISLE.enforcer_blocking`                                              |                                                                                                                                                                                                                                                                                                       |
+| Permission check, interference allowance                              | 40 μs        | Illustrative | `AISLE.enforcer_interference`                                          |                                                                                                                                                                                                                                                                                                       |
+| Serialized chunk size                                                 | 4,096 bytes  | Illustrative | `AISLE.chunk_wire_bytes`                                               | Waypoints, header, and evidence epoch                                                                                                                                                                                                                                                                 |
+| Board-link clock                                                      | 25 MHz       | Illustrative | `AISLE.board_link_clock`                                               | SPI, one bit per clock                                                                                                                                                                                                                                                                                |
+| Board-link serialization                                              | 1.31 ms      | Derived      | `AISLE.t_board_link`                                                   | Chunk bits over the link clock                                                                                                                                                                                                                                                                        |
+| Chunk deserialization                                                 | 2 ms         | Illustrative | `AISLE.t_chunk_deserialize`                                            |                                                                                                                                                                                                                                                                                                       |
+| Whole-plan validation                                                 | 18 ms        | Illustrative | `AISLE.t_plan_validate`                                                |                                                                                                                                                                                                                                                                                                       |
+| Plan activation                                                       | 1 ms         | Illustrative | `AISLE.t_plan_activate`                                                |                                                                                                                                                                                                                                                                                                       |
+| Dispatch-to-admission allocation ${\Delta_{\text{da}}}$               | 63.3 ms      | Derived      | `AISLE.t_dispatch_to_admission`                                        | Inference, link, deserialize, validate, activate, one tick                                                                                                                                                                                                                                            |
+| **Sensing and observation age**                                       |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Navigation-camera exposure                                            | 16 ms        | Chosen       | `RM.nav_camera.exposure_time`                                          | Configured setting, not a sensor property                                                                                                                                                                                                                                                             |
+| Navigation-camera readout                                             | 16.6 ms      | Datasheet    | `RM.nav_camera.readout_time`                                           |                                                                                                                                                                                                                                                                                                       |
+| Sensor transport                                                      | 0.8 ms       | Illustrative | `AISLE.t_transport`                                                    |                                                                                                                                                                                                                                                                                                       |
+| DMA transfer                                                          | 1.2 ms       | Illustrative | `AISLE.t_dma`                                                          |                                                                                                                                                                                                                                                                                                       |
+| Image signal processing                                               | 2.5 ms       | Illustrative | `AISLE.t_isp`                                                          |                                                                                                                                                                                                                                                                                                       |
+| Perception backbone                                                   | 22 ms        | Illustrative | `AISLE.t_backbone`                                                     |                                                                                                                                                                                                                                                                                                       |
+| Hand-off to the proposer                                              | 0.5 ms       | Illustrative | `AISLE.t_ipc`                                                          |                                                                                                                                                                                                                                                                                                       |
+| Observation age at dispatch ${t_{\text{age}}}$                        | 51.6 ms      | Derived      | `AISLE.perception_age`                                                 | Exposure midpoint to dispatch                                                                                                                                                                                                                                                                         |
+| Yaw rate turning into the aisle ${\omega_z}$                          | 0.5 rad/s    | Illustrative | `AISLE.yaw_rate_turn`                                                  | Sets rolling-shutter and sweep skew                                                                                                                                                                                                                                                                   |
+| Clock-conversion bound ${\epsilon_{\text{sync}}}$                     | 0.2 ms       | Illustrative | `AISLE.clock_conversion_bound`                                         | Capture clock to the safety MCU’s clock                                                                                                                                                                                                                                                               |
+| **Stopping budget at the rack end**                                   |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Pre-brake delay excl. ${\Delta_{\text{da}}}$, ${\tau_{\text{delay}}}$ | 133.6 ms     | Derived      | `AISLE.tau_delay`                                                      | ${t_{\text{age}}} + {T_{\text{lease}}} + {T_{\text{tick}}} + {T_{\text{bus}}} + {T_{\text{act}}}$                                                                                                                                                                                                     |
+| Rack-end clear distance ${D_{\text{clear}}}$                          | 1.10 m       | Illustrative | `AISLE.d_clear`                                                        |                                                                                                                                                                                                                                                                                                       |
+| Localization bound ${\delta_{\text{loc}}}$                            | 50 mm        | Illustrative | `AISLE.delta_loc`                                                      |                                                                                                                                                                                                                                                                                                       |
+| Protective clearance ${\delta_{\text{margin}}}$                       | 100 mm       | Chosen       | `AISLE.delta_margin`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Tracking-error bound ${\epsilon_{\text{track}}}$                      | 40 mm        | Illustrative | `AISLE.eps_track`                                                      |                                                                                                                                                                                                                                                                                                       |
+| Aisle speed ${v_{\text{aisle}}}$                                      | 1.3 m/s      | Chosen       | `AISLE.v_aisle`                                                        | Below the derived dry-floor ceiling                                                                                                                                                                                                                                                                   |
+| Aisle width                                                           | 1.30 m       | Illustrative | `AISLE.aisle_width`                                                    |                                                                                                                                                                                                                                                                                                       |
+| Aisle length                                                          | 30 m         | Illustrative | `AISLE.aisle_length`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Side clearance                                                        | 0.15 m       | Illustrative | `AISLE.side_clearance`                                                 |                                                                                                                                                                                                                                                                                                       |
+| Floor friction, dry                                                   | 0.60         | Illustrative | `AISLE.mu_dry`                                                         |                                                                                                                                                                                                                                                                                                       |
+| Floor friction, inspected floor                                       | 0.12         | Illustrative | `AISLE.mu_inspected_floor`                                             |                                                                                                                                                                                                                                                                                                       |
+| Floor friction, oil film                                              | 0.05         | Illustrative | `AISLE.mu_oil_film`                                                    |                                                                                                                                                                                                                                                                                                       |
+| Human approach speed ${v_h}$                                          | 1.6 m/s      | Datasheet    | `AISLE.v_human_approach`                                               | ISO 13855 value                                                                                                                                                                                                                                                                                       |
+| Safety scanner response time                                          | 80 ms        | Datasheet    | `RM.safety_scanner.response_time`                                      | Representative scanner (Keyence SZ-V32), high-speed mode, 2 scans; IEC 61496-3 Type 3, PL d. Carries the certified rack-end stop (**[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08.02 Choosing Evidence for a Spatial Decision#^sec-perception-photons-to-claims\|Choosing Evidence for a Spatial Decision]]**); the OS1-64 is unrated |
+| Safety scanner protective-field range                                 | 5.7 m        | Datasheet    | `RM.safety_scanner.protective_field_range`                             | Same mode, 70/150 mm objects                                                                                                                                                                                                                                                                          |
+| **Contact, conveyor, and coworker**                                   |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Latch plate stiffness                                                 | 400 N/mm     | Illustrative | `AISLE.k_latch`                                                        |                                                                                                                                                                                                                                                                                                       |
+| Latch approach speed                                                  | 0.03 m/s     | Illustrative | `AISLE.v_latch_approach`                                               |                                                                                                                                                                                                                                                                                                       |
+| Fast latch approach speed                                             | 0.10 m/s     | Illustrative | `AISLE.v_latch_high`                                                   |                                                                                                                                                                                                                                                                                                       |
+| Latch force tripwire                                                  | 15 N         | Illustrative | `AISLE.f_latch_tripwire`                                               |                                                                                                                                                                                                                                                                                                       |
+| Contact response time                                                 | 2 ms         | Illustrative | `AISLE.t_contact_response`                                             |                                                                                                                                                                                                                                                                                                       |
+| Latch force limit                                                     | 100 N        | Illustrative | `AISLE.f_latch_limit`                                                  |                                                                                                                                                                                                                                                                                                       |
+| Conveyor speed                                                        | 0.20 m/s     | Illustrative | `AISLE.v_conveyor`                                                     |                                                                                                                                                                                                                                                                                                       |
+| Mug slip acceleration on the conveyor                                 | 0.5 m/s²     | Illustrative | `AISLE.a_conveyor_slip`                                                |                                                                                                                                                                                                                                                                                                       |
+| Grasp tolerance                                                       | 15 mm        | Illustrative | `AISLE.grasp_tolerance`                                                |                                                                                                                                                                                                                                                                                                       |
+| Initial grasp-estimate error                                          | 3 mm         | Illustrative | `AISLE.grasp_initial_error`                                            |                                                                                                                                                                                                                                                                                                       |
+| Coworker hand spring constant ${k_H}$                                 | 75 N/mm      | Datasheet    | `AISLE.k_contact_human`                                                | ISO/TS 15066 hand body model                                                                                                                                                                                                                                                                          |
+| Coworker hand effective mass ${m_H}$                                  | 0.6 kg       | Datasheet    | `AISLE.m_contact_human`                                                | ISO/TS 15066 hand body model                                                                                                                                                                                                                                                                          |
+| Coworker contact force criterion                                      | 50 N         | Chosen       | `AISLE.f_contact_criterion`                                            |                                                                                                                                                                                                                                                                                                       |
+| Handover TCP speed                                                    | 0.10 m/s     | Chosen       | `AISLE.v_handover`                                                     |                                                                                                                                                                                                                                                                                                       |
+| **Human takeover**                                                    |              |              |                                                                        |                                                                                                                                                                                                                                                                                                       |
+| Perceptual cycle, nominal                                             | 100 ms       | Measured     | `AISLE.t_human_perceptual`                                             | Model Human Processor                                                                                                                                                                                                                                                                                 |
+| Perceptual cycle, slow bound                                          | 200 ms       | Measured     | `AISLE.t_human_perceptual_slow`                                        |                                                                                                                                                                                                                                                                                                       |
+| Cognitive cycle, nominal                                              | 70 ms        | Measured     | `AISLE.t_human_cognitive`                                              |                                                                                                                                                                                                                                                                                                       |
+| Cognitive cycle, slow bound                                           | 170 ms       | Measured     | `AISLE.t_human_cognitive_slow`                                         |                                                                                                                                                                                                                                                                                                       |
+| Motor cycle, nominal                                                  | 70 ms        | Measured     | `AISLE.t_human_motor`                                                  |                                                                                                                                                                                                                                                                                                       |
+| Motor cycle, slow bound                                               | 100 ms       | Measured     | `AISLE.t_human_motor_slow`                                             |                                                                                                                                                                                                                                                                                                       |
+| Perception-brake time, expected signal                                | 0.75 s       | Measured     | `AISLE.t_brake_response_expected`                                      | Drivers                                                                                                                                                                                                                                                                                               |
+| Perception-brake time, unexpected signal                              | 1.25 s       | Measured     | `AISLE.t_brake_response_unexpected`                                    | Drivers                                                                                                                                                                                                                                                                                               |
+| Perception-brake time, surprise                                       | 1.5 s        | Measured     | `AISLE.t_brake_response_surprise`                                      | Drivers                                                                                                                                                                                                                                                                                               |
+| Take-over time, median condition                                      | 2.37 s       | Measured     | `AISLE.t_takeover_driving_p50`                                         | Percentiles of condition means, not of individuals                                                                                                                                                                                                                                                    |
+| Take-over time, mean                                                  | 2.72 s       | Measured     | `AISLE.t_takeover_driving_mean`                                        |                                                                                                                                                                                                                                                                                                       |
+| Take-over time, 90th percentile condition                             | 4.33 s       | Measured     | `AISLE.t_takeover_driving_p90`                                         |                                                                                                                                                                                                                                                                                                       |
+| Take-over time, 99th percentile condition                             | 7 s          | Measured     | `AISLE.t_takeover_driving_p99`                                         |                                                                                                                                                                                                                                                                                                       |
+| Console video, glass to glass                                         | 104 ms       | Measured     | `AISLE.t_video_glass_to_glass`                                         | Wired best case; the site’s link needs a measured value                                                                                                                                                                                                                                               |
+| Handshake: request                                                    | 10 ms        | Chosen       | `AISLE.t_handshake_request`                                            |                                                                                                                                                                                                                                                                                                       |
+| Handshake: acknowledge                                                | 5 ms         | Chosen       | `AISLE.t_handshake_acknowledge`                                        |                                                                                                                                                                                                                                                                                                       |
+| Handshake: confirm                                                    | 15 ms        | Chosen       | `AISLE.t_handshake_confirm`                                            |                                                                                                                                                                                                                                                                                                       |
+| Four-phase handshake                                                  | 31 ms        | Derived      | `AISLE.t_handshake`                                                    | Three phases plus the commit tick                                                                                                                                                                                                                                                                     |
+| In-loop takeover ${T_{\Sigma, 1}}$                                    | 605 ms       | Derived      | `AISLE.t_takeover_in_loop`                                             | Slow-bound reaction plus video and handshake                                                                                                                                                                                                                                                          |
+| Out-of-loop takeover ${T_{\Sigma,2}}$                                 | 4.47 s       | Derived      | `AISLE.t_takeover_out_of_loop`                                         | 90th-percentile condition plus video and handshake                                                                                                                                                                                                                                                    |
+| Slow-down speed resolution                                            | 0.05 m/s     | Chosen       | `AISLE.v_takeover_resolution`                                          |                                                                                                                                                                                                                                                                                                       |
+| In-loop slow-down ceiling with ${\Delta_{\text{da}}}$                 | 0.797 m/s    | Derived      | `AISLE.v_takeover_in_loop_ceiling`                                     | S-curve ceiling at ${\tau_{\text{delay}}} + {T_{\Sigma, 1}} + {\Delta_{\text{da}}}$                                                                                                                                                                                                                   |
+| Speed before an in-loop request                                       | 0.75 m/s     | Derived      | `AISLE.v_takeover_in_loop`                                             | Ceiling rounded down to the resolution                                                                                                                                                                                                                                                                |
+| Crawl before an out-of-loop request                                   | 0.15 m/s     | Chosen       | `AISLE.v_takeover_out_of_loop`                                         |                                                                                                                                                                                                                                                                                                       |
+| Pre-trigger logging window                                            | 5 s          | Derived      | `AISLE.pre_trigger_window`                                             | Out-of-loop takeover rounded up                                                                                                                                                                                                                                                                       |
+
+Table 8: **The running machine’s data sheet**: Every input the chapters take from the warehouse mobile manipulator and its aisle site, grouped by subsystem, with its evidence category and the MLSysIM field that holds it (`RM` is the machine, `AISLE` the site scenario). Values print from the registry when the book is built.
+
+^tbl-appendix-systems-data-sheet
+
+### The Record Register
+
+^sec-appendix-systems-record-register
+
+A **record** is a machine-checkable statement of an assumption together with its evidence, its producer, its consumers, and the conditions that invalidate it. Sixteen records form the **record chain** of **[[01 Books/Volume IV - Physical AI/00 Introduction/01 The Causal Boundary/V4-01.12 The Architecture of This Book#^fig-01-spine|The spine of the book]]**, one from each chapter of Parts I to IV except **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/03 The Cognitive Brain/V4-03 The Cognitive Brain#^sec-brain|The Cognitive Brain]]**, whose proposer limits enter the handoff record, and one from **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18 Engineering Physical AI#^sec-frontier|Engineering Physical AI]]**. [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-record-register|Table 9]] gives each record one name. Two names shorten after first mention and in figure art, the provenance record and the belief record. Names in the last column are retired; where one survives in figure art, it names the same record. The wire formats in [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-formats|section 1.15]] lay out the records that cross a mailbox or are signed offline.
+
+| No. | Record                   | Produced in                                                                                                          | What it binds                                                                                                                                                                                                                                                   | Retired names                                                             |
+|:----|:-------------------------|:---------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------|
+| 1   | Limit record             | **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/02 The Physical Body/V4-02 The Physical Body#^sec-body\|The Physical Body]]**                                     | A limit’s value or distribution, operating conditions, measurement uncertainty, margin, runtime detector, and provenance with its evidence category                                                                                                             | Body limit record                                                         |
+| 2   | Handoff record           | **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04 The Nervous System#^sec-nervous\|The Nervous System]]**                           | The chunk lease, permission tick, clock domains, observation-age budget, and the handoffs between proposer and permission path, with the coupled stopping budget                                                                                                | Transport budget, handoff contract                                        |
+| 3   | Provenance record        | **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/05 Physical Data/V4-05 Physical Data#^sec-data\|Physical Data]]**                                         | Collection conditions, calibration revisions, plant identity, the scenario table the data covers, and the conditions it does not cover as known absences                                                                                                        | Provenance Record (as a proper name)                                      |
+| 4   | Policy manifest          | **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/06 Policy Training/V4-06 Policy Training#^sec-training\|Policy Training]]**                           | Architecture, weight digests, stored precision, training-regime sequence, declared operating domain, inference contract, and omission log                                                                                                                       | Training manifest                                                         |
+| 5   | Evaluation record        | **[[01 Books/Volume IV - Physical AI/02 Teaching the Machine/07 Closed-Loop Evaluation/V4-07 Closed-Loop Evaluation#^sec-evaluation\|Closed-Loop Evaluation]]**              | The target operating domain, trial population and protocol, finite-sample bound, coverage-gap catalog, and runtime monitor specifications                                                                                                                       | Evaluation Summary                                                        |
+| 6   | Observation contract     | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/08 Sensor Perception/V4-08 Sensor Perception#^sec-perception\|Sensor Perception]]**                   | Each observation’s capture epoch, clock identifier, conversion bound to the permission clock, frame and calibration revision, covariance, and health flags                                                                                                      | Perception Evidence record                                                |
+| 7   | Belief record            | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/09 Spatial Memory/V4-09 Spatial Memory#^sec-memory\|Spatial Memory]]**                                  | A represented quantity with its frame, evidence and estimate epochs, error-growth bound, validity region, expiry, query-work allocation, provenance, and lifecycle state                                                                                        | Scene Memory State record, spatial belief contract                        |
+| 8   | Intent lease             | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10 Grounded Intent#^sec-intent\|Grounded Intent]]**                                 | A grounded target, affordance frame, tolerance, effort ceilings, and an expiry at the earliest of the evidence, administrative, and stopping deadlines; it grants a target, never a path                                                                        | Intent Specification                                                      |
+| 9   | Trajectory record        | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11 Trajectory Planning#^sec-planning\|Trajectory Planning]]**                       | Frame, evidence time, initial reference state, the deadlines for start, nominal end, commit, and stop end, the matched stop suffix, and the parent intent lease’s expiry                                                                                        | Trajectory Plan record, trajectory contract                               |
+| 10  | Enforcement record       | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12 Safety Enforcement#^sec-enforcement\|Safety Enforcement]]**               | The enforcement contract (thresholds, barrier coefficients, loop period, fallback routing, validity region), the admitted command issued each tick, and the audit log of decisions                                                                              | Admitted Command record (as the chain record), execution token            |
+| 11  | Placement record         | **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13 Workload Placement#^sec-placement\|Workload Placement]]**                     | Execution domain, privilege, period, unloaded and loaded response maxima, interconnect and supply settings, and the digest of the loaded test                                                                                                                   | Deployment Envelope                                                       |
+| 12  | Authority record         | **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14 Supervisory Intervention#^sec-intervention\|Supervisory Intervention]]**      | The authority manifest (which actor may command which channel, and when) and the per-tick authority log of who held authority and what was proposed, admitted, and delivered                                                                                    | Intervention Event record, intervention record, forensic authority record |
+| 13  | Fault record             | **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/15 Adversarial Verification/V4-15 Adversarial Verification#^sec-verification\|Adversarial Verification]]**      | For each fault trial, the claim, envelope point, injected fault, precommitted oracle, verdict, and retained trace; release receives the fault records with their coverage deficits                                                                              | Verification Matrix, fault-record set                                     |
+| 14  | Release manifest         | **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/16 Deployment Release/V4-16 Deployment Release#^sec-release\|Deployment Release]]**                           | The claim root, argument digest, image hashes, calibration references, upstream record digests, verdict, standing conditions, expiry, and signature                                                                                                             | Safety case dossier                                                       |
+| 15  | Approval record          | **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/17 Responsible Physical AI/V4-17 Responsible Physical AI#^sec-responsibility\|Responsible Physical AI]]** | For each decision behind an admitted action, its owner and approval; each human role and whether a person can perform it; the permission stage and reporting duties; per-group exposure and detection; records about people; and the labor the deployment moves | (none)                                                                    |
+| 16  | Residual-claims register | **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18 Engineering Physical AI#^sec-frontier\|Engineering Physical AI]]**                   | For each open premise, the missing observable, the hazard it permits, the operating restriction, its owner, and the closure test                                                                                                                                | Claims register (unqualified)                                             |
+
+Table 9: **The record register**: The sixteen records of the record chain, the chapter that produces each, and what each binds. Each record is a claim with conditions; none is a license to operate.
+
+^tbl-appendix-systems-record-register
+
+The chain has two strands. Records 1 through 5 state what the plant can do and what the proposer has shown it can do; records 6 through 9 carry what the proposer proposes now. They meet in the enforcement record. The placement record then tests whether the permission path keeps its deadline on the chosen silicon, and records 12 through 16 carry the result into governance.
+
+## Wire Formats for the Record Chain
+
+^sec-appendix-systems-wire-formats
+
+A mailbox decoder needs a bounded amount of work and an unambiguous representation. The layouts below specify byte offsets, field lengths, and validation rules across the proposal boundary between application processors and the independent enforcer. Fixed headers and bounded arrays make resource requirements explicit. The chosen serialization framework alone does not determine allocation or timing behavior.
+
+1.  *Zero Dynamic Allocation Invariant*: Deserialization must never invoke dynamic memory managers (`malloc`, `free`, C++ `new`, `delete`). Dynamic heap allocators manage internal free-list bins, take global allocator mutexes, and suffer from heap fragmentation. Under memory pressure, heap operations can invoke the `brk()` or `mmap()` system calls, triggering kernel memory compaction or page faults that stall execution for tens of milliseconds. In hard real-time control, all record slots, mailbox staging areas, scratch buffers, and circular telemetry logs must be statically sized at compile time and preallocated in dedicated static SRAM or Data Tightly Coupled Memory (DTCM) pools.
+2.  *Bounded Parse and Validation Work*: Header fields have fixed offsets; arrays have validated counts and configured maxima. Reading one scalar is constant-time, but copying, hashing, and validating a complete record scale with its bounded length. Full trajectory admission remains interruptible and separate from the per-tick check.
+3.  *Natural Alignment Across Heterogeneous ABIs*: On heterogeneous SoCs combining 64-bit application processors (ARM Cortex-A or x86_64) and 32-bit real-time microcontrollers (ARM Cortex-R52 or Cortex-M7), data types must be naturally aligned. A scalar of size ${k}$ bytes must reside at an offset satisfying:
+
+$$
+\text{offset} \equiv 0 \pmod {k}
+$$
+
+ Specifically, 64-bit timestamps and integers (`uint64_t`, `float64`) align on 8-byte boundaries (${k}=8$), 32-bit values (`uint32_t`, `float32`) align on 4-byte boundaries (${k}=4$), and 16-bit integers (`uint16_t`) align on 2-byte boundaries (${k}=2$). Explicit padding bytes between narrower fields maintain these alignment invariants across both 32-bit and 64-bit compilers.
+
+An alignment violation has direct microarchitectural consequences: a core may trap an unsupported unaligned access or split it into multiple bus operations. The result depends on instruction width, memory attributes, and processor configuration. A safety integrity classification does not itself specify those semantics. Explicit reserved bytes, scalar encodings, endianness, and schema versions define the wire representation. A native C structure is not that representation by default. Use checked offsets or explicit serialization and verify layout on each ABI. Alignment alone also does not guarantee atomicity of a wide access on a narrower core.
+
+Not every record in [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-record-register|table 9]] needs a byte layout. The layouts below cover the proposal header that every proposal carries and the records that cross a mailbox or are signed offline. Runtime proposals and evidence use bounded records where they cross mailboxes or fieldbuses, while limits, evaluation, enforcement configuration, placement evidence, and release artifacts are retained under canonical encodings and linked by digest. All records use standard little-endian byte ordering for multi-byte scalars (`uint64_t`, `uint32_t`, `uint16_t`, `float32`, `float64`). Lineage is established by embedding parent SHA-256 digests. Runtime corruption is caught via IEEE 802.3 CRC-32 checksums over headers and payloads. Operator authority is authenticated via AES-128 CMAC tags and Ed25519 digital signatures. The authority log is chained with HMAC-SHA-256. Offline records (placement, fault, release, approval) are identified by the SHA-256 digest of their canonical encoding, and the record that consumes one stores that digest under the consumed record’s name.
+
+### Proposal Header and Chunk Payload
+
+^sec-appendix-systems-wire-header
+
+Every proposal that crosses the proposal boundary opens with the same header, and `payload_kind` selects the payload that follows at `0x50`. [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-header|Table 10]] lays out the header with the minimal chunk payload of **[[01 Books/Volume IV - Physical AI/01 Machine Anatomy/04 The Nervous System/V4-04.05 Chunk Lease Sizing from the Stopping Budget#^sec-nervous-supervisory-timers|Supervisory timers and proposal wire contracts]]**. The chunk carries kinematic setpoints only. Torque is computed on the permission side, where the tracker derives it from the admitted reference, so a learned proposal never names a motor torque.
+
+| Offset                 | Field              | Scalar type       | Unit                 | Invariant and check                                                                                                                                          |
+|:-----------------------|:-------------------|:------------------|:---------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`                 | `sequence_id`      | `uint64_t`        | dimensionless        | Strictly increasing per producer; a record not newer than the last accepted one is rejected.                                                                 |
+| `0x08`                 | `t_evidence_ns`    | `uint64_t`        | ns, permission clock | Capture epoch of the oldest evidence the proposal rests on, converted to the safety microcontroller’s clock.                                                 |
+| `0x10`                 | `t_issue_ns`       | `uint64_t`        | ns, permission clock | Time the producer published the record.                                                                                                                      |
+| `0x18`                 | `t_expire_ns`      | `uint64_t`        | ns, permission clock | Requested absolute expiry; admission caps it by the successful admission time plus the configured lease and by earlier evidence, parent, and stop deadlines. |
+| `0x20`                 | `frame_id`         | `uint64_t`        | dimensionless        | Transform-tree key and calibration revision of the setpoints’ frame.                                                                                         |
+| `0x28`                 | `parent_digest`    | `uint8_t[32]`     | SHA-256              | Digest of the record this proposal was derived from; establishes lineage, authenticates nothing.                                                             |
+| `0x48`                 | `sync_error_ns`    | `uint32_t`        | ns                   | Bound on the evidence time’s conversion error; added to every age the reader checks.                                                                         |
+| `0x4C`                 | `payload_kind`     | `uint16_t`        | enumeration          | `CHUNK` for this payload; `INTENT`, `TRAJECTORY`, and `OPERATOR` select the other payloads.                                                                  |
+| `0x4E`                 | `payload_len`      | `uint16_t`        | bytes                | Payload length; bounds the parser before any payload byte is read.                                                                                           |
+| `0x50`                 | `num_waypoints`    | `uint16_t`        | count                | Chunk horizon ${H}$; a count outside the configured range is rejected.                                                                                       |
+| `0x52`                 | `num_joints`       | `uint8_t`         | count                | Commanded joints ${N_j}$; must equal the configured count, and `payload_len` must equal $4+8{H} {N_j}$.                                                      |
+| `0x53`                 | reserved           | `uint8_t`         | —                    | Zero.                                                                                                                                                        |
+| `0x54`                 | `joint_positions`  | `float32[H][N_j]` | rad                  | Commanded joint angles within the reach limits (${q_{\min}} \le {q} \le {q_{\max}}$).                                                                        |
+| `0x54` + $4{H} {N_j}$  | `joint_velocities` | `float32[H][N_j]` | rad/s                | Commanded joint velocities within certified ceilings ($\lVert {\dot{\mathbf{q}}} \rVert \le {\dot{q}_{\max}}$).                                              |
+| `0x50` + `payload_len` | `crc32`            | `uint32_t`        | checksum             | Last field; IEEE 802.3 CRC-32 over all preceding bytes.                                                                                                      |
+
+Table 10: **Proposal header and chunk payload**: Field offsets, scalar types, units, and invariants for a chunk proposal exchanged through the seqlock mailbox of [algorithm 1](https://mlsysbook.ai/vol4/backmatter/appendix_systems.html#algo-lock-free-trajectory). The header occupies `0x00`–`0x4F` in every proposal; the other payload layouts in this section begin at `0x50`.
+
+^tbl-appendix-systems-wire-header
+
+### Intent Payload
+
+^sec-appendix-systems-wire-intent
+
+The intent lease of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/10 Grounded Intent/V4-10.09 The Intent Lease Specification and Contract#^sec-intent-lease|The Intent Lease Specification and Contract]]** travels under the proposal header with `payload_kind` set to `INTENT` ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-intent|table 11]]). Three header fields take specific meanings. `t_evidence_ns` is the parent belief record’s evidence epoch, never its estimate epoch. `parent_digest` is that belief record’s digest, which the permission path matches against a retained record. `t_expire_ns` is the requested expiry, which the permission path shortens to the earliest of the evidence horizon, its configured lease ceiling, and the stop deadline. The six `bounds` values are three conservative position-error envelopes and three task tolerances in the base frame named by `frame_id`. They are not an encoding of a covariance, and the producer must justify any conversion from its covariance estimate, including calibration bias and the declared tail risk.
+
+| Offset        | Field              | Scalar type  | Unit               | Invariant and check                                                                                                                      |
+|:--------------|:-------------------|:-------------|:-------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`–`0x4F` | proposal header    | as above     | as above           | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-header\|table 10]], with `payload_kind` = `INTENT`. |
+| `0x50`        | `target_pose`      | `float64[7]` | m; unit quaternion | Base-frame position and orientation; finite values, normalized quaternion, workspace prefilter.                                          |
+| `0x88`        | `bounds`           | `float32[6]` | m                  | Error envelope ${e}$, then task tolerance ${r}$; $0 \le {e}_i \le {r}_i$, each checked against the approved task profile.                |
+| `0xA0`        | `wrench_request`   | `float32[6]` | N; N·m             | Three requested forces and three torques; clamped or rejected against independent task and actuator limits.                              |
+| `0xB8`        | `terminal_request` | `uint32_t`   | enumeration        | Requested terminal mode; the permission path selects a feasible approved response from the current load and contact state.               |
+| `0xBC`        | `crc32`            | `uint32_t`   | checksum           | IEEE 802.3 CRC-32 over all preceding bytes.                                                                                              |
+
+Table 11: **Intent payload**: The intent lease as a proposal-header payload. Orientation tolerances and contact-mode rules come from an independently approved task profile; the quaternion is the proposed orientation only.
+
+^tbl-appendix-systems-wire-intent
+
+### Trajectory Payload
+
+^sec-appendix-systems-wire-trajectory
+
+The trajectory record of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11.09 The Trajectory Record#^sec-planning-trajectory-contract|The Trajectory Record]]** replaces the chunk on the running machine and travels under the same proposal header, with `payload_kind` set to `TRAJECTORY` and `parent_digest` set to the digest of the active intent lease ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-trajectory|table 12]]). The header’s `t_expire_ns` requests an absolute expiry. The MCU retains an admitted expiry no later than that request or the successful admission time plus the configured chunk lease. Earlier evidence and stop deadlines can shorten it further. The parent intent’s expiry comes from the lease that `parent_digest` identifies. The MCU records admission time locally, without changing `t_evidence_ns` or `t_issue_ns`. The layout below illustrates a single polynomial stopping suffix per joint. It does not encode the piecewise S-curve worked in **[[01 Books/Volume IV - Physical AI/03 Running the Machine/11 Trajectory Planning/V4-11.06 Behavior at the Seam#^sec-planning-c2-stopping-suffix|The C^2 stopping suffix and jerk-limited braking]]**. That profile requires its own specified bounded encoding and decoder, with decoding and validation charged to admission. The setpoint samples and the assumptions sidecar travel outside this fixed part. The permission path verifies `sidecar_digest` over both, validates the complete candidate in staging memory, and latches the admitted setpoints and stop suffix in protected memory before tracking begins.
+
+| Offset             | Field              | Scalar type       | Unit                    | Invariant and check                                                                                                                                                                                             |
+|:-------------------|:-------------------|:------------------|:------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`–`0x4F`      | proposal header    | as above          | as above                | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-header\|table 10]], with `payload_kind` = `TRAJECTORY`.                                                                    |
+| `0x50`             | `sample_period_ns` | `uint32_t`        | ns                      | Setpoint cadence ${\Delta t_{\text{step}}}$; must match the configured decoder.                                                                                                                                 |
+| `0x54`             | `num_samples`      | `uint16_t`        | count                   | Nominal setpoints in the digested sample payload; bounds its size.                                                                                                                                              |
+| `0x56`             | `num_joints`       | `uint8_t`         | count                   | Commanded joints ${N_j}$; must equal the configured count.                                                                                                                                                      |
+| `0x57`             | `payload_version`  | `uint8_t`         | enumeration             | Decoder version; an unknown version is rejected.                                                                                                                                                                |
+| `0x58`             | `t_start_ns`       | `uint64_t`        | ns, permission clock    | First nominal sample.                                                                                                                                                                                           |
+| `0x60`             | `t_commit_ns`      | `uint64_t`        | ns, permission clock    | Latest entry into the matched stop suffix; ${t_{\text{commit}}}={t_{\text{stop\_end}}}-{T_{\text{stop}}}$.                                                                                                      |
+| `0x68`             | `t_plan_exp_ns`    | `uint64_t`        | ns, permission clock    | End of the nominal setpoints.                                                                                                                                                                                   |
+| `0x70`             | `t_stop_end_ns`    | `uint64_t`        | ns, permission clock    | Protected stop completion; ${t_{\text{start}}}\le {t_{\text{commit}}}<{t_{\text{plan\_exp}}}<{t_{\text{stop\_end}}}$.                                                                                           |
+| `0x78`             | `sidecar_digest`   | `uint8_t[32]`     | SHA-256                 | Digest over the setpoint samples and the assumptions sidecar; binds content.                                                                                                                                    |
+| `0x98`             | `seam_state`       | `float32[3][N_j]` | rad; rad/s; rad/s²      | Entry state $({q},{\dot{q}},{\ddot{q}})$ of each joint.                                                                                                                                                         |
+| `0x98` + $12{N_j}$ | `stop_suffix`      | `float32[6][N_j]` | polynomial coefficients | Stop-polynomial coefficients per joint, resident and feasible at ${t_{\text{commit}}}$; a quartic uses a zero fifth-order coefficient. Admission separately requires state-matched fallbacks before commitment. |
+| `0x98` + $36{N_j}$ | `crc32`            | `uint32_t`        | checksum                | IEEE 802.3 CRC-32 over all preceding bytes.                                                                                                                                                                     |
+
+Table 12: **Trajectory payload**: The trajectory record as a proposal-header payload. The four deadlines are absolute times on the safety microcontroller’s clock; the variable-length setpoint samples and the assumptions sidecar are bound by `sidecar_digest` and validated before activation.
+
+^tbl-appendix-systems-wire-trajectory
+
+### Enforcement Record
+
+^sec-appendix-systems-wire-enforcement
+
+The enforcement record of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.12 The Enforcement Record#^sec-enforcement-telemetry|The Enforcement Record]]** is configuration, not a proposal, so it carries no proposal header ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-enforcement|table 13]]). Three digests name what the record rests on: the evaluation record, the limit records behind the stopping envelope, and the validity region. Each threshold names the fallback-ladder rung that a failed check selects. Where the rung depends on whether the body is moving, the row names both, `STOP` in motion and `HOLD` at standstill. Refusing a replacement selects no rung if the active record still passes its own state, evidence, lease, and stopping checks. Failure of an active-record check selects the applicable fallback.
+
+| Offset                   | Field                      | Scalar type       | Unit                                 | Check, and the rung a failure selects                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|:-------------------------|:---------------------------|:------------------|:-------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`                   | `evaluation_record_digest` | `uint8_t[32]`     | SHA-256                              | Evaluation record whose runtime monitor specifications become this record’s monitor channels.                                                                                                                                                                                                                                                                                                                                                                                         |
+| `0x20`                   | `limit_record_digest`      | `uint8_t[32]`     | SHA-256                              | Canonical list of the limit records whose braking, onset, and actuator limits parameterize ${d_{\text{stop}}}({v})$.                                                                                                                                                                                                                                                                                                                                                                  |
+| `0x40`                   | `validity_region_digest`   | `uint8_t[32]`     | SHA-256                              | `validity_region`, the plant-parameter bounds the thresholds rest on. On the mobile manipulator it covers the arm at the door, where it equals the target ODD, and at the packing station through the mug pick and the handover approach. Each base configuration, normal or restricted, loads as its own enforcement record, so this field holds the region digest of that configuration and its friction premise. A live state outside it that the machine observes selects `STOP`. |
+| `0x60`                   | `loop_period_ns`           | `uint32_t`        | ns                                   | Permission-loop period ${T_{\text{tick}}}$; the placement record’s `nominal_period_ns` must equal it.                                                                                                                                                                                                                                                                                                                                                                                 |
+| `0x64`                   | `deadline_ns`              | `uint32_t`        | ns                                   | Permission-path deadline inside the tick; a threatened overrun invokes a separately bounded response: `STOP` in motion, `HOLD` only at a qualified standstill. The mechanism must act even if this computation stalls.                                                                                                                                                                                                                                                                |
+| `0x68`                   | `evidence_age_ceiling_ns`  | `uint32_t`        | ns                                   | Operating ceiling on upper evidence age, qualified for admission and continued tracking. Refuse a candidate above it; cap its admitted expiry at `t_evidence_ns` plus the ceiling minus `sync_error_ns`. An expired active lease or evidence deadline selects `STOP` in motion and `HOLD` at standstill.                                                                                                                                                                              |
+| `0x6C`                   | `watchdog_timeout_ns`      | `uint32_t`        | ns                                   | The self-watchdog is fed only after a completed tick; expiry requests `INHIBIT` through the independently wired trip.                                                                                                                                                                                                                                                                                                                                                                 |
+| `0x70`                   | `t_stop_ns`                | `uint32_t`        | ns                                   | Stopping-time bound for the qualified profile from the maximum admitted speed. Admission reserves that profile’s distance, pre-brake travel, and uncertainty allowances; loss of the required clearance selects `STOP`.                                                                                                                                                                                                                                                               |
+| `0x74`                   | `pos_tracking_bound`       | `float32`         | m                                    | $\lvert {x_{\text{meas}}} - {r_{\text{cmd}}} \rvert \le {\epsilon_{\text{track}}}$; `STOP` above it.                                                                                                                                                                                                                                                                                                                                                                                  |
+| `0x78`                   | `pos_critical_bound`       | `float32`         | m                                    | $\lvert {x_{\text{meas}}} - {r_{\text{cmd}}} \rvert \le {\epsilon_{\text{crit}}}$, with ${\epsilon_{\text{crit}}} > {\epsilon_{\text{track}}}$; `STOP` above it.                                                                                                                                                                                                                                                                                                                      |
+| `0x7C`                   | `vel_ceiling_limit`        | `float32`         | rad/s                                | $\lvert {\dot{q}} \rvert \le {\dot{q}_{\max}}$; `PROJECT` (QP clamp).                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `0x80`                   | `torque_slew_ceiling`      | `float32`         | N·m/s                                | $\lvert {\dot{\tau}} \rvert \le {\dot{\tau}_{\max}}$; `PROJECT` (slew limiter).                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `0x84`                   | `actuator_curr_limit`      | `float32`         | A                                    | $\lvert {I_{\text{phase}}} \rvert \le {I_{\text{peak}}}$; `STOP`.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `0x88`                   | `dc_bus_overvolt_thresh`   | `float32`         | V                                    | ${V_{\text{bus}}} \le {V_{\text{max\_safe}}}$; `STOP`, with the brake chopper absorbing returned energy.                                                                                                                                                                                                                                                                                                                                                                              |
+| `0x8C`                   | `num_barriers`             | `uint16_t`        | count                                | Barrier constraints ${K_b}$; must equal the configured count.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `0x8E`                   | `num_approach_channels`    | `uint16_t`        | count                                | Approach channels ${K_a}$; must equal the configured count.                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `0x90`                   | `cbf_barrier_params`       | `float32[K_b][2]` | normalized distance; $\text{s}^{-1}$ | Margin ${\delta}_k$ and class-${\mathcal{K}}$ rate ${{\gamma_{\text{cbf}}}}_{k}$ of each barrier; ${h}_k({\mathbf{x}}) \ge {\delta}_k$, else `PROJECT`, or `STOP` when no feasible input remains.                                                                                                                                                                                                                                                                                     |
+| `0x90` + $8{K_b}$        | `approach_channel_ids`     | `uint32_t[K_a]`   | enumeration                          | Zone and activation condition of each channel, drawn from the validity region, such as the tool point inside the door zone or `accept_item` held.                                                                                                                                                                                                                                                                                                                                     |
+| `0x90` + $8{K_b}+4{K_a}$ | `approach_ceilings`        | `float32[K_a]`    | m/s                                  | Ceiling on tool-point approach speed while its channel is active; a faster proposal takes `PROJECT` (QP clamp), and the channel that bound it is logged.                                                                                                                                                                                                                                                                                                                              |
+| `0x90` + $8{K_b}+8{K_a}$ | `crc32`                    | `uint32_t`        | checksum                             | IEEE 802.3 CRC-32 over all preceding bytes; a mismatch rejects the stored record, and no motion is admitted until a valid copy loads.                                                                                                                                                                                                                                                                                                                                                 |
+
+Table 13: **Enforcement record**: Thresholds of the permission path with the fallback-ladder rung each failed check selects, and digests of the evaluation record, limit records, and validity region the thresholds rest on. The record is configuration and telemetry; it adds no packet to the proposal stream.
+
+^tbl-appendix-systems-wire-enforcement
+
+The operating evidence ceiling must charge capture-to-admission age and permitted tracking time while reserving the response and stopping distance derived in **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.06 Safe Sets as Conditional Permission#^sec-enforcement-safe-sets-conditional-permission|Safe Sets as Conditional Permission]]**. The perception dispatch-age gate applies at dispatch only. It cannot serve as this operating ceiling. The dispatch-to-admission interval remains a separate qualification obligation, and the partial stopping budget cannot establish the ceiling without that bound and the required reserve. Each runtime check uses the current MCU time and the retained evidence epoch; admission never makes old evidence fresh.
+
+### Placement Record
+
+^sec-appendix-systems-wire-placement
+
+The placement record of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/13 Workload Placement/V4-13.09 The Placement Record#^sec-placement-hardware-allocation|The Placement Record]]** is offline evidence with a fixed header and a linked test report ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-placement|table 14]]). It carries no signature of its own; the signed release manifest binds it through `placement_record_digest`. `enforcement_record_digest` names the enforcement record whose `deadline_ns` was tested. `test_report_digest` identifies the external test report. That report states the declared worst-case execution time the loaded test must not exceed, together with distributions, sample counts, test conditions, mitigations, and untested states. A maximum that has not been measured is stored as all ones, never zero, the same unavailable-value convention the fault record uses.
+
+| Offset | Field                        | Scalar type   | Unit            | Invariant and check                                                                                                                          |
+|:-------|:-----------------------------|:--------------|:----------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00` | `execution_domain_id`        | `uint64_t`    | enumeration     | Must match the declared topology (application processor, NPU, GPU, MCU, lockstep controller).                                                |
+| `0x08` | `privilege_and_ring`         | `uint64_t`    | privilege level | Proposer at EL0; enforcer at EL1 or above, or in the secure world.                                                                           |
+| `0x10` | `nominal_period_ns`          | `uint32_t`    | ns              | Enforcer tick; equal to the enforcement record’s `loop_period_ns`.                                                                           |
+| `0x14` | `hard_deadline_ns`           | `uint32_t`    | ns              | The permission path’s deadline inside the tick; equal to the enforcement record’s `deadline_ns`.                                             |
+| `0x18` | `unloaded_observed_max_ns`   | `uint64_t`    | ns              | Largest response observed without competing load; a sample maximum, not a WCET.                                                              |
+| `0x20` | `loaded_observed_max_ns`     | `uint64_t`    | ns              | Largest response under the declared load; all ones until a loaded test runs. Independence stands only while it is at most the declared WCET. |
+| `0x28` | `shared_axi_channel_qos`     | `uint64_t`    | configured QoS  | Arbitration priority per claimant; controller semantics verified by register capture and a stress test.                                      |
+| `0x30` | `max_pdn_droop_thermal_trip` | `uint32_t[2]` | mV; m°C         | Configured rail-droop and thermal trip thresholds; the test report records the tests behind them.                                            |
+| `0x38` | `hardware_mitigation_flags`  | `uint8_t[32]` | bitfield        | Active mitigations, such as a TCM snapshot, memory partitioning, or an isolated rail; register-locked after boot.                            |
+| `0x58` | `enforcement_record_digest`  | `uint8_t[32]` | SHA-256         | Enforcement record whose `loop_period_ns` and `deadline_ns` this record tests.                                                               |
+| `0x78` | `test_report_digest`         | `uint8_t[32]` | SHA-256         | External test report, including the model and firmware digests under test.                                                                   |
+
+Table 14: **Placement record header**: Configuration values and observed maxima, with digests linking the tested enforcement record and the external test report. The header alone does not establish freedom from interference.
+
+^tbl-appendix-systems-wire-placement
+
+### Authority Record and Operator Payload
+
+^sec-appendix-systems-wire-authority
+
+The authority record of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14.09 The Authority Record#^sec-intervention-authority-log|The Authority Record]]** has two runtime layouts. A network operator’s command is a proposal-header payload ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-operator|table 15]]). It is the one proposal whose sender’s identity confers authority, so it carries an AES-128 CMAC tag under the operator role’s key, the primitive whose per-frame cost **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14.06 Authenticating an Intervention#^sec-intervention-authenticating-intervention|Authenticating an Intervention]]** prices. The static authority manifest fixes each role’s channel grant, the command’s component count, order, and units, and the key custody.
+
+| Offset            | Field                    | Scalar type    | Unit         | Invariant and check                                                                                                                        |
+|:------------------|:-------------------------|:---------------|:-------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`–`0x4F`     | proposal header          | as above       | as above     | [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-header\|table 10]], with `payload_kind` = `OPERATOR`. |
+| `0x50`            | `nonce`                  | `uint64_t`     | —            | Never repeated within a key’s lifetime; a repeated nonce is rejected as a replay.                                                          |
+| `0x58`            | `requested_channel_mask` | `uint16_t`     | bitfield     | Channels requested; must lie within the role’s grant in the static manifest.                                                               |
+| `0x5A`            | `operator_role_id`       | `uint8_t`      | enumeration  | Role whose key produced `mac`.                                                                                                             |
+| `0x5B`            | reserved                 | `uint8_t`      | —            | Zero.                                                                                                                                      |
+| `0x5C`            | `command`                | `float32[N_c]` | per manifest | Requested command components in manifest order, admitted like any other proposal.                                                          |
+| `0x5C` + $4{N_c}$ | `mac`                    | `uint8_t[16]`  | AES-128 CMAC | Tag over all preceding bytes; reject an invalid packet without revoking an otherwise valid active channel.                                 |
+| `0x6C` + $4{N_c}$ | `crc32`                  | `uint32_t`     | checksum     | IEEE 802.3 CRC-32 over all preceding bytes.                                                                                                |
+
+Table 15: **Operator payload**: A network operator’s command under the proposal header. The tag authenticates the role; the permission path still admits the command by its content.
+
+^tbl-appendix-systems-wire-operator
+
+The authority log ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-authority|table 16]]), the per-tick part of the authority record, is written once per tick, not sent as a packet. Its time is on the safety microcontroller’s clock; the mapping that relates it to PTP and calendar time, with its error bound, lives in the static manifest together with the vector lengths, units, and component order. Each entry’s `chain_link` is an HMAC-SHA-256, under the log key, over the previous entry’s link and this entry’s preceding fields, so alteration or interior deletion is detectable against a retained trusted anchor. Detecting truncation of the log also requires an independently retained final link or checkpoint.
+
+| Offset                    | Field                    | Scalar type    | Unit                 | Recorded evidence and limit                                                                                                                |
+|:--------------------------|:-------------------------|:---------------|:---------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `0x00`                    | `t_mcu_ns`               | `uint64_t`     | ns, permission clock | Event time of this tick’s decision.                                                                                                        |
+| `0x08`                    | `actuator_channel_mask`  | `uint16_t`     | bitfield             | Channels to which this decision applies; bus and DMA permissions enforce write scope.                                                      |
+| `0x0A`                    | `preempt_trigger_code`   | `uint16_t`     | enumeration          | Request, timeout, enabling-device loss, or protective input cause.                                                                         |
+| `0x0C`                    | `authority_state`        | `uint8_t`      | enumeration          | `AUTO`, `PEND`, `BLEND`, `MAN`, `FALLBACK`, or `PROTECTIVE`.                                                                               |
+| `0x0D`                    | `fallback_rung`          | `uint8_t`      | enumeration          | `PROJECT`, `HOLD`, `STOP`, or `INHIBIT` when the state is `FALLBACK`; `NONE` otherwise.                                                    |
+| `0x0E`                    | `operator_role_id`       | `uint8_t`      | enumeration          | Authenticated source role, interpreted against the static manifest.                                                                        |
+| `0x0F`                    | reserved                 | `uint8_t`      | —                    | Zero.                                                                                                                                      |
+| `0x10`                    | `blend_factor_alpha`     | `float32`      | dimensionless        | Progress in $[0,1]$ of the enforcer-owned blending profile.                                                                                |
+| `0x14`                    | `policy_proposed_cmd`    | `float32[N_c]` | per manifest         | Command components before permission; not a motor write.                                                                                   |
+| `0x14` + $4{N_c}$         | `enforcer_clamped_cmd`   | `float32[N_c]` | per manifest         | Components admitted after the current constraint check.                                                                                    |
+| `0x14` + $8{N_c}$         | `actuator_delivered_cmd` | `float32[N_c]` | per manifest         | Dispatched setpoint components; delivery at the drive needs separate evidence.                                                             |
+| `0x14` + $12{N_c}$        | `measured_plant_state`   | `float32[N_s]` | per manifest         | Sampled state components, with sensor timing in the manifest.                                                                              |
+| `0x14` + $12{N_c}+4{N_s}$ | `chain_link`             | `uint8_t[32]`  | HMAC-SHA-256         | Keyed link over the previous link and this record’s preceding fields; evidence of tampering only while the key and anchor stay in custody. |
+
+Table 16: **Authority log entry**: One entry per tick of the permission loop. A missing entry is a gap in the chain, never an implied pass, and the entry is a sampled decision trace, not proof of delivered force or contact.
+
+^tbl-appendix-systems-wire-authority
+
+The compact layout above is the fixed decision trace, not the complete incident evidence bundle. Versioned companion records must preserve the remaining lease age, authenticated source identity, admission or rejection outcome, and sensor-event timing and uncertainty required by **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14.08 Trustworthy Operational Logs#^sec-intervention-trustworthy-logs|Trustworthy Operational Logs]]**. Each companion record must bind to the decision tick and channel mask under the same integrity scheme; missing companions remain declared evidence gaps. In `MAN`, `policy_proposed_cmd` stores the selected human proposal despite its historical field name.
+
+### Authority-Transfer Protocol
+
+^sec-appendix-systems-authority-protocol
+
+The authority-transfer protocol of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14.04 Authority Transitions#^sec-intervention-authority-transitions|Authority Transitions]]** and **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/14 Supervisory Intervention/V4-14.05 Transfer without Discontinuity#^sec-intervention-bumpless-transfer|Transfer Without Discontinuity]]** runs in the enforcer’s $1\text{ kHz}$ loop on the safety microcontroller, where the four-phase handshake, integrator pre-biasing, and the ${C}^2$ quintic blend become one sequence of per-state steps. Each tick writes the authority-log entry of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-authority|table 16]] under the state names used below. The cadence and jitter below are illustrative design targets; the target implementation must qualify them before actuator permission is granted.
+
+Three cadence and memory invariants govern the loop:
+
+- *Execution cadence:* Hard real-time periodic timer interrupt (${f_s} = 1\text{ kHz}$, period ${T_{\text{tick}}} = 1.0\text{ ms}$, hardware timing jitter $< 1.0\,{\text{µ}}\text{s}$).
+- *Memory invariant:* Zero dynamic heap allocation (`malloc`/`free` forbidden; all state variables, mailboxes, and circular log buffers statically pre-allocated in DTCM SRAM).
+- *Hardware authority:* Exclusive write of the admitted setpoints staged for the next EtherCAT frame to the drives, and of the safe torque off (STO) hardware cutoffs.
+
+Each $1\text{ kHz}$ tick executes five state-machine steps:
+
+1.  Sample and validate plant state, available stopping reserve, independent protective inputs, and the current execution lease. An independent protective input selects its validated, state-matched stop path of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.10 The Fallback Ladder#^sec-enforcement-fallback-ladder|The Fallback Ladder]]**.
+2.  In `AUTO`, a manual request or policy handover request enters `PEND`; the policy may propose only while its existing permission remains valid. Set ${T_{\text{timeout}}}$ to the smaller of the protocol ceiling and clearance-derived deadline. No later than the last permission tick before ${T_{\text{timeout}}}$, transfer to the state-matched fallback. An invalid network packet is rejected and logged, not interpreted as a stop request.
+3.  In `PEND`, verify the operator credential, nonce, enabling input, target freshness, actuator limits, and full transfer-plus-stop clearance. On `ACK`, at the next qualified **Commit** tick, revoke the policy’s proposal token on the masked channels, latch ${\mathbf{u}}_0$ as its last *admitted* command, latch a checked human target ${\mathbf{u}}_1$, and set `BLEND`. The enforcer remains the only actuator writer. If the replacement fails admission, retain the current mode only while its own state, evidence, lease, and stopping checks pass; otherwise enter the independently validated fallback.
+4.  In `BLEND`, evaluate ${\hat{t}} = \min(1, ({t} - {t}_0) / {\tau_{\text{blend}}})$ and ${\alpha}({\hat{t}}) = 6{\hat{t}}^5 - 15{\hat{t}}^4 + 10{\hat{t}}^3$. The enforcer proposes ${\mathbf{u}_{\text{blend}}} = (1 - {\alpha}({\hat{t}})){\mathbf{u}}_0 + {\alpha}({\hat{t}}){\mathbf{u}}_1$, then checks that candidate against current state, torque/rate, and stopping limits before dispatch. These are **latched endpoints**, not simultaneous live policy and human actuator streams. If the lease, clearance, or tracking assumption fails, use the state-matched fallback. At ${\hat{t}} = 1$ with a live manual lease, set `MAN` and confirm that state to the operator.
+5.  In `MAN`, the enforcer checks each live human proposal. Lease expiry or enabling-device loss revokes manual proposals and transfers to the validated fallback. Log request, ACK, commit, candidate, admitted command, measured response, and clock uncertainty separately; the bounded high-rate record must not block the control tick.
+
+### Fault Record
+
+^sec-appendix-systems-wire-fault
+
+The fault record of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/15 Adversarial Verification/V4-15.12 Fault Records for Release#^sec-verification-fault-manifest|Fault Records for Release]]** is offline evidence, a fixed header signed with Ed25519 that links to the retained evidence bundle by digest ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-fault|table 17]]). The fault-record root (`fault_records_root`) that the release manifest binds is computed over the canonical encodings of these headers. `envelope_point` has a per-machine definition in the versioned fault-class manifest; for the mobile manipulator its four values are aisle speed (m/s), payload (kg), floor friction coefficient, and ambient temperature (K).
+
+| Offset | Field                   | Scalar type   | Unit            | Purpose and interpretation                                                               |
+|:-------|:------------------------|:--------------|:----------------|:-----------------------------------------------------------------------------------------|
+| `0x00` | `trial_id`              | `uint64_t`    | —               | Unique trial identifier in the versioned trial log.                                      |
+| `0x08` | `claim_ref_id`          | `uint32_t`    | index           | Precommitted physical claim and its units.                                               |
+| `0x0C` | `envelope_point`        | `float32[4]`  | per manifest    | Declared operating point of the trial.                                                   |
+| `0x1C` | `fault_injection_mode`  | `uint16_t`    | enumeration     | Injected fault class.                                                                    |
+| `0x1E` | `injection_target_node` | `uint16_t`    | enumeration     | Hardware boundary receiving the injection.                                               |
+| `0x20` | `fault_magnitude`       | `float32`     | per fault class | Injection amplitude; its unit is fixed by the fault-class manifest.                      |
+| `0x24` | `t_det_ns`              | `uint32_t`    | ns              | Fault trigger to detector assertion.                                                     |
+| `0x28` | `t_takeover_ns`         | `uint32_t`    | ns              | Fault trigger to measured takeover; subtract `t_det_ns` for the post-detection interval. |
+| `0x2C` | `stl_robustness_rho`    | `float32`     | claim’s unit    | Raw signed margin for `claim_ref_id`; other predicate margins remain in the bundle.      |
+| `0x30` | `verdict_status`        | `uint8_t`     | enumeration     | `PASS`, `FAIL`, `INVALID`, or `UNOBSERVABLE`.                                            |
+| `0x31` | reserved                | `uint8_t[3]`  | —               | Zero.                                                                                    |
+| `0x34` | `oracle_digest`         | `uint8_t[32]` | SHA-256         | Immutable predicate and oracle configuration.                                            |
+| `0x54` | `evidence_digest`       | `uint8_t[32]` | SHA-256         | Separately retained trial evidence bundle.                                               |
+| `0x74` | `signature`             | `uint8_t[64]` | Ed25519         | Signature over all preceding bytes; the key identifier is in the versioned manifest.     |
+
+Table 17: **Fault-record header**: The fixed part of one fault trial. The linked evidence bundle carries fault duration, hardware and software build identifiers, raw trace references and clock domains, detector identity, every margin value and scale, the measured physical outcome, secondary anomalies, and partial traces for non-pass verdicts.
+
+^tbl-appendix-systems-wire-fault
+
+For a trial aborted before injection, detector time, takeover time, and robustness margin are unavailable rather than zero. The layout stores all ones (`0xFFFFFFFF`) in an unavailable `uint32_t` time slot and a canonical quiet NaN in an unavailable `float32` margin slot, and the signed evidence bundle records a validity flag for each measured field and why it is absent. The oracle checks those flags and the verdict before doing arithmetic, and excludes unavailable slots from pass counts and from latency or margin statistics. The versioned manifest fixes the NaN bit pattern so that hashing remains reproducible.
+
+### Fault-Injection Protocol
+
+^sec-appendix-systems-fault-protocol
+
+The fault-injection protocol of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/15 Adversarial Verification/V4-15.09 Fault Injection on Hardware#^sec-verification-hardware-fault-injection|Fault Injection on Hardware]]** runs one hardware-in-the-loop trial on target silicon, from the precondition audit to the signed header of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-fault|table 17]]. Every exit it takes sets one value of that header’s `verdict_status`. The illustrative fixture below must qualify its timing, interlocks, and measurement uncertainty before any physical trial.
+
+Three substrate and interlock invariants govern the testbed:
+
+- *Execution substrate:* Hard real-time FPGA plant rig and testbed orchestrator (${f_s} = 1\text{ kHz}$, hardware timestamping jitter $< 500\text{ ns}$).
+- *Memory invariant:* Pre-allocated static DMA buffers in the host test orchestrator; zero runtime dynamic heap allocation on the safety microcontroller.
+- *Safety interlock authority:* Independent optical or laser truth sensors wired to hardware crowbar relays capable of cutting target actuator power within $2.0\text{ ms}$ of a physical envelope breach.
+
+Each hardware-in-the-loop fault trial executes five sequential stages:
+
+1.  **Precondition audit (stage 1).** Sample baseline environmental sensors via ${\mathcal{I}_{\text{truth}}}$ (temperature, rail voltage, and wheel speed). Compare each measurement with its declared same-unit tolerance; do not take one norm across kelvin, volts, and meters per second. If any precondition fails, log `ERR_PRECONDITION_OUT_OF_SPEC`, set the verdict to `INVALID`, and abort.
+
+2.  **Synchronization and steady-state arming (stage 2).** Arm the FPGA plant simulator, power up the target two-processor system, and start the periodic control loop ($1\text{ kHz}$). Establish a synchronized reference clock across the logic analyzer, FPGA plant, and truth digitizers via a $10\text{ MHz}$ PXI clock. Allow the physical plant state ${\mathbf{x}}({t})$ to stabilize in the nominal operating envelope for ${t_{\text{settle}}} = 2.000\text{ s}$. If baseline tracking error $\|{e_{\text{track}}}\| > {\epsilon_{\text{nom}}}$, assert `ERR_BENCH_INSTABILITY`, set the verdict to `INVALID`, and abort.
+
+3.  **Fault injection trigger (stage 3).** At monotonic test epoch ${t_{\text{inject}}}$, the hardware test orchestrator asserts the trigger line to the inline injection rig and records the injection timestamp ${t_{\text{fault\_start}}} \leftarrow {t_{\text{now}}}$ in nanoseconds on the reference clock:
+
+    - *Proposer stall (F1):* The orchestrator kills the chunk-policy task one tick after a lease renewal.
+    - *Sensor latency or bias (F2):* An FPGA interceptor latches a navigation-camera frame or holds a stale encoder payload while preserving its valid hardware timestamp.
+    - *Frame loss (F3):* A fieldbus disturbance node drops or corrupts EtherCAT frames at a drive’s slave port.
+    - *Drive-bus droop (F4a):* A programmable supply standing in for the pack at its depleted point steps the shared drive bus below the converter lockout of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/15 Adversarial Verification/V4-15.07 Deriving the Fault List#^tbl-15-fault-classification|Representative hardware and cyber-physical fault classes]]** for ${\Delta t_{\text{duration}}} = 5.0\text{ ms}$, while an independent digitizer records the permission rail and the permission path’s heartbeat.
+    - *Permission-rail feed loss (F4b):* A solid-state switch opens the permission rail’s feed during the longest resident stop in the qualified loaded envelope. The illustrative all-weight inspected-floor ceiling is a screening case, not the qualified injection condition.
+    - *Actuator mechanical stall:* A four-quadrant dynamometer applies step counter-torque ${\tau_{\text{stall}}} = 3.5 \times {\tau_{\text{rated}}}$.
+
+4.  **Enforcer response and takeover audit (stage 4).** Monitor the target MCU’s safety enforcer pins, CAN bus telemetry, and gate-driver PWM lines via an isolated logic analyzer. If the external containment rig trips on a structural envelope breach, the hardware crowbar cuts actuator power; assert `ERR_PHYSICAL_BREACH` and carry the trial to stage 5, where the violated containment predicate returns `FAIL`:
+
+    - Detect assertion of the non-maskable interrupt (NMI) or diagnostic flag: ${t_{\text{det}}} \leftarrow {t_{\text{now}}} \implies {\Delta t_{\text{det}}} = {t_{\text{det}}} - {t_{\text{fault\_start}}}$.
+    - Detect hardware multiplexer preemption of the motor driver: ${t_{\text{takeover}}} \leftarrow {t_{\text{now}}} \implies {\Delta t_{\text{takeover}}} = {t_{\text{takeover}}} - {t_{\text{fault\_start}}}$.
+    - Independently witness powered deceleration onset and standstill, rather than inferring either from a flag or multiplexer transition. Preserve the claim’s physical reference epoch: F1 measures from the last successful lease renewal, while F4a measures from the undervoltage flag; the injection epoch remains a separate diagnostic timestamp.
+    - Detect the physical plant’s transition to its safe bounded regime: ${t_{\text{bounded}}} \leftarrow {t_{\text{now}}} \implies {\Delta t_{\text{bounded}}} = {t_{\text{bounded}}} - {t_{\text{fault\_start}}}$.
+
+5.  **Robustness evaluation and record serialization (stage 5).** Ingest the truth trajectory ${\mathbf{x}_{\text{obs}}}({t})$ from independent instrumentation over the declared trial window. If required truth frames are missing, set the verdict to `UNOBSERVABLE` and retain the partial trace. For an observable trial, compute each precommitted predicate’s signed margin in its own unit, as the STL robustness of **[[05 Reference/Volume IV - Physical AI/V4 Machine Learning Background#^sec-appendix-ml-stl|Signal Temporal Logic and Continuous Robustness]]** defines it. Return `PASS` only when every required margin is nonnegative and all predeclared timing and travel bounds pass, including independently witnessed deceleration onset and stopping distance from the claim’s reference event. Fault-to-detection and fault-to-drive-takeover times are additional diagnostics, not substitutes for physical response; otherwise return `FAIL`. A dimensionless aggregate may be computed only after predeclared per-predicate normalization. Link the fixed fault-record header to the variable-length evidence bundle by digest, sign the header under the specified custody scheme, and retain both.
+
+### Release Manifest
+
+^sec-appendix-systems-wire-release
+
+The release manifest of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/16 Deployment Release/V4-16.09 The Release Manifest#^sec-release-manifest|The Release Manifest]]** is a signed offline artifact, not a mailbox record, so it has a canonical encoding in place of fixed offsets. Fields appear in the order that [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-release|table 18]] lists, each variable-length field carries a length prefix, and the adjudicator’s Ed25519 signature covers the encoding of every preceding field. Every digest is SHA-256. The expiry is the one calendar time in the record chain, and it is checked against a tamper-resistant real-time clock rather than the safety microcontroller’s monotonic clock.
+
+| Field                       | Encoding                                             | Binds                                                                                                                                                                                     | Check before permission                                                                                                                                                        |
+|:----------------------------|:-----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `claim_manifest_id`         | `uint8_t[16]` UUID                                   | Top-level safety claim                                                                                                                                                                    | Linked to the root node of the signed argument graph.                                                                                                                          |
+| `argument_digest`           | `uint8_t[32]`                                        | Complete claim–argument–evidence graph                                                                                                                                                    | Matches the graph the adjudicator reviewed.                                                                                                                                    |
+| `policy_weights_digest`     | `uint8_t[32]`                                        | Learned model weights                                                                                                                                                                     | Mismatch refuses release.                                                                                                                                                      |
+| `enforcer_bitstream_digest` | `uint8_t[32]`                                        | Enforcer logic image                                                                                                                                                                      | Mismatch refuses release.                                                                                                                                                      |
+| `rtos_kernel_digest`        | `uint8_t[32]`                                        | Real-time kernel image and drivers                                                                                                                                                        | Verified by the hardware root of trust at power-on.                                                                                                                            |
+| `calib_trace_pointers`      | length-prefixed list of signed evidence references   | Calibration certificates                                                                                                                                                                  | Missing or stale evidence refuses unless a separately signed restricted case covers it.                                                                                        |
+| `fault_records_root`        | `uint8_t[32]`                                        | Signed fault-record headers ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-fault\|section 1.15.8]])                                                | Missing, unauthenticated, or mismatched root refuses.                                                                                                                          |
+| `authority_record_digest`   | `uint8_t[32]`                                        | Static authority manifest and the authority log’s initial chain anchor ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-authority\|section 1.15.6]]) | Mismatch refuses release.                                                                                                                                                      |
+| `placement_record_digest`   | `uint8_t[32]`                                        | Placement record ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-placement\|section 1.15.5]])                                                       | Mismatch refuses release.                                                                                                                                                      |
+| `evaluation_record_digest`  | `uint8_t[32]`                                        | Evaluation record                                                                                                                                                                         | Mismatch refuses release.                                                                                                                                                      |
+| `verdict_classification`    | `uint8_t` enumeration                                | `UNCOND`, `COND`, or `REFUSE`                                                                                                                                                             | Selects the permitted operating envelope.                                                                                                                                      |
+| `standing_conditions`       | length-prefixed array of (premise, check rate, trip) | Physical premises checked in operation                                                                                                                                                    | Measurements or inspections follow each declared cadence; each tick checks retained validity, expiry, and monitor health. An unknown required premise takes the assessed stop. |
+| `telemetry_drift_budget`    | length-prefixed task-specific limits and triggers    | Tracking and timing drift                                                                                                                                                                 | A bound violation revokes; a trend prompts inspection.                                                                                                                         |
+| `verdict_expiry`            | UTC calendar time (ISO 8601)                         | Validity period of the verdict                                                                                                                                                            | A real-time clock reading past the expiry voids the permit.                                                                                                                    |
+| `lifecycle_budget`          | `uint64_t[2]` (hours, cycles)                        | Wear allowance                                                                                                                                                                            | An exceeded budget or an invalid counter refuses motion.                                                                                                                       |
+| `adjudicator_signature`     | key identifier plus `uint8_t[64]` Ed25519 signature  | The whole manifest                                                                                                                                                                        | Verifies under an authorized, unrevoked adjudicator key.                                                                                                                       |
+
+Table 18: **Release manifest**: Canonical field order of the signed release artifact. A new signed version can supersede a manifest only after the current physical conditions are checked, and the hardware root anchors keys rather than storing mutable digests.
+
+^tbl-appendix-systems-wire-release
+
+### Release-Gate Protocol
+
+^sec-appendix-systems-release-protocol
+
+In **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/16 Deployment Release/V4-16.09 The Release Manifest#^sec-release-manifest|The Release Manifest]]**, before the motor power stages are energized, the release gate attests the silicon state, verifies the manifest of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-release|table 18]] and its image digests, and audits the standing conditions in the order below. The hardware root of trust anchors an authorized, revocable adjudicator verification-key chain. Protected storage holds the signed manifest and signed evidence graph. The signature covers every versioned manifest field, including the identity of the signing key, and the verifier checks the key chain and its revocation state before trusting the signature. The individually signed fault records of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-wire-fault|section 1.15.8]] enter the manifest as one digest over the complete set in its declared order. The verifier checks each record signature, the ordering, completeness, and that root against the reviewed evidence index. A digest alone establishes neither record validity nor test adequacy.
+
+Fail-closed authorization begins with `Permit_gate = 0` and the physical plant in its assessed nonoperating state. All returned decisions use the signed enum `UNCOND`, `COND`, or `REFUSE`; an implementation may log a reason code separately:
+
+1.  Verify the adjudicator key chain and revocation status, the manifest signature, expiry, signed operating-hour and cycle budgets, and every active image digest. Any invalid, missing, or expired item returns `REFUSE`. A different software bank requires its own signed case and a new check of physical conditions.
+2.  Authenticate the complete set of fault records and calibration references against the signed graph. A missing fault record, bad record signature, or root mismatch returns `REFUSE`, even if the manifest says `UNCOND`. Stale calibration also returns `REFUSE` under the full case. It can support `COND` only when a *separately signed* restricted case explicitly covers that calibration state and all of its evidence and limits still validate.
+3.  Check the state-dependent standing conditions, including brake test, separation, timebase, and monitoring health. `KNOWN_FALSE` and `UNKNOWN` both return `REFUSE` while retaining distinct logged causes. Apply the approved state-matched stop or hold of **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.10 The Fallback Ladder#^sec-enforcement-fallback-ladder|The Fallback Ladder]]**.
+4.  If every check passes and the signed verdict is `UNCOND`, load the signed full envelope and return `UNCOND`. If every restricted condition passes under a signed `COND` case, load its signed reduced envelope and return `COND`. A signed `REFUSE` case or any other state returns `REFUSE`. In both operating modes the learned policy only *proposes* actions; the independent enforcer checks each candidate and controls actuator permission. Force trip thresholds must include measured detection and response headroom below the contact criterion.
+
+### Approval Record
+
+^sec-appendix-systems-wire-responsibility
+
+The approval record of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/17 Responsible Physical AI/V4-17.10 The Approval Record#^sec-responsibility-approval-record|The Approval Record]]** is an offline artifact like the release manifest: a canonical encoding in the field order of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-responsibility|table 19]], length-prefixed variable fields, SHA-256 digests, and an Ed25519 signature by the adjudicator over every preceding field. The release gate reads it after the manifest checks of [[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^sec-appendix-systems-release-protocol|section 1.15.11]], as one more standing condition.
+
+| Field                     | Encoding                                                                                   | Binds                                          | Check before permission                                                                                            |
+|:--------------------------|:-------------------------------------------------------------------------------------------|:-----------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
+| `record_id`               | `uint8_t[16]` UUID                                                                         | This version of the approval record            | Matches the identifier the manifest’s standing conditions name.                                                    |
+| `release_manifest_digest` | `uint8_t[32]`                                                                              | The release manifest it governs                | Mismatch refuses release.                                                                                          |
+| `upstream_digests`        | `uint8_t[32]` each: authority record, enforcement record, fault-record set                 | The records whose decisions it names           | Mismatch refuses release.                                                                                          |
+| `permit_stage`            | length-prefixed record: grantor, stage, configuration digest, domain reference             | The permission stage and what it covers        | A configuration digest different from the manifest’s refuses.                                                      |
+| `decisions`               | length-prefixed array of (type, owner role, approval reference, expiry)                    | Each decision behind an admitted action class  | An entry with no owner, or past its expiry, returns `REFUSE` with the cause logged.                                |
+| `human_roles`             | length-prefixed array of (duty, required time, available time, utilization bound, verdict) | Each human role the safety argument cites      | A role cited as a countermeasure with verdict `INFEASIBLE` or `UNKNOWN` returns `REFUSE`.                          |
+| `reporting_duties`        | length-prefixed array of (recipient, trigger, deadline)                                    | What must be reported, to whom, and by when    | Missing duties for the stage refuse; the disclosure log is kept beside the record and is not checked at each boot. |
+| `exposure`                | length-prefixed array of (group, chose exposure, measure, sample size, rate, interval)     | Each group exposed and its per-group detection | A group the design relies on detecting with no entry returns `REFUSE`.                                             |
+| `data_declarations`       | length-prefixed array of (record class, purpose, retention, readers, last audit)           | Each record class that identifies people       | An expired declaration or failed audit suspends that use and returns the premise to the adjudicator.               |
+| `labor`                   | length-prefixed record: takeover, dispatch, sweep, and monitoring hours; barred uses       | The labor the deployment moves                 | Recorded for review; it does not gate motion.                                                                      |
+| `validity_window`         | UTC calendar time (ISO 8601), start and end                                                | The period the record covers                   | A real-time clock reading outside the window refuses.                                                              |
+| `adjudicator_signature`   | key identifier plus `uint8_t[64]` Ed25519 signature                                        | The whole record                               | Verifies under an authorized, unrevoked adjudicator key.                                                           |
+
+Table 19: **Approval record**: Canonical field order of the signed approval record. Every check that refuses returns the premise to the adjudicator with its cause logged, the handling the release gate gives an unknown physical premise.
+
+^tbl-appendix-systems-wire-responsibility
+
+### Residual-Claims Register
+
+^sec-appendix-systems-wire-residual-claims
+
+The residual-claims register of **[[01 Books/Volume IV - Physical AI/04 Governing the Machine/18 Engineering Physical AI/V4-18.04 The Epistemic Frontier#^sec-frontier-residual-claims-register|A residual-claims register]]** tracks every physical premise the release rests on but does not observe, so that an open claim is carried across software deployments and hardware revisions. Like the release manifest, it is an offline artifact whose mandatory fields ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^tbl-appendix-systems-wire-residual-claims|table 20]]) follow a canonical order rather than fixed offsets.
+
+| Manifest Category           | Field                    | Physical Unit          | Invariant & Operational Contract                                                                                                                                                                                                        |
+|:----------------------------|:-------------------------|:-----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Manifest Header**         | `system_identifier`      | —                      | Unique embodied platform ID (e.g., `WMM-AISLE-01`)                                                                                                                                                                                      |
+| **Manifest Header**         | `hardware_build_rev`     | —                      | Target silicon and chassis revision (`HW-REV-3.2`)                                                                                                                                                                                      |
+| **Manifest Header**         | `software_digest`        | —                      | Digest of the released binary                                                                                                                                                                                                           |
+| **Manifest Header**         | `validity_limit_hours`   | hours                  | Configured operating window before review                                                                                                                                                                                               |
+| **Residual Claims**         | `entry_id`               | —                      | Unique claim tag (e.g., `CLAIM-FRIC-001`)                                                                                                                                                                                               |
+| **Residual Claims**         | `target_safety_claim`    | —                      | Explicit safety invariant (${d_{\text{stop}}} \le {D_{\text{clear}}}$)                                                                                                                                                                  |
+| **Residual Claims**         | `missing_observable`     | SI units               | Unmeasured physical state (e.g., surface friction ${\mu}$)                                                                                                                                                                              |
+| **Physical Hazard**         | `governing_law`          | —                      | Newton-Euler, Navier-Stokes, Joule heating                                                                                                                                                                                              |
+| **Physical Hazard**         | `time_to_harm`           | seconds                | Time from unmodeled transition to irreversible yield                                                                                                                                                                                    |
+| **Operational Containment** | `containment_type`       | —                      | `FIRMWARE_PARAM_CLAMP`, `PASSIVE_MECHANICAL`, or `OPERATING_RESTRICTION`; validate the selected limit                                                                                                                                   |
+| **Operational Containment** | `authority_limit`        | $\text{m/s}, \text{N}$ | Hard numeric setpoint ceiling (${v_{\max}}, {F_{\max}}$)                                                                                                                                                                                |
+| **Operational Containment** | `kinetic_energy_ceiling` | $\text{J}$             | Maximum allowable kinetic energy under fault (${E_k} \le {E_{\max}}$)                                                                                                                                                                   |
+| **Assurance & Inspection**  | `proof_test_interval`    | hours                  | Scheduled test interval; evidence between tests still depends on the operating restriction                                                                                                                                              |
+| **Assurance & Inspection**  | `accountable_owner`      | —                      | Named role responsible for maintaining the containment, arranging its inspections, and approving the closure evidence                                                                                                                   |
+| **Predeclared Closure**     | `closure_modality`       | —                      | Transducer technology or formal method required                                                                                                                                                                                         |
+| **Predeclared Closure**     | `sample_trials`          | count                  | Case-specific independent exposure, sized by the zero-failure rule of **[[05 Reference/Volume IV - Physical AI/V4 Machine Learning Background#^sec-appendix-ml-exposure\|Zero-Failure Testing and the Exposure Wall]]** for the declared miss-rate bound |
+| **Predeclared Closure**     | `confidence_level`       | —                      | Declared one-sided confidence level of that bound                                                                                                                                                                                       |
+
+Table 20: **Epistemic residual-claims register**: Canonical field order of the register. The header binds it to one platform, build, and operating window; each entry must carry its claim, the missing observable, the hazard and its time to harm, the containment that holds meanwhile, and the predeclared test that would close it.
+
+^tbl-appendix-systems-wire-residual-claims
+
+## Further Reading
+
+^further-reading
+
+For embedded architectures, real-time operating systems, and power electronics, consult the following references:
+
+- **Computer Architecture: A Quantitative Approach** ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-hennessy2019computer|Hennessy and Patterson 2019]]) provides a quantitative treatment of processor architectures, cache hierarchies, and memory subsystem trade-offs.
+- **Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment** ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-liu1973scheduling|Liu and Layland 1973]]) establishes the mathematical foundations of rate-monotonic scheduling and real-time task schedulability.
+- **Modern Operating Systems** by Andrew S. Tanenbaum and Herbert Bos covers inter-process communication, lock-free synchronization, and memory management.
+- **Real-Time Systems** by Jane W. S. Liu sets out the mathematical formulation of real-time scheduling algorithms, priority inversion, and response time analysis.
+
+Back to top
+
+## Source References
+
+^source-references
+
+Scott, Colin. 2012. “Numbers Every Programmer Should Know by Year.”
+
+^ref-scott2012latency
+
+Hanley, James A., and Abby Lippman-Hand. 1983. “If Nothing Goes Wrong, Is Everything All Right? Interpreting Zero Numerators.” *JAMA* 249 (13): 1743–45.
+
+^ref-hanley1983nothing
+
+International Organization for Standardization. 2018. *ISO 26262:2018: Road Vehicles, Functional Safety*. International Organization for Standardization.
+
+^ref-iso26262
+
+Kopetz, Hermann. 2011. *Real-Time Systems: Design Principles for Distributed Embedded Applications*. 2nd ed. Real-Time Systems Series. Springer. https://doi.org/10.1007/978-1-4419-8237-7.
+
+^ref-kopetz2011real
+
+Reeves, Glenn E. 1997. *What Really Happened on Mars?* Electronic mail message, Jet Propulsion Laboratory.
+
+^ref-reeves1997pathfinder
+
+Sha, Lui, Ragunathan Rajkumar, and John P. Lehoczky. 1990. “Priority Inheritance Protocols: An Approach to Real-Time Synchronization.” *IEEE Transactions on Computers* 39 (9): 1175–85.
+
+^ref-sha1990priority
+
+Coles, Stuart. 2001. *An Introduction to Statistical Modeling of Extreme Values*. Springer.
+
+^ref-coles2001introduction
+
+Steiner, Lukas, Matthias Jung, Michael Huonker, and Norbert Wehn. 2022. “Unveiling the Real Performance of LPDDR5 Memories.” *Proceedings of the International Symposium on Memory Systems (MEMSYS)*, 1–3. https://doi.org/10.1145/3565053.3565062.
+
+^ref-steiner2022lpddr5
+
+International Electrotechnical Commission. 2021. *IEC 61784-3:2021: Industrial Communication Networks, Profiles, Part 3: Functional Safety Fieldbuses, General Rules and Profile Definitions*. International Electrotechnical Commission.
+
+^ref-iec61784-3-2021
+
+ARM Limited. 2012. *ARM Cortex-M Programming Guide to Memory Barrier Instructions*. Application Note 321, ARM DAI 0321A. ARM Limited.
+
+^ref-arm2012an321
+
+Zhang, Zhengyou. 2000. “A Flexible New Technique for Camera Calibration.” *IEEE Transactions on Pattern Analysis and Machine Intelligence* 22 (11): 1330–34. https://doi.org/10.1109/34.888718.
+
+^ref-zhang2000flexible
+
+International Organization for Standardization. 2024. *ISO 13855:2024: Safety of Machinery, Positioning of Safeguards with Respect to the Approach of the Human Body*. International Organization for Standardization.
+
+^ref-iso13855
+
+Hennessy, John L., and David A. Patterson. 2019. *Computer Architecture: A Quantitative Approach*. 6th ed. Morgan Kaufmann.
+
+^ref-hennessy2019computer
+
+Liu, C. L., and James W. Layland. 1973. “Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment.” *Journal of the ACM* 20 (1): 46–61.
+
+^ref-liu1973scheduling
+
+## Footnotes
+
+^footnotes
+
+<sup>1</sup> **Jeff Dean**: Google Senior Fellow and systems architect. His latency numbers originally presented with Peter Norvig around 2010 established the canonical latency hierarchy across storage, memory, and network tiers ([[05 Reference/Volume IV - Physical AI/V4 Systems and Hardware#^ref-scott2012latency|Scott 2012]]). Physical AI extends this hierarchy down into electromechanical actuators, stopping kinematics, and thermal time constants.
+
+^fn1
+
+<sup>2</sup> **Hardware Watchdog Down-Counters**: A configured watchdog expires when its expected service does not occur. Its oscillator, timeout, output wiring, and plant response differ by device. Feeding it merely from an unrelated interrupt does not prove that the monitored control computation progressed; a firmware-fed reset also need not signal a drive. See the [Linux watchdog API](https://docs.kernel.org/watchdog/watchdog-api.html) for reset behavior and **[[01 Books/Volume IV - Physical AI/03 Running the Machine/12 Safety Enforcement/V4-12.10 The Fallback Ladder#^sec-enforcement-fallback-ladder|The Fallback Ladder]]** for stop selection.
+
+^fn2
+
+<sup>3</sup> **Inverter Dead-Time Insertion**: Timer dead time is selected from switch and driver timing over temperature and load, then verified with the actual gate waveforms. An overlap can create a damaging bus short; a numeric current or fuse outcome requires the circuit impedance and protection response.
+
+^fn3
+
+<sup>4</sup> **Sakurai-Newton Delay Modeling**: The alpha-power law models voltage-dependent gate delay; its parameters are technology dependent. The model predicts reduced setup slack during droop, while a missed deadline, register error, or reset must be established against measured path slack and device thresholds.
+
+^fn4
+
+<sup>5</sup> **DRAM Bank-Conflict Penalties**: A row change in one bank can add precharge and activate time. Video DMA can also queue transactions ahead of a safety read. The resulting delay must be bounded for the specific address mapping, arbitration policy, and workload; a fixed penalty per request is generally unjustified.
+
+^fn5
+
+<sup>6</sup> **Hardware Timestamping**: A compatible PHY or MAC timestamps frames closer to the wire than a software interrupt handler. Hardware timestamping removes one source of dispatch variation, while path asymmetry and clock conversion remain. Timestamp uncertainty belongs in the physical belief record and permission budget.
+
+^fn6
+
+<sup>7</sup> **Hardware Memory Barriers**: Barriers order accesses only within their specified shareability and memory-attribute contract. On a noncoherent route, cache clean/invalidate operations or coherent mappings are also required. [Arm’s memory-ordering guide](https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/memory-access-ordering-part-3---memory-access-ordering-in-the-arm-architecture) distinguishes ordering from coherence.
+
+^fn7
+
+<sup>8</sup> **Stator Thermal Time Constants**: Resistive Joule heating elevates motor phase winding temperatures during continuous high-torque maneuvers. Because copper electrical resistivity increases linearly with temperature, hot windings have higher resistance, reducing torque output under terminal voltage saturation. Exceeding winding insulation temperature limits breaks down dielectric coatings, causing inter-turn short circuits and permanent winding damage.
+
+^fn8
+
+<sup>9</sup> **Dynamic Braking Choppers**: A qualified chopper can dissipate returned energy when the battery is unavailable as a sink. Its threshold, switch and resistor ratings, pulse duration, and thermal recovery must be tested. Regeneration and chopper operation are not inherent to every emergency stop; safe torque off can instead leave a motor coasting.
+
+^fn9
+
+<sup>10</sup> **Pinhole Intrinsic Projection**: The pinhole model projects 3D points onto a 2D sensor through calibrated intrinsics. Under fixed pixel noise, the lateral variance after depth unprojection grows with squared distance; depth-error and calibration terms follow their own models. Uncalibrated intrinsics can bias a clearance estimate and must be included in its error envelope.
+
+^fn10
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol4/backmatter/appendix_systems.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol4/backmatter/appendix_systems.html#sec-appendix-systems). Rendering provenance is recorded in the import manifest.
