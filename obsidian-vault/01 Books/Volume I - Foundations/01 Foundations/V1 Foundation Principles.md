@@ -1,0 +1,70 @@
+---
+title: V1 Foundation Principles
+type: Part
+volume: 1
+chapter: 0
+publication_status: Released
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol1/parts/foundations_principles.qmd
+source_anchor: foundation-principles
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Part
+- Book/Volume_1
+rendered_source_url: https://mlsysbook.ai/vol1/parts/foundations_principles.html
+---
+
+# V1 Foundation Principles
+
+[[Home|Home]] · [[01 Books/Volume I - Foundations/Volume 1 Overview|Volume Overview]]
+
+^foundation-principles
+
+The introduction argued, through the bitter lesson, that progress in machine learning comes from general methods that scale with data and computation, and it named the iron law that accounts for the cost of that scale. Part I establishes the foundations on which that accounting rests: where a system can physically run, when its constraints must be known, and how the data it learns from is engineered. Across these choices, complexity in a machine learning system often moves rather than disappearing, even after good design removes accidental complexity. It shifts among the three domains of the D·A·M taxonomy: Data as information, Algorithm as logic, and Machine as physics. Simplifying one domain can burden the others. A hand-crafted feature pipeline reduces algorithmic complexity but demands more data engineering effort, whereas a larger model absorbs messy data by shifting complexity onto the hardware that must train and serve it. This conservation-of-complexity heuristic recurs throughout the volume, and the quantitative bounds, models, and principles at the start of each part describe the constraints that emerge wherever complexity resides.
+
+Those principles are neither transient best practices that evolve with frameworks nor unconditional laws of nature. Each principle box opens by naming its epistemic status (bound, decomposition, fitted model, policy, or heuristic), and each holds only under the assumptions it states. Part I’s two principles concern data, which every foundational decision must account for. The first governs what a model can learn from its inputs, and the second governs the physical cost of moving those inputs to the machine.
+
+**Principle 1: The data-as-code principle**
+
+**Heuristic**: Data functions as the source code of the ML system. A change to the training dataset can alter the system’s learned behavior. Here, learned behavior means the trained input-output mapping; $\text{Train}$ denotes the training process, and $\approx$ marks a qualitative dependency rather than a predictive equality. Model architecture, initialization, optimizer configuration, and training stochasticity are included in the training procedure.
+
+$$
+\text{Learned Behavior} \approx \text{Train}(\text{Training Data}, \text{Training Procedure})
+$$
+
+**Implication**: Data engineering requires the same rigor as software engineering. Datasets should be versioned (like Git), unit-tested (data quality checks), and debugged. Deleting a row of training data can alter the rebuilt model just as deleting a line of code can alter a compiled artifact.
+
+^pri-data-as-code
+
+If data functions as source code, then it is not merely a logical artifact; it also has physical properties that constrain system architecture when data and computation occupy different locations. Moving terabytes of raw sensor or text data across a constrained link costs far more time and energy than shipping the training or query logic to where those bytes already reside.
+
+**Principle 2: The data-gravity principle**
+
+**Heuristic**: As data volume (${D_{\text{vol}}}$) grows, transferring the dataset can cost more than sending a much smaller query or code payload over the same constrained link ([[01 Books/Volume I - Foundations/01 Foundations/V1 Foundation Principles#^ref-mccrory2010datagravity|McCrory 2010]]). Here, cost denotes one transfer metric at a time, such as elapsed transfer time or bytes sent, under identical link conditions; it does not combine latency and bandwidth into one quantity.
+
+$$
+\text{Cost to transfer dataset} \gg \text{Cost to transfer query or code} \quad \text{in this regime}
+$$
+
+**Implication**: Large datasets can become the gravitational center of the architecture. Systems may move compute to data by shipping queries or code to the storage layer rather than moving data to compute by repeatedly downloading large datasets.
+
+^pri-data-gravity
+
+Together, these two principles establish that data can be both the logical program and a physical anchor of an ML system. Part I develops these implications as a dependency chain. **[[01 Books/Volume I - Foundations/01 Foundations/02 System Paradigms/V1-02 System Paradigms#^sec-ml-systems|System Paradigms]]** derives from physical limits where a system can execute. **[[01 Books/Volume I - Foundations/01 Foundations/03 ML Lifecycle/V1-03 ML Lifecycle#^sec-ml-workflow|ML Lifecycle]]** carries those constraints around the lifecycle, where a constraint discovered late invalidates every artifact built before it. **[[01 Books/Volume I - Foundations/01 Foundations/04 Data Engineering/V1-04 Data Engineering#^sec-data-engineering|Data Engineering]]** builds the pipeline that meets both data bounds, versioning what the model learns from and delivering it as fast as the accelerator consumes it. Ignoring any link returns complexity as integration cost: an accurate model that cannot execute, a workflow that cannot reproduce its inputs, or a pipeline whose outputs no longer match deployment conditions.
+
+Back to top
+
+## Source References
+
+^source-references
+
+McCrory, Dave. 2010. *Data Gravity – in the Clouds*.
+
+^ref-mccrory2010datagravity
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol1/parts/foundations_principles.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol1/parts/foundations_principles.html#foundation-principles). Rendering provenance is recorded in the import manifest.

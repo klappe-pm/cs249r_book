@@ -1,0 +1,187 @@
+---
+title: V3 Agentic Failure Taxonomy
+type: Reference
+volume: 3
+chapter: 0
+publication_status: In Development
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol3/appendices/app_c_failure_taxonomy.qmd
+source_anchor: sec-vol3-app-failure-taxonomy
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Reference
+- Book/Volume_3
+rendered_source_url: https://mlsysbook.ai/vol3/appendices/app_c_failure_taxonomy.html
+---
+
+# V3 Agentic Failure Taxonomy
+
+[[Home|Home]] · [[01 Books/Volume III - Agentic Systems/Volume 3 Overview|Volume Overview]]
+
+^sec-vol3-app-failure-taxonomy
+
+A failed agent task can leave a responsive process, successful tool calls, and an unsupported completion report. Diagnosing it requires relating the task’s acceptance criteria to evidence distributed across model inputs, runtime decisions, and external effects. This appendix supplies a symptom-based reference for classifying failures, distinguishing competing explanations, and designing regression tests. It supports project work and the main text’s worked examples without replacing their explanations of the underlying mechanisms.
+
+## How to Use This Appendix
+
+^how-to-use-this-appendix
+
+When a deployed run fails its acceptance criteria even though every individual tool call returned success, an operator starts with the observed mismatch between the task contract and the recorded outcome. A category is an investigation aid, not proof of a unique cause; several categories can apply to one trajectory.
+
+- Use [[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^tbl-vol3-failure-taxonomy-matrix|table 1]] to match a symptom to a diagnostic entry and identify the evidence worth inspecting.
+- Use [[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-diagnostic-checklist|section 1.10]] when the category remains uncertain or the failure crosses several components.
+- Use [[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-report|section 1.11]] to record a tested explanation, a scoped correction, and the limits of its regression evidence.
+
+The chapter links in each entry identify where the book teaches the mechanism. A confirmed enforcement defect requires repair at the responsible boundary; a proposal-quality failure can motivate context, interface, or learning changes according to comparative evidence. The alternatives are not mandatory rungs in a response sequence.
+
+## Failure Taxonomy Matrix
+
+^sec-vol3-fail-matrix
+
+A retry storm can stress both horizon limits and controls on authorized effects, while a misleading reward can select poor behavior at any exposure, so the relevant H·S·A exposures depend on the actual task and effects. Each entry in [[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^tbl-vol3-failure-taxonomy-matrix|table 1]] pairs an observable mismatch with the evidence needed to distinguish competing explanations, because neither a category label nor a surface symptom establishes which boundary failed.
+
+| Failure mode                                                                                                                                         | Observable mismatch                                                           | Evidence that distinguishes explanations                                                           |
+|:-----------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------|
+| No-progress loop ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-semantic-livelocks\|section 1.2]])                  | Activity continues without demonstrated task progress                         | Candidate revisions, scoped check results, pending work, and newly obtained information            |
+| Context overflow and dilution ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-context-saturation\|section 1.3]])     | Requests exceed capacity, or decisions degrade as the working context changes | Exact delivered input, omissions, token accounting, reuse, and matched context-policy comparisons  |
+| Reward hacking and verifier gaming ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-goodhart-collapse\|section 1.4]]) | A score improves without corresponding task improvement                       | Reward and grader versions, candidate artifacts, protection boundaries, and independent assessment |
+| Confused deputy and injection ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-confused-deputy\|section 1.5]])        | A proposed or executed action exceeds the requester’s permitted scope         | Source provenance, effective grants, admission decisions, destinations, and actual effects         |
+| Correlated agreement ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-correlated-consensus\|section 1.6]])            | Several reviewers accept the same incorrect result                            | Independent task evidence, reviewer inputs, shared information, and the evaluated review procedure |
+| Environment desynchronization ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-environmental-desync\|section 1.7]])   | An action relies on an obsolete or mismatched observation                     | Source versions, observation dependencies, concurrent writes, and operation identities             |
+| Lost progress and repeated effects ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-lost-progress\|section 1.8]])     | A restart loses recorded work or dispatches an already performed effect       | Durable history, checkpoint coverage, dispatch records, and endpoint outcome evidence              |
+| Retry storm ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^sec-vol3-fail-retry-storm\|section 1.9]])                              | Attempts amplify dependency load while tasks exhaust allowances               | Attempts per logical operation, retry owners, arrival rates, and outstanding remote work           |
+
+Table 1: **Taxonomy of Agentic Failure Modes**: Observable mismatches direct evidence collection; they do not uniquely identify causes or guarantee a remedy.
+
+^tbl-vol3-failure-taxonomy-matrix
+
+## No-Progress Loops
+
+^sec-vol3-fail-semantic-livelocks
+
+A trajectory repeatedly edits and reverts the same patch, or repeats a tool request without obtaining evidence that advances the task. Rising activity with unchanged check results suggests a no-progress loop, whereas an unchanged workspace alone does not establish one because useful inspection, a pending external job, or justified backtracking can leave the same bytes in place.
+
+Compare candidate revisions with the exact checks and observations attached to them. Inspect whether a repeated request encounters unchanged conditions, whether previous failures remain available in context, and whether the tool response contains enough information to support a different proposal. Missing capture can make apparent repetition indistinguishable from useful investigation.
+
+Enforce the existing task budget while testing the explanation. A progress monitor can withhold further work, request investigation, or trigger another permitted response; it cannot guarantee that a revised proposal will succeed. Stopping new admissions does not settle outstanding effects. **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/12 Failure Recovery/V3-12.07 Semantic Watchdogs#^sec-vol3-sagas-watchdogs|Semantic Watchdogs]]** develops progress signals, false alarms, and bounded interventions, while **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/10 The Agent Harness/V3-10.10 Budgets and Ceilings#^sec-vol3-controlplane-accounting|Budgets and Ceilings]]** supplies the cumulative resource limits.
+
+## Context Overflow and Dilution
+
+^sec-vol3-fail-context-saturation
+
+A request rejected for exceeding the configured input limit establishes a capacity problem, whereas ignored constraints or poor tool arguments establish a behavioral problem whose cause remains open. The required evidence might be absent, truncated, obsolete, poorly organized, or present but inadequately used, so a longer context alone does not distinguish these cases.
+
+Inspect the actual delivered request rather than a reconstructed transcript. Record selected source versions, omission markers, token counts, and the serving policy’s reuse accounting. Longer uncached inputs add processing, but prefix reuse and context replacement change repeated work. Neither full retransmission nor a universal loss of information from the middle of the input should be assumed. Compare alternative context policies on matched tasks with quality, latency, and cost outcomes; **[[01 Books/Volume III - Agentic Systems/02 Agent Memory/04 Context Engineering/V3-04.04 Usable Working Context#^sec-vol3-context-engineering-physics|Usable Working Context]]** distinguishes nominal capacity from measured usability.
+
+The response should address the observed defect. Restore missing task evidence, repair silent truncation, or test a bounded compaction policy that preserves required constraints and provenance. Reducing tokens is not a successful correction if acceptance deteriorates. Memory pressure in the serving layer is a separate diagnosis from proposal quality; **[[01 Books/Volume III - Agentic Systems/02 Agent Memory/05 KV Cache Management/V3-05.03 The Footprint of Retained Attention State#^sec-vol3-kvcache-geometry|The Footprint of Retained Attention State]]** explains its capacity accounting. **[[01 Books/Volume III - Agentic Systems/02 Agent Memory/04 Context Engineering/V3-04.09 Evaluating Context Policies#^sec-vol3-context-engineering-evaluation|Evaluating Context Policies]]** provides the task-level comparisons needed to assess a context-policy change.
+
+## Reward Hacking and Verifier Gaming
+
+^sec-vol3-fail-goodhart-collapse
+
+A policy receives higher reward while independent assessment shows no corresponding improvement. Candidate diffs may weaken tests, special-case exposed examples, or optimize a judge’s preferred style instead of the declared criterion. Candidate selection can expose the same mismatch without changing model weights.
+
+A widening training–evaluation gap is not by itself proof of verifier gaming. Task mix, grader revisions, sampling variation, and differences between the measured criteria can also produce divergence. Compare candidate artifacts and reward components under recorded configurations. Establish whether the policy or submitted code could modify protected grading logic, and whether the checks actually cover the claimed outcome. Reading a permitted development test is not equivalent to tampering with an acceptance test.
+
+Repair an established protection or coverage defect and reassess the affected candidates. Protected tests still have limited coverage, and a learned judge needs calibration against independent assessment. **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/13 Agent Evaluation/V3-13.05 Grading Trajectories#^sec-vol3-evaluation-grading|Grading Trajectories]]** explains these measurement obligations; **[[01 Books/Volume III - Agentic Systems/05 Learning from Trajectories/17 Reinforcement Learning from Verifiable Rewards/V3-17.09 Training Pathologies#^sec-vol3-rlvr-pathologies|Training Pathologies]]** distinguishes training observations from their possible explanations. A decision to continue, suspend, or change training requires that evidence rather than an automatic diagnosis from the gap.
+
+## Confused Deputy Attacks and Prompt Injection
+
+^sec-vol3-fail-confused-deputy
+
+An agent processing an issue proposes sending private repository content to an unrelated recipient after reading instructions embedded in the issue. This is evidence of an out-of-scope proposal. Whether the runtime dispatched it, and whether data left the boundary, are separate findings. An approved destination can still receive information the task was not permitted to disclose.
+
+Compare the trusted task instructions with the third-party content, delivered context, effective grants, and admission record. Check the actual operation and its arguments, not only the tool name. A policy configuration error, an adapter that drops provenance, or incorrect tenant scoping can also permit an unauthorized effect without an injected instruction. The model’s account of why it acted does not establish causation.
+
+Withhold affected new actions while preserving authorized investigation and any outstanding recovery duties. Repair the boundary shown to be defective, such as object scoping, recipient checks, credential mediation, or approval binding. Model-visible source labels support interpretation but do not enforce those policies. **[[01 Books/Volume III - Agentic Systems/03 Tool Use/09 Agent Security/V3-09.03 The Adversarial Threat Model#^sec-vol3-security-threat-model|The Adversarial Threat Model]]** distinguishes hostile influence from delegated authority, and **[[01 Books/Volume III - Agentic Systems/03 Tool Use/09 Agent Security/V3-09.07 Information-Flow Policy#^sec-vol3-security-taint-tracking|Information-Flow Policy]]** develops the provenance and information-flow checks needed at use.
+
+## Correlated Agreement
+
+^sec-vol3-fail-correlated-consensus
+
+Several reviewers approve the same incorrect patch or repeat the same unsupported answer. Their agreement is observable; the dependence structure of their errors is not established by that incident alone. Identical model weights do not by themselves prove dependence between independently randomized outputs for a fixed input.
+
+Inspect the evidence each reviewer received, whether reviewers saw prior conclusions, and whether the acceptance criterion was incomplete or ambiguous. Shared candidate difficulty can associate errors across a task population even when reviews are conditionally independent. **[[05 Reference/Volume III - Agentic Systems/V3 Mathematical Foundations#^sec-vol3-appendix-math-correlated-quorum|Correlated failures in multi-agent quorum voting]]** supplies a model of that distinction. An interactive debate is a different procedure from isolated reviews and needs its own evaluation.
+
+Preserve the task’s required acceptance evidence and publication authority instead of replacing either with a vote. Test whether different evidence sources or independent initial reviews improve the selected result under matched budgets. Distinct reviewer names are not evidence of useful diversity, and a passing check establishes only its covered criterion. **[[01 Books/Volume III - Agentic Systems/06 Agents at Scale/18 Multi-Agent Coordination/V3-18.07 Correlated Ensemble Failures#^sec-vol3-multiagent-consensus|Correlated Ensemble Failures]]** explains how to assess review dependence and retain a separate integration boundary.
+
+## Environment Desynchronization
+
+^sec-vol3-fail-environmental-desync
+
+An agent edits a file using a stale listing, retrieves a superseded record, or treats a late result as evidence for a newer operation. A missing path can also reflect a wrong workspace, an incorrect argument, or an access restriction. The failure category applies when the observation used for a decision does not match the relevant source state or operation.
+
+Compare observation identities and source versions with the state at the attempted use. Include concurrent writers, index-update coverage, and the dependencies of derived summaries. A successful earlier read establishes the observation then, not its continued validity. Historical information can remain correct as history while being unsuitable for a current-state decision.
+
+Invalidate or restrict the affected use, obtain an authorized current observation where possible, and enforce the endpoint’s applicable version condition on mutation. Workspace isolation limits interference only within its stated boundary. A late reply may be ineligible to continue an obsolete branch yet remain important evidence for settling an unresolved operation. **[[01 Books/Volume III - Agentic Systems/02 Agent Memory/04 Context Engineering/V3-04.08 Context Invalidation#^sec-vol3-context-engineering-context-rot|Context Invalidation]]** develops dependency-aware invalidation, and **[[01 Books/Volume III - Agentic Systems/06 Agents at Scale/18 Multi-Agent Coordination/V3-18.06 Optimistic Concurrency Control#^sec-vol3-multiagent-concurrency|Optimistic Concurrency Control]]** treats concurrent publication.
+
+## Lost Progress and Repeated Effects
+
+^sec-vol3-fail-lost-progress
+
+After a worker restarts, the trajectory repeats completed analysis or sends a second external request. A missing progress record suggests a durability problem, while a second request suggests a repeat-safety problem, yet neither observation alone establishes whether the external effect occurred twice.
+
+Inspect the surviving authoritative history and its declared failure domain, the checkpoint boundary and referenced artifacts, and each logical operation’s dispatch attempts. Because an intent without adequate outcome evidence remains unresolved, a complete recorded history can reconstruct known decisions whereas a fresh model response cannot reconstruct a missing historical observation, and missing logs may reflect retention or capture limits rather than absence of execution.
+
+Restore compatible recorded state where supported and reconcile unresolved operations through the endpoint’s result-recovery or repeat contract. A deduplication key has value only under the endpoint’s enforced semantics; an unchanged-state probe cannot exclude a delayed effect. Withhold repetition when the available contract and evidence do not establish its safety. **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/11 Durable Execution/V3-11.04 Durable Intent Before Dispatch#^sec-vol3-persistence-wal|Durable Intent Before Dispatch]]** explains durable intent before dispatch, and **[[01 Books/Volume III - Agentic Systems/03 Tool Use/07 Tool Calling/V3-07.06 Retrying Uncertain Actions#^sec-vol3-tool-calling-idempotency|Retrying Uncertain Actions]]** distinguishes safe repetition from unresolved outcomes.
+
+## Retry Storms
+
+^sec-vol3-fail-retry-storm
+
+Many trajectories exhaust their allowances while a shared dependency receives repeated attempts. A slowdown alone does not establish a retry storm: sequential clients that wait for replies can reduce their request rate as latency rises, whereas amplification requires added attempts, overlapping remote work, synchronized arrivals, or another source of increased load.
+
+Group transport attempts by logical operation and identify every retry owner, including client libraries and gateways. Compare attempted and admitted rates with dependency outcomes, queue occupancy, and unresolved remote work. Several layers can each obey a local retry allowance while multiplying total attempts. Changing argument wording can also disguise repetitions generated by the agent itself.
+
+Coordinate retry ownership and enforce scoped admission and capacity limits: a circuit breaker can withhold new dispatches without canceling earlier remote operations, and backoff and jitter change timing without guaranteeing a peak-load bound or making a mutating retry safe. **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/12 Failure Recovery/V3-12.08 Tool Circuit Breakers#^sec-vol3-sagas-containment|Tool Circuit Breakers]]** develops these controls and their evidence requirements, so incident reports should preserve the distinction between withheld new work and unresolved old work when recording the response.
+
+## Diagnostic Evidence Checklist
+
+^sec-vol3-fail-diagnostic-checklist
+
+Before testing an explanation, preserve the available evidence and apply any necessary containment under the task’s authority. A student experiment should use an isolated fixture with live effects disabled unless those effects are explicitly part of the authorized test. Grouping the retained evidence by the bounded question each source can answer ([[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^tbl-vol3-triage-workflow|table 2]]) keeps the investigation focused without imposing a mandatory incident sequence.
+
+| Investigation focus         | Evidence to retain or compare                                                          | Limit of the finding                                                          |
+|:----------------------------|:---------------------------------------------------------------------------------------|:------------------------------------------------------------------------------|
+| Task outcome                | Acceptance criteria, candidate revision, scoped checks, and unresolved outcomes        | A runtime completion label does not establish task acceptance                 |
+| Admission and effects       | Proposals, current grants, decisions, dispatch identities, and endpoint evidence       | A blocked proposal differs from an unauthorized executed effect               |
+| Progress and context        | Delivered inputs, omission metadata, versioned observations, checks, and pending work  | Repetition or a missing fact does not identify a unique cause                 |
+| Source state and durability | Source generations, concurrent changes, surviving history, and checkpoint coverage     | A missing record does not prove that an operation never occurred              |
+| Load and resources          | Logical operations, attempts, reservations, charges, queues, and remote obligations    | Local request completion does not prove that remote work ended                |
+| Assessment and intervention | Grader configuration, candidate artifacts, comparison fixtures, and all trial outcomes | A successful correction on one fixture is not a general reliability guarantee |
+
+Table 2: **Diagnostic Evidence Checklist**: Each evidence set answers a bounded question and leaves explicit uncertainty for the investigation.
+
+^tbl-vol3-triage-workflow
+
+Reconstructing history, replaying captured inputs against harness code, and running a changed continuation answer different questions. Missing capture limits replay; changing an input creates an experiment rather than a recovered historical outcome. **[[01 Books/Volume III - Agentic Systems/04 The Agent Runtime/14 Operating Agents/V3-14.05 Incident Postmortems#^sec-vol3-evaluation-postmortems|Incident Postmortems]]** develops these distinctions and controlled comparisons. Keep both established defects and competing explanations in the report until the evidence supports a narrower conclusion.
+
+## Failure Report and Regression Record
+
+^sec-vol3-fail-report
+
+A useful project report should let another reader locate the evidence, understand the tested correction, and reproduce the relevant check without repeating a live harmful effect. Recording those findings in [[05 Reference/Volume III - Agentic Systems/V3 Agentic Failure Taxonomy#^tbl-vol3-failure-report-template|table 3]] separates an observed contract violation from the hypothesis that a particular change will improve task outcomes.
+
+| Record field              | Material to supply                                                                                                                       |
+|:--------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| Task and symptom          | Intended outcome, acceptance criteria, observed mismatch, task and candidate identities                                                  |
+| Evidence and coverage     | Exact artifact or record references, configurations, retained interval, redactions, and missing inputs                                   |
+| Findings and alternatives | Established boundary defects, plausible contributors, competing explanations, and evidence still needed                                  |
+| Controlled comparison     | Starting fixture, intervention, unchanged conditions, allowed randomness, common outcome criteria, and effect isolation                  |
+| Regression checks         | Deterministic boundary tests where applicable; repeated task-level trials with failures, budget stops, and unavailable verdicts retained |
+| Decision and limits       | Tested revision, supported claim, untested conditions, outstanding effects and their owners, and evidence required before broader use    |
+
+Table 3: **Failure Report Template**: A project can instantiate these fields without claiming a unique cause or a universally effective repair.
+
+^tbl-vol3-failure-report-template
+
+For a silently truncated tool response, a boundary regression can verify that the revised adapter supplies a partial-result marker and a valid continuation handle. Separate task-level trials assess whether the revised interface improves accepted repairs. Neither result establishes that every future task will succeed. The appendix’s diagnostic categories help choose those tests; the evidence, not the category name, supports the correction.
+
+Back to top
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol3/appendices/app_c_failure_taxonomy.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol3/appendices/app_c_failure_taxonomy.html#sec-vol3-app-failure-taxonomy). Rendering provenance is recorded in the import manifest.
