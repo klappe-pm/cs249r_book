@@ -1,0 +1,905 @@
+{
+  "title": "Media Round Two",
+  "reviewed_at": "2026-11-10T08:36:34.641320+00:00",
+  "source_commit": "de87c0103806d7bfb1c677dbb77a2b92fa00c298",
+  "manifest_sha256": "2246e990446b3b9c1ba334d4a43171cd88a8a6d2e9277f94cdb114fc6e7c41f4",
+  "status": "Passed",
+  "asset_count": 1186,
+  "asset_files": 1186,
+  "image_reference_count": 1241,
+  "expected_image_reference_count": 1241,
+  "format_counts": {
+    "SVG": 854,
+    "WEBP": 71,
+    "PNG": 239,
+    "JPEG": 22
+  },
+  "caption_counts": {
+    "Figure Caption": 606,
+    "Alternative Description": 635
+  },
+  "total_bytes": 168727591,
+  "largest_asset_bytes": 4844099,
+  "external_svg_resources": [],
+  "external_svg_hyperlinks": [],
+  "external_image_embeds": [],
+  "issues": [],
+  "reviewer": "Media Import Agent",
+  "scope": "All Active Image Assets and Image References in Every Markdown Note, Including Personal Notes",
+  "remediations": [
+    {
+      "finding": "Stale Generated Attachments From Initial Build",
+      "resolution": "Removed Only Files Unreferenced by All Markdown Notes Whose Bytes Matched Their SHA-256 Filename Signature",
+      "removed_files": 170,
+      "removed_bytes": 21317339
+    },
+    {
+      "finding": "Volume III Preface Div Figure Caption Was Lost During Conversion",
+      "source_path": "books/vol3/frontmatter/about.qmd",
+      "source_anchor": "fig-vol3-chapter-dependencies",
+      "resolution": "Renderer Preserves the Original Div fig-cap; Final Preface Caption Verified"
+    }
+  ],
+  "safe_pruning_verification": {
+    "result": "Passed",
+    "preserved": [
+      "Full Vault Wiki References",
+      "Shorthand Wiki References",
+      "Relative Markdown References in Personal Notes",
+      "Manually Modified Generated Attachments"
+    ],
+    "removed": "Only One Unused Unmodified Generated Fixture Attachment"
+  },
+  "removed_stale_attachments": [
+    {
+      "path": "90 Assets/Volume I/01 Introduction/161c3dba7e65a855b9d3e31d02ae360bab087e18 3e25218720.svg",
+      "sha256": "3e25218720e6d6dd49508102e58498c1c5f83df83cd9d27150af67eb035bbbe0",
+      "bytes": 178852
+    },
+    {
+      "path": "90 Assets/Volume I/01 Introduction/92bf9feb98655053a755d100f672fae83a8ac6a9 46944d28c6.svg",
+      "sha256": "46944d28c64930b62e15ff9f60bba4968ed384f491ef066a9eef82755f04c75a",
+      "bytes": 152536
+    },
+    {
+      "path": "90 Assets/Volume I/01 Introduction/C6bf675550e206b24861d5360c145f115229926e 969186f04d.svg",
+      "sha256": "969186f04d6379ebbf4059140bc51ec2def8211d771d8772fdb891fe504351d3",
+      "bytes": 38675
+    },
+    {
+      "path": "90 Assets/Volume I/01 Introduction/D4cd2bfdabcf107f9d30da3922160ef14b525831 c90f3a94fe.svg",
+      "sha256": "c90f3a94fef65c05c252d2a3711db4517d9e3b8a5e526296ccc1e7da922d3c52",
+      "bytes": 75844
+    },
+    {
+      "path": "90 Assets/Volume I/01 Introduction/Fe6affc94a154e37b647728011c89d713a543370 8195baf2b8.svg",
+      "sha256": "8195baf2b836ace0b759e676ed5af2d5bf35cdfbb7cfd8f78acda09e0ec61a1a",
+      "bytes": 99949
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/0b5b8c644ed51600ffd51433543b86fa2872b88c c073474dc6.svg",
+      "sha256": "c073474dc6e516033d2d106cedc7bd1cebd72dd2adc6aebae0ae041e23c39dcb",
+      "bytes": 63497
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/0e42374a223352c44b1cba641dcec83f41a568c6 1906383286.svg",
+      "sha256": "1906383286cf19f5517fae5240a579b22d2f44eba8149db58b41fa9045a60033",
+      "bytes": 47980
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/453142e2263a51c44c4bb97fcf1fd14e92a1ca89 d2f68b2aec.svg",
+      "sha256": "d2f68b2aec4ee8797127201f90c2fadaa32775995b32c1f82ccb4a3d82c2dd07",
+      "bytes": 79519
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/66f5beb8cdbeed97ea5bb638a64736f76a7fc9ae f0f5e61ec5.svg",
+      "sha256": "f0f5e61ec5e7570c67f71f6a94cfc3cf716af5643957d1322467841854d4ad39",
+      "bytes": 81042
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/7765a3e48ff50a2c6f650c39d2072a70a80f07fc 4222dfe6ff.svg",
+      "sha256": "4222dfe6ff760514325a0d2249f334dfaddaa5d04dfe7be6ae77c6e556886c67",
+      "bytes": 162121
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/7e2226c000192cfc9ef6ea18e2be25ccc6f26866 4f52fa284b.svg",
+      "sha256": "4f52fa284bc9fee58e8d33d8f5bf3248db837a2b56af435a0de9d1ae18e354df",
+      "bytes": 79011
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/93ce376c48bf7e25e967b5830da69e733296a58c 4a69f730dd.svg",
+      "sha256": "4a69f730dd2b225adc57b162dca0fb1373bbd018f0d027a48cf729c953f043d6",
+      "bytes": 73168
+    },
+    {
+      "path": "90 Assets/Volume I/02 System Paradigms/Bcbdbf7e5dcec688fc3faeecfa3c73ff13be220e de3b5d8176.svg",
+      "sha256": "de3b5d81765f1af9e7dcea27365b9d006bc98d783109363359d2c6c787e3479d",
+      "bytes": 77350
+    },
+    {
+      "path": "90 Assets/Volume I/03 ML Lifecycle/3c1d711c08c269c221a87b93bd6835d532898beb a844bf44b9.svg",
+      "sha256": "a844bf44b9011c4d48faec100f78d535af23f5a4486d58018518cb0a44d94d04",
+      "bytes": 88357
+    },
+    {
+      "path": "90 Assets/Volume I/03 ML Lifecycle/46b6d2f98df528bd517bfdc5b1a6b3a5a6c51e0f 88873e3f79.svg",
+      "sha256": "88873e3f79a1f2d89a7810fd0a5802a0f989174fe55546e2bca9c88dc2374251",
+      "bytes": 110862
+    },
+    {
+      "path": "90 Assets/Volume I/03 ML Lifecycle/4965e128a93c910b6865ced96484b2aa62cb2525 4602c3e387.svg",
+      "sha256": "4602c3e387874cbb4662d066f48294b6941b0af04a95bad71c42bded3fad5132",
+      "bytes": 82511
+    },
+    {
+      "path": "90 Assets/Volume I/03 ML Lifecycle/952f115072adc78345590b4af2189740002d9589 47dfaa51b6.svg",
+      "sha256": "47dfaa51b6196c060fbb4b40555a1aa7de81136ba9d2b4a04072b428e1b61608",
+      "bytes": 31563
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/1cacaaa70548bdd0c3125d16aec2dae4dcd79f12 9c03d9bda7.svg",
+      "sha256": "9c03d9bda7d1240369d49cd27d12b05d572502daa3a4dccd7bf43061e311b037",
+      "bytes": 129702
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/3baedde52f98819205ab248613a4587f7956b593 dafe406efd.svg",
+      "sha256": "dafe406efd6b1b8dcaab3f2c621862e378918c61aed862387848023736fff0cf",
+      "bytes": 56939
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/3f4144d26bc0df39d0ecc8bb7a851aeb676ff37c 3d57af61f6.svg",
+      "sha256": "3d57af61f6fbac4f663d85630c0e2e4c2d9150a074d9e9ac034edc42cef13713",
+      "bytes": 75520
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/67cf8d4abfd1021ef6f46c12c5048357fcdfaa70 54fc117c7b.svg",
+      "sha256": "54fc117c7b1939b4198d44e221b5c5c529cafaa8644804b8569224d8ea6a12ae",
+      "bytes": 63047
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/6c8963a193445567a888e8466ebf16704fe6a337 8ed3d9cf94.svg",
+      "sha256": "8ed3d9cf948f8778d5b1ddbab3c0ec98f2cd9a55d3e843e5af89166a5b6db540",
+      "bytes": 102382
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/Aaf114d245f27c31df1525700329c0b64b3255ae 5d9d5864e3.svg",
+      "sha256": "5d9d5864e3071e156e55feece2f82e9c74d991d5c7663632834ca14248f6ec1e",
+      "bytes": 53648
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/Ac3df388d451e907b6a96eb5457967ac6e157786 0b70ab2e9e.svg",
+      "sha256": "0b70ab2e9e33eaeb3f899c282477fcdfe4343cf9af40a8ffbcba379e4cab8b35",
+      "bytes": 107109
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/C8c7c2dee060471bbbdbe68ca595f4ae116cec3e 6d70c104ff.svg",
+      "sha256": "6d70c104ffbb6c8bcf30e2b60021fbe5757c769c6d65a25098d1ef0ae9baa135",
+      "bytes": 117166
+    },
+    {
+      "path": "90 Assets/Volume I/04 Data Engineering/D5f9a53714eb35848794bea937bba5c7714c5f9e 59104de97a.svg",
+      "sha256": "59104de97ac078f32b8ce04de994cf65c142f56282a09a5e62f765388177894d",
+      "bytes": 71830
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/00c30d047f24a8cb449181f88efbf70bf9623624 7781615c19.svg",
+      "sha256": "7781615c19c9e347bc605afa0dedd2079fcc18c471644aa59a8a9ab54cf71d1e",
+      "bytes": 45158
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/0111fdff2516dc30fbe6e82907ac16cd050ad973 e2a0fe603e.svg",
+      "sha256": "e2a0fe603e74c01303f985df30886bd8a42e58a6663438e94daf3d072fd26764",
+      "bytes": 124958
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/22d6db081ce330ceddf009f7f4d23b001c9f048f a0fe778c4e.svg",
+      "sha256": "a0fe778c4e1c9962b73070a3ed208bcdfa1adde455e2d60ea1c6b898103b1fcf",
+      "bytes": 161368
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/242a23c427a3493bed976f5a9a5e3ed61d3af0fa d8297f1d9e.svg",
+      "sha256": "d8297f1d9e10559241b5a9cc08ef8387fafacd87acf00f590e1745e5a84d580d",
+      "bytes": 76072
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/49771adb8e5e301dd70be2202cd7edafc1fab207 83e6082c91.svg",
+      "sha256": "83e6082c912803074659437bf62c5946c7bf3948b53b51942ad3c6e0ae250f0b",
+      "bytes": 55608
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/4c4b9b95a1e13ed2d40cb6353eb298bed1d1b249 9eff7ab474.svg",
+      "sha256": "9eff7ab4746866aac769f6846d7eb92e88755569bfc929c56a44ab764692d445",
+      "bytes": 78532
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/533336a68b3ab7555beaff096c0b6fd19ab08fe0 adbc7932ec.svg",
+      "sha256": "adbc7932ec1b8846002b9d4920c5de76dca3137d6ceba4afd13daf060822a9eb",
+      "bytes": 2444923
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/6d6539bd675ac174f7dbd15fc1e8098b6f157bd6 2f7228b752.svg",
+      "sha256": "2f7228b7529e1861839b49a52e67b21c7f2de3877c0be34ccd93a6612dd31dd5",
+      "bytes": 81144
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/80236be262c4fc012a57f9dcca988e88a276f66f 5a920546a2.svg",
+      "sha256": "5a920546a2a107049d73638ca67f00b8e5e8d5944f150636751dd6668267f3cc",
+      "bytes": 15990
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/A6f34991a7cf726c5dd028ea5eca2bca6fbe204e d50e1af8e6.svg",
+      "sha256": "d50e1af8e6d26563fec00f0b55333de51369936c0f5c630abba82b8d8f411f22",
+      "bytes": 17764
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/B76b5e64a7ecf9e3a68291ab11b3c7e6db808a32 68ee73e854.svg",
+      "sha256": "68ee73e8540260ea0be00955628fc02794ee06cf962ff1b026a84dba2e883546",
+      "bytes": 67873
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/C2786c8d7c813bb3d40ff4866a5c904c0bda22e2 e59156a880.svg",
+      "sha256": "e59156a880a57849384a0fbf56d6901e78cfe58ba41d55502e61fe667bfd39e9",
+      "bytes": 294967
+    },
+    {
+      "path": "90 Assets/Volume I/05 Nn Computation/F3e6628cba22f437519748918afd0767be943467 9d40a52c2e.svg",
+      "sha256": "9d40a52c2ec7884f6bee91a74fe7acf2b40a332e7580f1beeb316ec2ba522243",
+      "bytes": 74429
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/155335a942de31ecf2001ff9bae688b4351ba809 addefc29a7.svg",
+      "sha256": "addefc29a764c9ee92a8f4b5dc7fe4b7f078f92f938109393c4eb200d09456c9",
+      "bytes": 60842
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/328980928e9f96f622a6b62b83be11ebafe82a87 f0ba598601.svg",
+      "sha256": "f0ba598601a9d843d909ffb0f1f65b71d56ffead18424d42050ec71d3e0dd11e",
+      "bytes": 166290
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/3eae67b97bd5a11f89d6603f62a5a84360d8fb39 03e660c075.svg",
+      "sha256": "03e660c07533bd3cc81723331542419f8551223d74bf1f31653cb4cd4d48f43e",
+      "bytes": 62585
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/46abda1544e7fcdd2d4e5b4e275e92488b16503b 33675d0436.svg",
+      "sha256": "33675d0436f08d85e88dc6bcb07f68e6d25c3bac617a883671c981f49d135563",
+      "bytes": 42644
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/5fbd56340b8725bbf82db32d23c88201c4a69433 0bfefa039b.svg",
+      "sha256": "0bfefa039b960050196dc91c8ef6e5ab604254269c677e3130d222b8245c50f4",
+      "bytes": 81188
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/662eb2d01e8bd3ce0a2ce7f0934efb32f8ca2d8f 3beea3e6ca.svg",
+      "sha256": "3beea3e6caa72653d313d65c9e2d4c98560450e6238f9125e4af08e0a62b0cf9",
+      "bytes": 38836
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/72d674634e739c26170b204145050601610ea017 79abc595ed.svg",
+      "sha256": "79abc595edf96a44052922d6ffbf08dd56ca99b05a9dbde328f2989217cdb329",
+      "bytes": 100123
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/92c52eaa2f99d7bb75fb75176a44cc04ecd104e3 4d68e247f7.svg",
+      "sha256": "4d68e247f7f2852f4e2f71615c23295cf058538cd1527ea6423b5eac68b7e82e",
+      "bytes": 25147
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/A2e5f9d3946f53d6a2fdc0b4c29cde37044c0a38 71a59668ce.svg",
+      "sha256": "71a59668ced87e7055921ed988bcd23a6d985939cfcc35c1e27f80402affcbd8",
+      "bytes": 80499
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/B233383d4fcabe4d23b5fd60c250536b45acc3a0 f76b63240e.svg",
+      "sha256": "f76b63240e30af2bf94a6bd1edaf76213ce56446880e967969ec458cf1b8d775",
+      "bytes": 50861
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/Bf2c5073952a5bd2dafda75b287ce919b23162bb 74ffba3e07.svg",
+      "sha256": "74ffba3e07fa00f108917f90d3533b82871d42d9819838557ed53ceb18e23f2c",
+      "bytes": 45797
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/E70edcc6eb62e4ff70aa34885c4dab5b35caf21e 7927f3b195.svg",
+      "sha256": "7927f3b19595d8b34ef7d74a1861ecf0888edf5e2f23cc7280cbb914b3c74bf3",
+      "bytes": 77836
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/F32c967e4606fea93ae00a0fc247227e1c1fbfd7 cc63eacf37.svg",
+      "sha256": "cc63eacf37a1349d0b9fb4ca1b603dd90aadefafbd821f34f1dbcd6dcff3dc60",
+      "bytes": 204593
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/F4112a7d7c9ed0d7caf326c37f9a6beedd889b06 db6e9aabab.svg",
+      "sha256": "db6e9aabab8bf4d2d940d9f29b8626517a5c7b0b1b8e8f5a36a27c64ad687886",
+      "bytes": 44186
+    },
+    {
+      "path": "90 Assets/Volume I/06 Nn Architectures/F4e4be610329816d20260ae235383d7bd893f200 c6619a7b4b.svg",
+      "sha256": "c6619a7b4b920e27db0db378df188d5cd33db0bf190ed18e9066ea86dc2d9327",
+      "bytes": 4844099
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/22d3c14429d8a7334a1f5705f38253c19f7575df 48776867d6.svg",
+      "sha256": "48776867d671421433cda0667c6a885a39851d591cce275325abfe87bd745bd4",
+      "bytes": 72949
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/33903e655a1e1f4661d0d0df1301531cff5f2ccc 28293cabb9.svg",
+      "sha256": "28293cabb97328a9f5500bced86b5e40fa60c0d5b3cb7db16a6316bd7233e28b",
+      "bytes": 47139
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/773f00696c66782420c09b691cbfb8fca873a439 645f621fdc.svg",
+      "sha256": "645f621fdcc760e4e7a278a5e8ea941fbf4b02fe8db991b2e87bed0df50df6b3",
+      "bytes": 14755
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/7a50e1539e29e7bfdd19f662af3ea6f6e775b184 0970a7fcc1.svg",
+      "sha256": "0970a7fcc15f9511f4a375831630d026c41b0bad399dfb98852378a9444499bd",
+      "bytes": 65660
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/7ba0eb0adaeb9f142e6522387c03aff0b53f1302 7673229e5b.svg",
+      "sha256": "7673229e5ba1f1345efcfbd4b719fc379fbbe7da51e8370b8119eb131a15a1cd",
+      "bytes": 78551
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/9d0bec4585bea2905d7c74c81d9e3a7b2fbc1b21 80b32b6be2.svg",
+      "sha256": "80b32b6be23e400b9910fd67520da4d11262a2e5068b61ac98dee37e527a4f77",
+      "bytes": 502152
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/A1a678e8cb8e0e845e5d27f0e791360c0f96e78d cbe28f7958.svg",
+      "sha256": "cbe28f79588fd6163b0efef2b9901972165484da4dd16e6b86d5ab7530797b54",
+      "bytes": 47423
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/Cfd451c35efafbf37f7c1d2956b477aaceaf2a55 9634322cb1.svg",
+      "sha256": "9634322cb1810a94af9c486ca82ef025cd17f25111763638c4930f52f8ca8fcc",
+      "bytes": 41271
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/Db9ef5248a691f6f58ac8119e880e6e1900e51af 4f76f06c96.svg",
+      "sha256": "4f76f06c961f7d3a3fd699881fb0d7c10318405fd3115ec63c3885b30f3e8e17",
+      "bytes": 16208
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/E0574f1852e32905536fef2aec72f1feecf7fd4a 8612d0fcdc.svg",
+      "sha256": "8612d0fcdc21f292d88fc93604d9ad113da0df9a0065583102b94e66ed5d8822",
+      "bytes": 33105
+    },
+    {
+      "path": "90 Assets/Volume I/07 Frameworks/F5ba835da3e9e9d3075112974742fb34d2bec2a2 e33d910813.svg",
+      "sha256": "e33d9108135458bd1bb7f6c7846d4bff9388e26888c4625223ff8d47565aaef9",
+      "bytes": 70087
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/314ea113ac92a31dfe947d12aa5fa65f4b4b8a58 eb45796620.svg",
+      "sha256": "eb4579662089cc991c7588dbd287d8af7e94141e21a4c9daa2d3484b1a3d6562",
+      "bytes": 83341
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/4c6da2315eb024fa79197fd2522bf03bebc6ad88 5bb3da8ca8.svg",
+      "sha256": "5bb3da8ca85b19d7f2a2f65f0a9fe1e3e97319089cb439a6ecd0afeeace7b29d",
+      "bytes": 44940
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/52d3e2488569ad5df8ac31e9e67d68fed6ec4fbb b84e51cb2e.svg",
+      "sha256": "b84e51cb2e906e2d138171838338685b06ea04e9e9e16e68ab30d644bd56b00c",
+      "bytes": 65012
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/6d853a72323542355b9f99a8130e53527ed8683c 12166cf8ad.svg",
+      "sha256": "12166cf8adc3c8fc11b01f8c0b370f4eed809a225c0fce4aeff79f565c0357ef",
+      "bytes": 63561
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/7948aab866235802a04b0d71e2cc7abb02f3b080 769abca0e3.svg",
+      "sha256": "769abca0e39036c04c7729728338de106a42c285deec58256c4e80d55f9e3561",
+      "bytes": 76826
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/900fbb6f3233d992bb3b85f9b826d3bab8e251d3 cc85b50f7c.svg",
+      "sha256": "cc85b50f7c2567d0e688bb1c243472e79a50552ea610002f7d7381a2de907f04",
+      "bytes": 73383
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/B9bb780b2492d57644b546580421396ba6ad67df 8f54f2a99e.svg",
+      "sha256": "8f54f2a99e9f6d129744dede9769ab8dad26b0449f6a1810f298339ee0b6d7db",
+      "bytes": 86966
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/Be615f477359c4de720d46eadd5fc3f910306d06 66c6eabb27.svg",
+      "sha256": "66c6eabb278233752c869b9516b97b9054bddd137a44b902168c495e1ca30fc8",
+      "bytes": 67201
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/C700c8d78a88a2e387d68357baa0e66df4160804 730cd3ca03.svg",
+      "sha256": "730cd3ca03decbefc785bb32d7dec5905a5116077676c27eb352a8d904f9cb95",
+      "bytes": 35974
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/D3d06e524edff55d24162897e71e8e2659426246 5105188ee0.svg",
+      "sha256": "5105188ee0550bc7235b68bcfb61cae04c84e1d3b10a9830ecea3a0235f5fe3d",
+      "bytes": 76551
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/Ddac04ece7e66da0753e84c38df821c58ee38a1f a359643810.svg",
+      "sha256": "a359643810fb87cbb9144896fc1a448b81175a9c83395b2cfe402c1aa092ae79",
+      "bytes": 40014
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/Fc13a11aff091136ae17d849c58d915821cc68b3 b0a0ac2f54.svg",
+      "sha256": "b0a0ac2f54387070910cb3ddf85032c81df80bd76577aa4ce75172357ea0608d",
+      "bytes": 57346
+    },
+    {
+      "path": "90 Assets/Volume I/08 Training/Fee5f06d43facc2a7454352f35b42236d41d6631 1819e42dbb.svg",
+      "sha256": "1819e42dbbaf15dbb9f54b1bffe835d07f0fed4f81db32744a79e244b2ba836e",
+      "bytes": 50623
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/2462b50c69dac33baaa1d30a57203c89be9a89c2 7d08feac04.svg",
+      "sha256": "7d08feac04bba636598cab0cc21bd7f6a38a579ba511c7051b24dbc45840f15d",
+      "bytes": 70231
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/46ff9f772cde874ab3b3c9fc36a148d5675e4978 339be65052.svg",
+      "sha256": "339be6505206e931e6a0d66e2e62785fd3629e8c5b8d170d01d8ac77e93e8ab7",
+      "bytes": 93302
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/5fb700bc26eefed63b72a9d4b56614c6771a5835 e48b12f8cb.svg",
+      "sha256": "e48b12f8cb6d7fe5bf7e269065edfc223b36594d23b38db2e4cdeaa42f0f2b48",
+      "bytes": 76391
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/8968cea40dc1217fad97dba473f54d5494132794 4a7e5a457f.svg",
+      "sha256": "4a7e5a457f6c8c7eb3576c3279934a82fef327082de14c5a886146f27161b201",
+      "bytes": 45835
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/A59e9c94dcde54da60262a87514cba532bd2454a 7247106dfb.svg",
+      "sha256": "7247106dfbd315b728ece36dba0ba22e1353e27a1e15ec030d83ef584b8cd69e",
+      "bytes": 39551
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/B4a66d7b99f9e2c1399885d0837171cd969b27a3 59836c326e.svg",
+      "sha256": "59836c326e3003c87d0c1cee204db7f948e9a042e6dbc74aae22f0fbe6dcf10e",
+      "bytes": 89151
+    },
+    {
+      "path": "90 Assets/Volume I/09 Data Selection/B9ce1f76c09d91d01f74367c9cee89f8512f85d7 ad480faa3c.svg",
+      "sha256": "ad480faa3c65aa4cfcad79b239fd8fb34716ef83550f20c07f1601eb500a35cf",
+      "bytes": 84969
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/1151f174fdd12d13ea4e08241d9b2a2da95cfc07 21c9ce2c41.svg",
+      "sha256": "21c9ce2c41a9bf903b02d37a6bbcf6a175a58bcfc2fbe8a2b48617eec3af999d",
+      "bytes": 29666
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/1953316bdaf5b91736c760801de03f5cb5d263e0 4475a9be6d.svg",
+      "sha256": "4475a9be6d60bf0cd9a4436bf1576723237b937568a910ebc4895dc1c0a5c054",
+      "bytes": 44344
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/264fb48a1f83cb29fdcb4e1986e5922d7f2ac165 18ba16e390.svg",
+      "sha256": "18ba16e3907b3d956602cada18ac4854cfdecf40310d5cb9feb39d5d6a366f9e",
+      "bytes": 85220
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/303b8ffd4a5dccf308af83fa9fa5c1aa56f1b416 7e1ad8c5d7.svg",
+      "sha256": "7e1ad8c5d7fb4410748c9a48a458e0da346d3db36ecb007b111d72c8db852a9e",
+      "bytes": 102330
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/4832af201c597663676bf4ba3e8cd32cd5bed72e d8bb8b1902.svg",
+      "sha256": "d8bb8b1902740615e6d9f874ceb810e4ec2f98c90c47724ff99a5c782b48c660",
+      "bytes": 28085
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/48a52c2a820e79303e107d1d81754533e1805235 d79d51af25.svg",
+      "sha256": "d79d51af2571d25e3ca5b8d759c2ea1af02bdd43903c25c0fa01f4c79db53915",
+      "bytes": 32422
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/4b93eb7943f4beed82e6408cf1d6986baaca2bcc 84d3542aa4.svg",
+      "sha256": "84d3542aa42c82639cd4f97c51546a7cc6df17e0b9c678ddba5d0e15ef9b0ace",
+      "bytes": 83590
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/5ce6d0af103f9152020078068dfad10edfb2025e 8bdb9252e1.svg",
+      "sha256": "8bdb9252e1f0780d69c967f0e78776d056599968a46d9757d33856b246d5b3fe",
+      "bytes": 38227
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/5d42a20ba83f63ec2dda5936bc8a34324b398652 da4abc1e42.svg",
+      "sha256": "da4abc1e427868410d14531809d7202cc0ed8c09fc189ed0ea509dbbb5b06050",
+      "bytes": 124605
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/61c3ab3c0a0880c8b7831ec6d39bf629b5ef4630 35e03a2cdb.svg",
+      "sha256": "35e03a2cdb82c4cb22866be8ad1227c3f439aedf8fd98c04dc85e443167746e1",
+      "bytes": 68190
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/6d4fa45f2440e361559e1443d5082b8ac5246c1d d9079c7caf.svg",
+      "sha256": "d9079c7cafde4bfdef9a07c78c6e94584a7fec1a416a50205fc269ccab983786",
+      "bytes": 69422
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/7a3ecb8a91106e7142ef5ed1fdf500f450c77b15 f6b80f1aef.svg",
+      "sha256": "f6b80f1aefa462fb356cfe5459807cc3a9284e900239a368194ac8917abb5b61",
+      "bytes": 70843
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/8b321a776cadd00b45d54b3f11360d9901600aa2 a42ac3d9f5.svg",
+      "sha256": "a42ac3d9f5cd1a67a0b4088c231e0adfccec69efe1750446ea5ef9d2d2eeb5a8",
+      "bytes": 188520
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/8d9a0bf73716a3e459ec3b7d609ff3ee3abb05e1 aacd9c8313.svg",
+      "sha256": "aacd9c83130454b2453263b3e8e320b699f598cc01fa1591265652b5e498ef71",
+      "bytes": 103401
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/93b7c22a8891b533be9015c11c8ce8a82617c180 7551f2a1df.svg",
+      "sha256": "7551f2a1df29c1b17d6f280a9ce1348dd9ef2a387dcc2e203d42243e00d3b80c",
+      "bytes": 172567
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/95f7c9157e048cf16166c318dc7bf49be561b0c7 fd2fd7e949.svg",
+      "sha256": "fd2fd7e949d1696f16510b9f78d9e07dd36d0bc92a032c49c71ed4a7bf5e2a8a",
+      "bytes": 38131
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/9712fcebbf0f7a5191cd93853558ad827dbc395e 9320ee1987.svg",
+      "sha256": "9320ee198790ebd7ee215c6dbe13aabfc115de22dc6f531ec74f66ae42ac0218",
+      "bytes": 19799
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/9b8ad8e044caaab0db89e601c1d504b8d4488236 4d2316ca4b.svg",
+      "sha256": "4d2316ca4bc4d3273b122d953e8b45334383331110fd41756c8a03342a13e0dd",
+      "bytes": 83747
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/A95ce62ba378e478cabb50aaac7e6951bb1b7d26 9c48d67166.svg",
+      "sha256": "9c48d671669498950a27d3d8ea5bd13da2a799e35f90587838fb35e5b2609e48",
+      "bytes": 176867
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/B484c2577f4c806457d02064bb88328a1eeb1795 b89d77e750.svg",
+      "sha256": "b89d77e7508f4e9dab36c5c57ae81e5dd9113b9f0c2168ffc39dc25713c6d253",
+      "bytes": 183685
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/B5528dde0c19a8190b53e80a3180b3584c9f1b97 e04fdd3104.svg",
+      "sha256": "e04fdd31043376c356ad609b4c373eecce2ec06973c433d210cf7e5e2da7537b",
+      "bytes": 39513
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/Ba16a300ea3548ce961190e1d2bd7182ed07cee5 0fbf5c274e.svg",
+      "sha256": "0fbf5c274eb4acd798a8c7b453a23b3f2fa8fd22939b2e2c4cc6f289b6e2d854",
+      "bytes": 94657
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/C782ca9fd4e81dd8f4e676f2da86910799cde933 5d7a78db8c.svg",
+      "sha256": "5d7a78db8c6086567d06c4f5a03077f9be62145fee8be78ddac1a68e372733f6",
+      "bytes": 49233
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/Cccc509a9fc9f0f5395e63611f31e6941932c40e b662c06aa6.svg",
+      "sha256": "b662c06aa674aacdee81090f43b54c343c1c42c87ecd694c3f034137845d9fe1",
+      "bytes": 82010
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/Dd115b009e3e0397ac36fa2c054247e2cbb0c198 1644089d38.svg",
+      "sha256": "1644089d38f029b32651167a83efa6f22942b6b14820b83064ecd7be4f369c63",
+      "bytes": 202688
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/E078b03d6a407093ade20ad0b477b2bb323c2749 3ce4d4f289.svg",
+      "sha256": "3ce4d4f2895a81f379c521e32b95e4f132c2e5630dc4d10d783d756ecba21c18",
+      "bytes": 12249
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/E1abb26292b11662e0f58b37003bbebd21b60dc7 3ea88b3dfe.svg",
+      "sha256": "3ea88b3dfec7c287f794a2b97a109d4317b836de73bc970632bd47bc647509de",
+      "bytes": 20984
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/Ecd0e0f1928043564f923af63ab00274b11da184 fa9e3e5cd2.svg",
+      "sha256": "fa9e3e5cd226aed13cea1c603bce0080aa5fd9e4ecf0936733bb096b78fe35fe",
+      "bytes": 28271
+    },
+    {
+      "path": "90 Assets/Volume I/10 Model Compression/F64b8c472c0a0f9e49fbf48e8ebcf627201ef478 a8fc75814f.svg",
+      "sha256": "a8fc75814f733cb829adfbe2437c1e615e5c226eede6d0324873fef8ff41072e",
+      "bytes": 265567
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/0231a2e75e17d18b13236d8867bc0b77a199de1a 1c09e50aed.svg",
+      "sha256": "1c09e50aed89e598b36d753149615f6f436bc1127262b2117b016fa368618fe8",
+      "bytes": 275651
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/1cde7af7d2aa63cf0514ac09a81912267a2e7cc3 e22fc11152.svg",
+      "sha256": "e22fc111525ae8cbfed60128ee2d47a620e808882e3859e5af4aba4c8dea01d7",
+      "bytes": 52975
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/74a48691e04f2fc38286b5e8f0c59602beb4475a ed69b8d311.svg",
+      "sha256": "ed69b8d3116942ebdd843627647c44d67552fbc82cb986fae20ce7ee61d419a6",
+      "bytes": 79202
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/8784f1e240119df3b984e2c3c9b68d608cc05033 c028b0ced7.svg",
+      "sha256": "c028b0ced799d9a95a4bae7ebcc5bd7d2dba13091a9a9df42f5d99fd08f1e449",
+      "bytes": 39278
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/Ab7e1744e52c80361695cc9ff171af01a94d7f57 3c16e5d251.svg",
+      "sha256": "3c16e5d251944afb3885f6a97615f212433d53913b2980e2326b04007f4f37ec",
+      "bytes": 87127
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/B5e9763ec6b16d43dfc10942f939025947488e55 4ad0964be1.svg",
+      "sha256": "4ad0964be1ba1ae9d2126097f1a9b4cdd5448f0d228709d191c2fcbf03bf4e86",
+      "bytes": 89542
+    },
+    {
+      "path": "90 Assets/Volume I/11 Hw Acceleration/Ea7f1184e169141c72dd1b4146f54132f1d21b77 8792248dbf.svg",
+      "sha256": "8792248dbf03378b010fdd337b217bda313e2aa6f8ba7e6e7b437e15692d8bc4",
+      "bytes": 35472
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/379074829321108420c716d9b555e6d9dd9f1fc0 3348c7a6e7.svg",
+      "sha256": "3348c7a6e7f9668e48c83dbda556db46650b8ba5f3aab0213cb5387733a9d06c",
+      "bytes": 123806
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/412cf715dc534fdca6838a5b4a6b9335e57254e0 295bd2956f.svg",
+      "sha256": "295bd2956fdcd2e55ac57d4f35b50fde7a0407c65402a1892f4c4e5258458620",
+      "bytes": 174731
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/45e469dce26769ec809c8a1d658cd132c8fa5e4a c22d239f32.svg",
+      "sha256": "c22d239f32ceae37582b89d5500a66cca92d11eae5f621e4231f1487197830da",
+      "bytes": 46634
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/5dcfa43ae6c8f08d0452b8c9f7d65cd4d095186e be7c1c1971.svg",
+      "sha256": "be7c1c19712ab183f6fb9dd1c3f0a5e388bad8c32db6d06e43a506465a170006",
+      "bytes": 55633
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/7160863319855ffd4a7e8a421b89fab36567d911 f132e07c99.svg",
+      "sha256": "f132e07c99687775aa5e255c6978766982f88c07ba92340dfeb71cf2ec5c0514",
+      "bytes": 37451
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/78fd510d8a23e702860aa296734c057d0e567c42 2a9deb4108.svg",
+      "sha256": "2a9deb4108a2c61ec494930afae7cd2f3a19f47b46e5db394cc3c5e6ea4ed2cf",
+      "bytes": 43708
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/81f947f926f164a785aad2cfaef9ef06a3ab8945 f1e4c7370f.svg",
+      "sha256": "f1e4c7370faa41b0c68a105d9364e36bae4e5462d9047c353eb7802b375074fa",
+      "bytes": 112850
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/B2c5ec64e57199f314ea0203c5f6f5052fc7e032 623bc3169c.svg",
+      "sha256": "623bc3169c421e9abe6e407aa9d5d0864023ebac0e533cf7c8de94f89c6205a3",
+      "bytes": 49688
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/Bde31a7a1801f9a77a89cc934b07d74c3b25f3eb 9b63960411.svg",
+      "sha256": "9b6396041190176887a2ff55d334f7e4834e52f538e9fa803fab3c0ec00baa97",
+      "bytes": 98383
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/C65e65cb7fea7facdda3ab538c194e191e24e213 9c72a5fca7.svg",
+      "sha256": "9c72a5fca7860227c3300fa305d58d95a0312298af06506233fca3285e2c4464",
+      "bytes": 52341
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/Dba27289bbe3ebfaa393ce1f724f4f743e4ffd71 7c4e080b6c.svg",
+      "sha256": "7c4e080b6cf5e2b42dd95be7875b619fe33173b5292a97c22b376b70e60b5ebb",
+      "bytes": 85777
+    },
+    {
+      "path": "90 Assets/Volume I/12 Benchmarking/E07e8dadee98b6b83ff4b8a5fc10fb737af0ddf2 af9409288c.svg",
+      "sha256": "af9409288cfeac3670dbe214f9465aa5a0a7d16b2f9925608af603ad9610961c",
+      "bytes": 209479
+    },
+    {
+      "path": "90 Assets/Volume I/13 Model Serving/00b908adf094683421ef4df6368523131315d6ef ceb078301c.svg",
+      "sha256": "ceb078301cf446d3e11988383713807d15389f83e63294c372fc6250d23c012b",
+      "bytes": 61210
+    },
+    {
+      "path": "90 Assets/Volume I/13 Model Serving/186806054df8b9d43db2922ca9c527b54dbc89fe d96590f7bd.svg",
+      "sha256": "d96590f7bdc50346ba5377bd93718a85171d86437ea31cfe08837f11012c2b4d",
+      "bytes": 74731
+    },
+    {
+      "path": "90 Assets/Volume I/13 Model Serving/2e5a3b8ab1e6e077ffa35886de80d94174e7dd7c 18376be809.svg",
+      "sha256": "18376be8099dcb89ae016d6e00ec4a245d52dd5897e68a891d6328a7f4688a2a",
+      "bytes": 35915
+    },
+    {
+      "path": "90 Assets/Volume I/13 Model Serving/Bda625eb1037c80a1754a393b830dc019bfc8a54 7612892bf0.svg",
+      "sha256": "7612892bf064b9bffbad905cf6b3efabc70f16dd294c30047a10126453716b44",
+      "bytes": 109879
+    },
+    {
+      "path": "90 Assets/Volume I/13 Model Serving/D1c10d2a77a63fc1040456e9e108bbafe79cabf6 5d374ddfa7.svg",
+      "sha256": "5d374ddfa7983f5d0d89e1891a6a32239c294946e6d67e38cbfc39a6dd4d1121",
+      "bytes": 90982
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/0d37750dcee93f1e7533717d432ffbedc41cd817 52f7f9e06b.svg",
+      "sha256": "52f7f9e06b772d8266144f514baa3f0c18eb281d27d57a1854b473bc7513fce0",
+      "bytes": 104946
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/426e302c0d6a274b2e7d47ef88454505438af003 a73616164c.svg",
+      "sha256": "a73616164c2cf698c11982f1c9212976be7d3c12484315b865c575dc147fccf9",
+      "bytes": 36901
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/5ce7b68d553e8e12882a29ed0bfd2604384fb5f5 eaa4f12fe0.svg",
+      "sha256": "eaa4f12fe087ddd6f7e20a294e07ee7bcbb1c89a933ce1745b8a6cb0f5bcf3a9",
+      "bytes": 67996
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/5e72cbeab842a0a7b70a830ff7e5978314ac1029 30ad50a559.svg",
+      "sha256": "30ad50a5598657e7ab4c12ef91258d6b979c949f76b012e72bc30e64d2c55000",
+      "bytes": 42334
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/922a1cd0620b6564f3031714615b6f702450c6b0 4a0181a9b7.svg",
+      "sha256": "4a0181a9b7997f50bbf66e82abda4c512647f01b714599bbe126329fc8494bcc",
+      "bytes": 91995
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/Baa1fb4c3357bc66364f5227d9fddb249aaad107 a72ea0a94c.svg",
+      "sha256": "a72ea0a94c1a4e72510f6764dc8edf075ea91ed55e511a15c9a94e284121abff",
+      "bytes": 674643
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/C69b39cd17910553f84f2d5c7853e206b8cd0ebb a57437e33d.svg",
+      "sha256": "a57437e33d06f107a0290904c886b13de59c101a803a7f65fc008c30e19a0b3c",
+      "bytes": 81305
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/D1160c88d7e2ae1f5c6d932765747635e68efde8 35a49928aa.svg",
+      "sha256": "35a49928aa3a82f792b6cf46e6b0d0c91425cd15ea8a3ce22441a47f2bee56a6",
+      "bytes": 49181
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/D4d359f2336fb3776cc0d2b941a307fc04a2c280 8953083d76.svg",
+      "sha256": "8953083d76831a5441a62d81471735fd69e4dfe2a0fc990b41f0a2072cfa1b0e",
+      "bytes": 69230
+    },
+    {
+      "path": "90 Assets/Volume I/14 ML Ops/Dc72d71f5a50ebe524d5c2f3a64b83aa18f8f7fc 5a971da839.svg",
+      "sha256": "5a971da8394d6f17941a329483347768a7b56e8d44d2539cc821529816185edd",
+      "bytes": 119690
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/17b5edd8558432261c4d58b08e2a970a3d5a8c19 963a95bffd.svg",
+      "sha256": "963a95bffd0d82783b28ebfaa9afcd079b345d5c708994561403b5b442253afe",
+      "bytes": 45328
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/280d9a01c1e78ad00a26047463c56fb9cc3e7d37 822de13bc9.svg",
+      "sha256": "822de13bc93356421309c83f5901160ac639e17de36c45613521b28f6666b508",
+      "bytes": 77598
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/33355d4f7df940d541fe11dadd4a1e7bd969802e 0acb554946.svg",
+      "sha256": "0acb55494659d6aa7bc8ddafe2792359acd353b3355375522ec90195470bbb22",
+      "bytes": 84013
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/3907de206cac6fae2f59281c0f3f29cdf1c7529b f70d0d1846.svg",
+      "sha256": "f70d0d18464a4a932c4de852cca10649553a6cc66e5232873afcb2179c99680c",
+      "bytes": 109504
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/6e9fe464d94efd952930ef75c1b3ee587797f56a 9369e669fb.svg",
+      "sha256": "9369e669fbd1ad74107b96a0103b11673a72ec0823a6d9c548a028f6789ab6f6",
+      "bytes": 79202
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/885fc8ff08ba690a3805e2ab5c521bef458ae46d ca63cccf46.svg",
+      "sha256": "ca63cccf46e85a010be8c7f8eb327ece10c946d4fabcb5289b99807b213ff27b",
+      "bytes": 318278
+    },
+    {
+      "path": "90 Assets/Volume I/15 Responsible Engr/Efa04a9a8957f1d5768b848e53b86cc3085a2e3a f8b1d798df.svg",
+      "sha256": "f8b1d798dff99beadd4b6c676a153322a467efd81d8dcba832e7448af43732b4",
+      "bytes": 76804
+    },
+    {
+      "path": "90 Assets/Volume I/16 Conclusion/32babc41eaba8fcdfc4217e593e84d4eaa9a125f 6771331cd7.svg",
+      "sha256": "6771331cd70d953c2775c475e12656682d9cab7dac7524d2242a637fa05cd186",
+      "bytes": 123079
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/49fecaa99b59c5d3ba3fc9281b55ea402112dd9c b813ac03b5.svg",
+      "sha256": "b813ac03b55b0eb58e620ba180539366742724dc535d7d64b0525a36a6bf2858",
+      "bytes": 63935
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/54f1884e89ae470752098e352a672c8c0516c9c3 c768208ae0.svg",
+      "sha256": "c768208ae05a5cd986a4f1ad39b276fcffea879db87c60a9304be2f03fc8c7cf",
+      "bytes": 26836
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/59ccba2199da7684c63b3c1b7633db1ff5d154d0 f6adab1b5a.svg",
+      "sha256": "f6adab1b5a10bdd49377dd2608fd219dc9fd974fb692107838b20d494c15f8c4",
+      "bytes": 40282
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/7125229f582f4a9a16672fe00ac3edacefa4f3d3 b21282f4c6.svg",
+      "sha256": "b21282f4c6f04e7989c994f16ff1c0cf5fbbbed1d45dcba028aefa5775508d1b",
+      "bytes": 36056
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/Cf9acfcfd25bd8c71cfc39f593ff16ea2cbc7139 42944a94ad.svg",
+      "sha256": "42944a94ad29a694de84228cd0de77f7a7125fecd629085f9bbc95434bb5c9fb",
+      "bytes": 50386
+    },
+    {
+      "path": "90 Assets/Volume I/Shared Figures/F8a3f8621cfcd221afacc09177f174072c2958da 0e32cb813c.svg",
+      "sha256": "0e32cb813c1f604d9e984a55c77eabb8b53f815a01010f2288c139116f40879b",
+      "bytes": 51196
+    },
+    {
+      "path": "90 Assets/Volume II/01 Introduction/Fleet Stack dfae3bfd77.svg",
+      "sha256": "dfae3bfd77b29b1412a9d5028f819d736948e7028a2af85e04bd5df9c7072037",
+      "bytes": 10925
+    },
+    {
+      "path": "90 Assets/Volume II/02 Compute Infrastructure/Compute Infrastructure Cxl Bandwidth Gap 597f250188.svg",
+      "sha256": "597f2501883a79aa2ba54c1a3f6e4ef946d04c6f0f19a2cdbf510bb335faee12",
+      "bytes": 16284
+    },
+    {
+      "path": "90 Assets/Volume II/02 Compute Infrastructure/Margin Stack e7b38e246f.svg",
+      "sha256": "e7b38e246f2f49e1442b6649fb58769539e8a0ebc57834ab50f77d971e325dbf",
+      "bytes": 3900
+    },
+    {
+      "path": "90 Assets/Volume II/03 Network Fabrics/Network Fabrics Pfc Pause Blast 680be2b6e8.svg",
+      "sha256": "680be2b6e84c2da379ed5179c84aaac1c50653f790c5e40d7e1a690b587cc7a1",
+      "bytes": 18472
+    },
+    {
+      "path": "90 Assets/Volume II/04 Data Storage/Data Storage Checkpoint Storm Write Time 36901fddf9.svg",
+      "sha256": "36901fddf9969d4d6845fd0dca45ea978d43b0c94607e8f82cd2e085b108715d",
+      "bytes": 1578
+    },
+    {
+      "path": "90 Assets/Volume II/06 Distributed Training/Margin Stack b5f508998b.svg",
+      "sha256": "b5f508998b619e6c441d6f44c425f26631acd42f6086202171de0ae8eb916ef5",
+      "bytes": 3900
+    },
+    {
+      "path": "90 Assets/Volume II/15 Sustainable AI/Vol2 Sustainable AI Margin 004 50ccf8d4ea.svg",
+      "sha256": "50ccf8d4eacac660018c181afa06eb2b52669e60aa5c6393f748d407f103c336",
+      "bytes": 1424
+    },
+    {
+      "path": "90 Assets/Volume II/16 Responsible AI/Margin Stack fa29bbbf49.svg",
+      "sha256": "fa29bbbf49ba3ebcbde7b50ff16fd00b9794a68418d2ea396de173e23d37faae",
+      "bytes": 3900
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+---
+title: V3 Author’s Note
+type: Frontmatter
+volume: 3
+chapter: 0
+publication_status: In Development
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol3/frontmatter/author_note.qmd
+source_anchor: authors-note
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Frontmatter
+- Book/Volume_3
+rendered_source_url: https://mlsysbook.ai/vol3/frontmatter/author_note.html
+---
+
+# V3 Author’s Note
+
+[[Home|Home]] · [[01 Books/Volume III - Agentic Systems/Volume 3 Overview|Volume Overview]]
+
+^authors-note
+
+When an AI answers a question, the interaction is over. When an AI takes an action, the real engineering has only just begun.
+
+A prompt-and-response model in a stateless, text-only interaction is an oracle behind glass: it answers when spoken to, carries no action privileges, and leaves no session state for the next call. Once you give that intelligence tools, memory, and a delegated goal, however, it ceases to be an oracle. It becomes an **actor**.
+
+My curiosity about agentic systems began during a National Science Foundation (NSF) workshop on AI efficiency. As someone whose work has long focused on benchmarking and quantitative systems evaluation, including the initialization of MLPerf, I found myself asking a basic systems question: *how do we benchmark and evaluate the efficiency of these actors?*
+
+At the algorithmic and application layers, the community has introduced a vibrant lexicon of techniques: “prompt engineering,” “prompt chaining,” “in-context reflection,” and “agentic workflows.” These ideas are genuinely creative and impactful. They show us what is possible when models interact iteratively with task environments. As a computer systems architect, however, I found myself asking a complementary question: what machine is required to build, benchmark, and scale these ideas? When you hear these exotic-sounding terms at the application level, what is the actual system you have to construct underneath?
+
+To measure and engineer these workflows, we have to break them down to their fundamentals. Viewed from first principles, an agentic system is not an alien artifact. It is **a machine built around a foundation model**, and its parts are ones a systems engineer recognizes:
+
+- The foundation model reads a context and **proposes** the next action.
+- **Agent memory** decides what each call sees and keeps what must outlast the session.
+- **Tools** carry approved proposals into the environment under scoped permissions, with sandboxes containing the reach of executable code.
+- The **agent runtime** mediates proposals, records execution, and coordinates recovery or escalation when something goes wrong.
+
+Taken together, these parts form a single architectural map that I call the Stochastic Computer. That map shows how the pieces fit at a glance, after which each subsystem must be engineered on its own terms, because a foundation model does not behave like deterministic logic and a context window does not behave like a hardware cache.
+
+Yet this machine carries a profound systems twist: **it is stochastic**. A deterministic program repeats its result when its inputs and execution conditions remain fixed. A sampling foundation model can propose a different action under the same context. Even when generation is repeatable, the proposal can still be wrong. Repeated success is no substitute for bounding what the next action may reach.
+
+I experienced this firsthand while drafting these chapters. Working alongside an autonomous coding assistant with direct terminal access, the agent took an unexpected turn and executed an `rm -f` directly in the directory containing my active edits. Then, late at night and out of habit, I committed and pushed the changes upstream. Days of work across a holiday weekend were gone.
+
+A computer systems professor should know better than to give an unconstrained actor raw effector privileges without an isolated sandbox, or to push a tree without reading the diff. That is the trap. Autonomy is convenient until it makes a change that cannot be undone. The task needed only reversible authority over a disposable working copy of my files, and the environment granted irreversible authority over my sole authoritative workspace (**[[01 Books/Volume III - Agentic Systems/00 Introduction/01 Introduction/V3-01.05 The H·S·A Exposure Space#^sec-vol3-intro-hsa|The H·S·A Exposure Space]]**).
+
+Reliability has always required more than debugging individual components. When the component proposing actions is learned, we must also account for proposals that look plausible while violating the task. We cannot rely on human vigilance or prompt cleverness alone to guarantee safety. The runtime around the model must bound what each call sees, contain what each action can reach, preserve the records needed for recovery, and escalate when an effect cannot be safely repaired.
+
+I write these chapters as a student of a discipline in motion. Putting this book together, shuttling between Cambridge and Zurich, has been my way of distilling the durable first principles that will still govern these systems a decade from now: the three exposures of **horizon, state, and authority** and the closure the runtime builds against them. I hope you find it helpful.
+
+— Vijay Janapa Reddi\
+Cambridge, Massachusetts & Zurich, Switzerland\
+2026
+
+Back to top
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol3/frontmatter/author_note.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol3/frontmatter/author_note.html#authors-note). Rendering provenance is recorded in the import manifest.

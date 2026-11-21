@@ -1,0 +1,1508 @@
+---
+title: V2 Glossary
+type: Reference
+volume: 2
+chapter: 0
+publication_status: Preview
+source_repository: https://github.com/klappe-pm/cs249r_book
+source_commit: de87c0103806d7bfb1c677dbb77a2b92fa00c298
+source_path: books/vol2/backmatter/glossary/glossary.qmd
+source_anchor: sec-glossary
+source_mode: Source-Correlated Published HTML
+tags:
+- Type/Reference
+- Book/Volume_2
+rendered_source_url: https://mlsysbook.ai/vol2/backmatter/glossary/glossary.html
+---
+
+# V2 Glossary
+
+[[Home|Home]] · [[01 Books/Volume II - Scaling/Volume 2 Overview|Volume Overview]]
+
+^sec-glossary
+
+This glossary defines key terms used throughout this book. Terms are organized alphabetically.
+
+## 1
+
+^sec-glossary-volume-ii-scalable-systems-1
+
+**1F1B scheduling**\
+One-Forward-One-Backward scheduling, a synchronous pipeline scheduling algorithm that alternates forward and backward passes for in-flight microbatches, capping peak activation memory to $\mathcal{O}({N_{\text{PP}}})$ where ${N_{\text{PP}}}$ is pipeline depth.
+
+## 3
+
+^sec-glossary-volume-ii-scalable-systems-3
+
+**3D parallelism**\
+The composition of data parallelism, pipeline parallelism, and tensor parallelism across orthogonal axes of a cluster mesh to match physical bandwidth tiers (intra-node NVLink, inter-node fabric, cluster spine).
+
+## A
+
+^sec-glossary-volume-ii-scalable-systems--86ed
+
+**accountability**\
+The mechanisms by which individuals or organizations are held responsible for the outcomes of AI systems, involving traceability, documentation, auditing, and the ability to remedy harms.
+
+**activation checkpointing**\
+A memory-saving training technique that stores only selected activations and recomputes others during backpropagation, trading extra compute for lower memory use.
+
+**active optical cable (AOC)**\
+A fiber-optic cable assembly with integrated electro-optical transceivers at both ends that converts high-speed electrical signals to optical pulses, providing reaches up to 100 meters across server racks.
+
+**adapter modules**\
+Small trainable neural network components inserted between frozen layers of a pretrained model to enable lightweight adaptation without modifying the base architecture.
+
+**adaptive routing**\
+A routing mechanism that selects among available paths using current network conditions, such as queue occupancy, to avoid hot spots while preserving the transport’s ordering requirements.
+
+**advanced packaging**\
+Semiconductor integration techniques, such as 2.5D interposers, chiplets, and 3D stacking, that connect multiple dies with shorter, denser links than a conventional circuit board can provide.
+
+**adversarial attack**\
+A type of attack where carefully crafted inputs are designed to cause machine learning models to make incorrect predictions while remaining nearly indistinguishable from legitimate data to humans.
+
+**adversarial example**\
+A maliciously modified input that is designed to fool a machine learning model into making an incorrect prediction, often created by adding small, imperceptible perturbations to legitimate data.
+
+**adversarial training**\
+A defense technique that involves training models on adversarial examples to improve their robustness and ability to correctly classify adversarial inputs.
+
+**algorithmic fairness**\
+The principle and mathematical formulation that algorithmic decisions should not disproportionately or unjustly disadvantage individuals or protected groups based on sensitive demographic attributes.
+
+**alignment tax**\
+The measured degradation in general task performance, training throughput, or inference latency incurred as a byproduct of applying safety and alignment interventions.
+
+**AllGather**\
+A collective communication operation that gathers each rank’s shard and makes the combined result available to every rank.
+
+**AllReduce**\
+A collective communication operation that reduces values across ranks and returns the reduced result to every rank, commonly used for gradient synchronization.
+
+**AllToAll**\
+A collective communication operation where each rank sends distinct data to every other rank and receives distinct data from each rank.
+
+**alpha-beta model**\
+A communication cost model that separates fixed startup latency from message-size-dependent transfer time to estimate the cost of moving data.
+
+**Amdahl’s law**\
+The bound on the speedup of fixed work across ${N}$ processors when a fraction ${r}$ of it is serial, $1/({r} + (1-{r})/{N})$, which can never exceed $1/{r}$. At fleet scale, the serial fraction includes exposed communication, synchronization, and pipeline bubbles.
+
+**anomaly detection**\
+The identification of patterns in data that do not conform to expected behavior, often used to detect outliers, faults, or malicious activities in systems.
+
+**anonymization**\
+The process of removing or modifying personally identifiable information from datasets to protect individual privacy, though often insufficient against sophisticated re-identification attacks.
+
+**Archetype A (GPT-4/Llama-3)**\
+The book’s recurring large dense language-model workload, used to probe communication-heavy distributed training and memory-bandwidth-bound serving. Its running instance is a 175B-parameter dense transformer trained with mixed precision and the Adam optimizer on 1,024 H100 GPUs.
+
+**Archetype B (DLRM at Scale)**\
+The book’s recurring recommendation workload, a deep learning recommendation model whose large embedding tables are sharded across many nodes. It probes sparse feature routing, AllToAll communication, and tail latency.
+
+**Archetype C (Federated MobileNet)**\
+The book’s recurring edge workload, an efficient convolutional network trained by federated learning across phone-class devices with sustained power budgets of a few watts. It probes the per-device compute envelope and the coordination of unreliable participants.
+
+**arithmetic intensity**\
+The amount of computation performed per byte of data moved, usually measured in FLOP/byte.
+
+**artificial intelligence**\
+A broad field of computer science focused on creating systems that can perform tasks typically requiring human intelligence, including learning, reasoning, and decision-making.
+
+**asynchronous checkpointing**\
+A fault-tolerance mechanism that snapshots model state into local staging memory before asynchronously streaming bytes to persistent storage in the background, minimizing training stall time.
+
+**attained service scheduling**\
+A duration-agnostic priority queueing discipline where job priority decreases monotonically as cumulative resource consumption increases, approximating shortest remaining processing time without requiring runtime estimates.
+
+**autoencoder**\
+A neural network architecture that learns compressed data representations by minimizing reconstruction error, commonly used for anomaly detection and dimensionality reduction.
+
+**automation bias**\
+The tendency for humans to over-rely on automated system outputs even when clear errors are present, potentially compromising human oversight.
+
+**AutoML**\
+Automated machine learning that uses algorithms to automate the process of applying machine learning to real-world problems, including feature engineering, model selection, and hyperparameter tuning.
+
+**availability**\
+The property that a storage service responds when a client needs it; it is distinct from whether acknowledged data survives failures or whether a read returns the newest committed version.
+
+**availability attack**\
+A type of data poisoning attack that aims to degrade the overall performance of a machine learning model by introducing noise or corrupting training data across multiple classes.
+
+## B
+
+^sec-glossary-volume-ii-scalable-systems-b-4eba
+
+**backdoor attack**\
+A malicious machine learning attack where a model is trained or poisoned to perform normally on standard inputs but produce adversary-selected behaviors whenever a specific secret trigger pattern is present.
+
+**backfill scheduling**\
+An optimization policy that schedules smaller, shorter queued jobs out of order onto currently idle resources, provided they do not delay the planned start time of higher-priority gang-scheduled jobs.
+
+**backpressure**\
+A control response that slows admission or bounds in-flight work when a downstream stage cannot sustain the upstream arrival rate.
+
+**backpropagation**\
+The algorithm for computing gradients in neural networks by propagating error signals backward through layers, essential for training but computationally expensive on resource-constrained devices.
+
+**bandwidth hierarchy**\
+The ordered set of data-movement tiers within and between computing systems, from on-chip memory through device, node, rack, and pod interconnects, whose bandwidth generally decreases as physical distance increases.
+
+**batched gather-matrix-vector (BGMV)**\
+A GPU kernel operation that batches matrix-vector products across heterogeneous adapters, gathering adapter-specific weights according to each token’s adapter index.
+
+**Bayesian neural networks**\
+Neural networks that incorporate probability distributions over their weights, enabling uncertainty quantification in predictions and more robust decision-making.
+
+**bias detection**\
+Systematic methods for identifying unfair discrimination or disparate treatment across different demographic groups in machine learning system outputs.
+
+**bias mitigation**\
+Techniques and interventions designed to reduce unfair discrimination in machine learning systems, applied during data collection, model training, or postprocessing stages.
+
+**bias-only adaptation**\
+A lightweight training strategy that freezes all model weights and updates only scalar bias terms, drastically reducing memory requirements and computational overhead for on-device learning.
+
+**bin packing**\
+The assignment of jobs with resource demands into fixed-capacity nodes or clusters; in ML fleets this often spans GPUs, memory, CPUs, network locality, and topology.
+
+**bisection bandwidth**\
+The minimum aggregate link capacity crossing any cut that splits a network into two equal halves, bounding worst-case throughput for global communication.
+
+**bit flip**\
+A hardware fault where a single bit in memory or a register unexpectedly changes its value from 0 to 1 or vice versa, potentially corrupting data or computations.
+
+**black-box attack**\
+An adversarial attack where the attacker has no knowledge of the model’s internal architecture, parameters, or training data, and must rely solely on querying the model and observing outputs.
+
+**block-wise quantization**\
+A quantization method that partitions tensors into independent sub-blocks with individual scaling factors, confining extreme outlier values to single blocks.
+
+**built-in self-test (BIST)**\
+Hardware testing mechanisms that allow components to test themselves for faults using dedicated circuitry and predefined test patterns.
+
+**bulk synchronous parallel (BSP)**\
+A parallel execution model in which workers perform local computation, communicate, and then wait at a global barrier before the next step.
+
+## C
+
+^sec-glossary-volume-ii-scalable-systems-c-dd8c
+
+**C³ taxonomy**\
+The book’s diagnostic framework for distributed execution, which divides wall-clock time and bottlenecks into Compute (${C}_1$, local arithmetic and memory on each node), Communication (${C}_2$, data movement between devices), and Coordination (${C}_3$, synchronization, scheduling, and recovery). The Fleet Law assigns one term to each dimension.
+
+**canary deployment**\
+A rollout pattern that sends a small slice of traffic to a new model or service version, monitors behavior, and then expands or rolls back.
+
+**CAP theorem**\
+A distributed-systems result stating that, under a network partition, a system must choose between strict consistency and availability.
+
+**carbon-aware scheduling**\
+A workload scheduling strategy that shifts compute tasks geographically or temporally to match periods of high renewable energy availability and low grid carbon intensity.
+
+**carbon footprint**\
+The total amount of greenhouse gas emissions produced directly and indirectly by an individual, organization, event, or product, typically measured in CO<sub>2</sub>-equivalent.
+
+**carbon intensity**\
+The greenhouse gas emissions associated with a unit of electricity, commonly measured in grams of CO<sub>2</sub>-equivalent per kilowatt-hour.
+
+**carbon usage effectiveness (CUE)**\
+A data-center sustainability metric defined as the ratio of total carbon dioxide equivalent emissions produced by data center operations to total IT equipment energy consumption.
+
+**catastrophic forgetting**\
+The tendency of a neural network to abruptly lose proficiency on previously learned tasks or historical distributions when sequentially trained on new data without rehearsal or regularization.
+
+**certified robustness**\
+A formal guarantee that a model prediction remains unchanged for all allowed perturbations within a specified radius or norm bound.
+
+**checkpoint/restart**\
+A fault-tolerance strategy that periodically saves job state so a failed run can resume from the last saved state instead of starting over.
+
+**checkpoint storm**\
+A synchronized surge of massive network and storage write traffic that occurs when all nodes in a distributed training fleet flush model parameters and optimizer states simultaneously at periodic intervals.
+
+**chiplet**\
+A modular silicon die that is combined with other dies in one package (2.5D interposer or 3D stacking, such as TSMC CoWoS) so an accelerator can exceed the reticle limit of a single die.
+
+**chunked prefill**\
+A prompt ingestion strategy that divides long input contexts into fixed-size token chunks co-scheduled alongside single-token decode steps, preventing compute-intensive prefill passes from causing head-of-line latency spikes on decode streams.
+
+**circular economy**\
+An industrial economic model aimed at eliminating waste through the continual use, refurbishment, remanufacturing, and recycling of physical assets.
+
+**client drift**\
+The divergence of local model updates from the global optimal trajectory during federated learning, caused by multiple local optimization steps on heterogeneous, non-IID data distributions.
+
+**client scheduling**\
+The process of selecting which devices participate in federated learning rounds based on availability, data quality, and resource constraints to ensure representative model updates.
+
+**clock gating**\
+A circuit technique that suppresses the clock signal to inactive logic blocks, reducing dynamic power without changing the supply voltage or clock frequency of active blocks.
+
+**cloud ML**\
+Machine learning systems that use cloud computing infrastructure to provide scalable computational resources for training and inference, typically offering high-bandwidth connectivity and substantial processing power.
+
+**communication-computation ratio**\
+The ratio ${\rho}= {T_{\text{comm}}}({N})/({T_{\text{compute}}}/{N})$ of per-step communication time to local computation time. Values near or above 1 indicate substantial communication pressure; achievable overlap depends on independent work and available resources. The ratio is the time-domain form of communication intensity.
+
+**co-packaged optics (CPO)**\
+An advanced packaging architecture that co-locates silicon photonics transceivers directly on the same substrate as the network switch ASIC, shortening electrical trace lengths to millimeters to drastically lower interconnect energy per bit.
+
+**collective operation**\
+A group communication pattern in which all ranks participate to aggregate, broadcast, or redistribute data.
+
+**combinational logic**\
+Digital logic circuits where the output depends only on the current input states, not any past states or memory elements.
+
+**communication-computation overlap**\
+The concurrent execution of data transfer and useful computation whose dependencies are already satisfied. Only communication that fits within the available independent work can be hidden; any remaining transfer tail stays on the critical path.
+
+**communication intensity (CI)**\
+The ratio of bytes transferred across a network to local floating-point operations performed. It extends arithmetic-intensity reasoning from a device’s memory hierarchy to a distributed system’s network fabric.
+
+**compute express link (CXL)**\
+An open industry-standard interconnect protocol built on the PCIe physical layer that provides high-bandwidth, low-latency, cache-coherent shared memory access and pooling across heterogeneous processors and memory expanders.
+
+**concept bottleneck models**\
+Neural network architectures that first predict interpretable intermediate concepts before making final predictions, combining deep learning power with transparency.
+
+**concept drift**\
+A statistical change in the relationship between input features and target labels over time (${p}({y}\mid {x})$), causing trained model predictions to degrade even if input data distributions remain unchanged.
+
+**confidential computing**\
+A security technology that protects data in use by performing computation inside hardware-isolated, cryptographically attestation-backed Trusted Execution Environments (TEEs).
+
+**conformal prediction**\
+A framework that uses held-out calibration data to construct prediction sets or intervals with finite-sample marginal coverage at a specified level under exchangeability.
+
+**congestion control**\
+Mechanisms that regulate traffic injection or routing in response to load, preventing persistent queues, packet loss, and tail-latency amplification in a shared fabric.
+
+**consistency**\
+The contract that determines which version a read may observe when writes overlap or replicas disagree.
+
+**consistent hashing**\
+A hash-based routing method that keeps keys or sessions mapped to stable replicas while minimizing remapping when replicas are added or removed.
+
+**constitutional AI**\
+A training method where models learn to improve their own outputs by critiquing responses against a set of principles, enabling iterative self-refinement and reducing harmful content while maintaining helpfulness.
+
+**contestability**\
+The architectural property and operational mechanism enabling end users or auditors to interrogate, challenge, and seek redress or recourse against algorithmic decisions.
+
+**context parallelism**\
+An attention-level distributed execution technique that partitions long sequence lengths across dedicated process groups using point-to-point ring communication or sequence-head transposes.
+
+**continual learning**\
+The ability of machine learning systems to learn continuously from a stream of data while retaining previously acquired knowledge, addressing the challenge of catastrophic forgetting in neural networks.
+
+**continuous batching**\
+An inference scheduling architecture that groups and schedules active requests at each autoregressive token generation iteration rather than waiting for an entire batch to complete, eliminating padding waste.
+
+**controller pattern**\
+An asynchronous, declarative control loop (standardized in Kubernetes) that continuously observes the actual state of cluster resources and drives mutations to converge toward the desired declared state.
+
+**cooling effectiveness**\
+The efficiency with which a data center cooling system removes heat from computing equipment, typically measured as the ratio of heat removed to energy consumed for cooling.
+
+**coordinated checkpointing**\
+A distributed fault-tolerance protocol where all participating worker ranks synchronize at a common execution step to capture a globally consistent snapshot of application state.
+
+**counterfactual explanation**\
+An interpretability mechanism specifying the minimal input perturbation required to flip a model’s output prediction or decision.
+
+**covariate drift**\
+A shift in the distribution of input features (${p}({x})$) between training and production environments while the true conditional probability distribution of targets (${p}({y}\mid {x})$) remains unchanged.
+
+**covariate shift**\
+A type of distribution shift where the input distribution changes while the conditional relationship between inputs and outputs remains stable.
+
+**critical batch size**\
+A workload-dependent crossover beyond which increasing the batch yields diminishing reductions in the optimization steps needed to reach a target quality. The gradient noise scale can provide a proxy; the crossover is not necessarily a hardware-throughput or training-time optimum.
+
+**critical message size**\
+The operational crossover payload size (${n^*} = {\alpha}\cdot {\beta}$) in the ${\alpha}$-${\beta}$ model below which communication is dominated by startup latency and above which transfer time is dominated by link bandwidth.
+
+**CUDA graphs**\
+A GPU execution model that captures a sequence of kernel launches and memory dependencies into a static graph, amortizing CPU dispatch overhead through single-request replay.
+
+## D
+
+^sec-glossary-volume-ii-scalable-systems--6294
+
+**D·A·M taxonomy**\
+A single-node systems framework decomposing workloads into Data (dataset volume and pipeline throughput), Algorithm (computational complexity and arithmetic intensity), and Machine (compute capabilities and memory hierarchy), projected onto distributed fleets via the C³ taxonomy.
+
+**dark launching**\
+A deployment strategy where newly updated model versions process production traffic in the background without exposing outputs to end users, measuring system performance and stability under real load.
+
+**data center**\
+A facility housing computer systems and associated components such as telecommunications and storage systems, typically including redundant power supplies, cooling systems, and network connections.
+
+**data compression**\
+Techniques for reducing the size and complexity of training data through encoding, quantization, or feature extraction to enable efficient storage and processing on memory-constrained devices.
+
+**data contract**\
+A formal agreement between data producers and downstream consumers defining schema definitions, semantic constraints, and freshness expectations for ML feature pipelines.
+
+**data parallelism**\
+A training strategy where each worker holds a full model replica, processes a different data shard, and synchronizes gradients before applying the same update.
+
+**data poisoning**\
+An adversarial attack where malicious or corrupted data is deliberately injected into training datasets to degrade overall model accuracy or introduce specific vulnerabilities.
+
+**data provenance**\
+An immutable, auditable record tracking the origin, lineage, licensing, filtering criteria, and preprocessing transformations applied to training data throughout its lifecycle.
+
+**data sanitization**\
+The process of deliberately and permanently removing or destroying data stored on memory devices to make it unrecoverable, ensuring data security.
+
+**data stall ratio**\
+A diagnostic efficiency metric measuring the fraction of total training step duration during which accelerators sit idle waiting for input data from storage or preprocessing pipelines.
+
+**datasheets for datasets**\
+A standardized documentation framework that records the provenance, composition, collection methodology, and intended use cases of machine learning datasets.
+
+**decode phase**\
+The autoregressive generation phase in LLM inference that emits tokens one step at a time using the KV cache, often limited by memory bandwidth.
+
+**decode piggybacking**\
+A co-scheduling optimization in chunked prefill systems where memory-bandwidth-bound decode token generation executes concurrently with compute-bound prefill matrix multiplications, increasing GPU arithmetic intensity.
+
+**deep learning**\
+A subset of machine learning using neural networks with multiple hidden layers to automatically learn hierarchical representations from data.
+
+**defensive distillation**\
+A technique that trains a student model to mimic a teacher model’s behavior using soft labels, reducing sensitivity to adversarial perturbations.
+
+**demographic parity**\
+A group fairness criterion requiring that the likelihood of receiving a positive algorithmic prediction or outcome is identical across all protected demographic subgroups.
+
+**Dennard scaling**\
+The historical observation that as transistors become smaller, their power density remains approximately constant, allowing for more transistors without proportional increases in power consumption.
+
+**differential privacy**\
+A mathematical guarantee bounding how much a randomized algorithm’s output distribution can change between neighboring datasets. The parameters ${\epsilon}$ and ${\delta}$ limit individual influence under the stated adjacency relation; they do not promise that an observer learns nothing about a person.
+
+**differentially private SGD (DP-SGD)**\
+A training algorithm that clips per-example gradients and adds calibrated noise, with privacy accounting for sampling and repeated updates under a stated adjacency relation.
+
+**direct attach copper (DAC)**\
+A passive, shielded twinaxial copper cable assembly with fixed transceiver terminations used for short in-rack interconnections, introducing negligible transmission latency and zero active transceiver power consumption.
+
+**direct-to-chip liquid cooling**\
+A thermal management architecture that circulates liquid coolant through sealed cold plates mounted directly on high-power processors, capturing heat far more efficiently than air cooling.
+
+**disaggregated serving**\
+An inference serving architecture that physically separates prompt processing (prefill) and token generation (decode) onto dedicated, independently scaled hardware pools.
+
+**disparate impact ratio**\
+A quantitative fairness measure defined as the ratio of the positive selection rate for an underprivileged protected group to the positive selection rate for the privileged group, traditionally assessed against the four-fifths rule.
+
+**displacement of overhead**\
+The principle that reducing one distributed-systems cost often moves pressure to another part of the system rather than eliminating it. For example, fewer synchronization barriers can reduce coordination time while increasing staleness or recovery complexity.
+
+**distributed checkpointing**\
+A checkpointing pattern where workers write their own portions of training state in parallel under a coordinated protocol.
+
+**distributed tracing**\
+An observability technique that follows a request across multiple services or components using propagated trace context.
+
+**distributed training**\
+The practice of training machine learning models across multiple computing nodes or devices to reduce training time and enable larger model architectures.
+
+**distribution shift**\
+The phenomenon where data encountered during model deployment differs from the training distribution, potentially degrading model performance.
+
+**domain adaptation**\
+Machine learning techniques that enable models trained on one domain to perform well on a different but related domain, addressing distribution mismatch challenges.
+
+**dominant resource fairness (DRF)**\
+A multi-resource fair-sharing algorithm that equalizes the maximum share of any resource type (such as GPU, CPU, memory, or network bandwidth) allocated to competing users or workloads.
+
+**double binary tree**\
+An AllReduce algorithm implemented in NCCL that routes communication across two complementary spanning trees simultaneously, achieving $\mathcal{O}(\log {N})$ latency while sustaining near-optimal bandwidth utilization.
+
+**dual modular redundancy (DMR)**\
+A fault-tolerance technique that duplicates a computation across two independent systems and compares their outputs. A disagreement detects a fault but cannot identify or correct the faulty result without another mechanism.
+
+**dual-use dilemma**\
+The challenge of mitigating misuse of technology that has both positive and negative potential applications, particularly relevant in AI security.
+
+**duck curve**\
+A daily electrical load profile graph showing a pronounced midday dip in net demand caused by peak solar energy generation, followed by a steep evening ramp when solar generation ceases.
+
+**durability**\
+The property that acknowledged data remains recoverable after the failures covered by the storage contract.
+
+**dynamic batching**\
+A serving technique that briefly aggregates incoming requests into batches to improve throughput while controlling added latency.
+
+**dynamic voltage and frequency scaling (DVFS)**\
+A power-management technique that adjusts a processor’s supply voltage and clock frequency to trade execution speed for energy use and thermal headroom.
+
+## E
+
+^sec-glossary-volume-ii-scalable-systems-e-da15
+
+**edge AI**\
+The deployment of artificial intelligence algorithms directly on edge devices like smartphones, IoT sensors, and embedded systems, enabling real-time processing without cloud connectivity.
+
+**edge computing**\
+A distributed computing paradigm that brings computation and data storage closer to data sources, enabling real-time processing with reduced latency and lower bandwidth requirements.
+
+**edge intelligence**\
+The paradigm of deploying machine learning inference, continuous adaptation, and distributed coordination directly on edge devices and near-edge systems under local power, memory, and connectivity constraints.
+
+**edge ML**\
+Machine learning systems that perform inference and sometimes training at the edge of networks, typically on resource-constrained devices like smartphones or embedded systems with limited computational power.
+
+**effective FLOP/s**\
+The useful throughput of a fleet after its peak FLOP/s is reduced by single-device efficiency (MFU), scaling efficiency, and runtime goodput, with each loss counted in exactly one factor.
+
+**efficiency frontier**\
+The Pareto-optimal trade-off curve across latency, throughput, cost, memory, and model accuracy beyond which no metric can improve without degrading another.
+
+**elastic training**\
+Training that can continue as workers join, leave, fail, or are replaced by resizing process groups and redistributing state or data.
+
+**elastic weight consolidation (EWC)**\
+A continual learning regularization algorithm that slows learning on parameters critical to previously mastered tasks by penalizing changes weighted by their Fisher information matrix values.
+
+**electromigration**\
+The movement of metal atoms in a conductor under the influence of an electric field, potentially causing permanent hardware faults over time.
+
+**elephant flow**\
+A persistent, high-throughput network flow, such as a large gradient AllReduce or checkpoint transfer, that sustains near line-rate transmission and creates structural bottleneck risks under hash-based routing.
+
+**embodied carbon**\
+The cumulative greenhouse gas emissions generated during the raw material extraction, manufacturing, transportation, and construction of hardware and physical data-center infrastructure.
+
+**energy efficiency**\
+The ratio of useful output to energy input, measuring how effectively a system converts energy into desired computational work.
+
+**energy roofline model**\
+An analytical model relating computational intensity and data movement to energy use under specified operation costs and accounting boundaries.
+
+**energy accounting boundary**\
+The requirement to evaluate useful computation against the total energy consumed by compute, cooling, and network movement. It complements the Fleet Law’s time decomposition with an energy-side measure of distributed efficiency.
+
+**ensemble methods**\
+Machine learning approaches that combine predictions from multiple models to improve accuracy, robustness, and reliability compared to individual models.
+
+**environmental monitoring**\
+The systematic collection and analysis of environmental data using sensor networks and machine learning to track ecosystem health, pollution levels, and climate change impacts.
+
+**equal-cost multi-path (ECMP)**\
+A routing method that hashes flows across multiple paths with equal routing cost; persistent large flows can collide on one path even when other paths remain underused.
+
+**equal opportunity difference**\
+The difference in true positive rates between protected demographic groups for a binary classification decision.
+
+**equality of opportunity**\
+A fairness criterion focused on ensuring equal true positive rates across groups, guaranteeing that qualified individuals are treated equally regardless of group membership.
+
+**equalized odds**\
+A group fairness metric requiring that a predictor achieves identical true positive rates and identical false positive rates across all protected demographic groups.
+
+**erasure coding**\
+A mathematical data durability scheme that divides objects into ${d}$ data and ${m}$ parity fragments distributed across separate failure domains, providing extreme fault tolerance at lower capacity overhead than full replication.
+
+**error-correcting codes**\
+Methods used in data storage and transmission to detect and correct errors, improving system reliability and data integrity.
+
+**error feedback**\
+A distributed optimization technique for biased gradient compression (such as Top-${k}$ sparsification or 1-bit quantization) that stores compression residuals in local memory and adds them to subsequent updates, preserving convergence guarantees.
+
+**ESP32**\
+A low-cost microcontroller unit widely used in IoT applications, featuring a 240 MHz processor and 520 KB SRAM, commonly deployed in resource-constrained social impact applications.
+
+**evaluation contract**\
+A specification defining quantitative performance thresholds, test suites, and regression checks that a machine learning model must satisfy before promotion to production.
+
+**event time**\
+The time at which an event occurred at its source, as distinct from the processing time at which a system handled it.
+
+**exactly-once outcome**\
+An application-level result in which replay cannot lose or duplicate an effect, typically enforced with stable identifiers and idempotent or transactional writes rather than transport delivery alone.
+
+**expected calibration error (ECE)**\
+A scalar metric that measures the discrepancy between predicted confidence probabilities and actual empirical accuracies across partitioned confidence bins.
+
+**experience replay**\
+A memory-based technique that stores past training examples in a buffer to prevent catastrophic forgetting and stabilize learning in streaming or continual adaptation scenarios.
+
+**expert collapse**\
+A training pathology in mixture of experts models where only a few experts receive significant training signal, causing other experts to become underutilized and reducing the model’s effective capacity.
+
+**expert parallelism**\
+A distributed strategy for Mixture of Experts (MoE) architectures where different experts are assigned to different accelerators, requiring AllToAll collective routing to dispatch tokens to their assigned experts and combine results.
+
+**explainability**\
+The ability of stakeholders to understand how a machine learning model produces its outputs through post-hoc explanation techniques.
+
+**explicit congestion notification (ECN)**\
+A network-layer protocol extension that marks congestion indicators in IP packet headers when switch buffer queues exceed a preset threshold, triggering sender rate reductions without packet drops.
+
+**external memory**\
+Mechanisms that allow neural networks to access and manipulate external storage systems, extending their working memory beyond parameter storage to enable more complex reasoning and information retrieval.
+
+## F
+
+^sec-glossary-volume-ii-scalable-systems-f-d0dc
+
+**fail-stop failure**\
+A failure mode where a computing component halts operation completely and visibly upon encountering a fault, ceasing all communication and computation.
+
+**failure in time (FIT)**\
+A reliability unit equal to one failure per $10^9$ device-hours. A component’s mean time to failure in hours is $10^9$ divided by its FIT rate.
+
+**fairness constraints**\
+Technical and policy restrictions designed to ensure equitable treatment across demographic groups in machine learning systems.
+
+**fast gradient sign method (FGSM)**\
+A gradient-based adversarial attack that generates adversarial examples by adding small perturbations in the direction of the gradient.
+
+**fat-tree topology**\
+A Clos-style hierarchical network topology whose aggregate capacity increases toward the spine to provide high bisection bandwidth and multipath routing.
+
+**fault injection attack**\
+A physical attack that deliberately disrupts hardware operations through techniques like voltage manipulation or electromagnetic interference to induce computational errors and compromise system integrity.
+
+**fault tolerance**\
+The ability of a system to continue operating correctly even when some of its components fail or encounter errors.
+
+**feature store**\
+A centralized operational data management system that automates the ingestion, transformation, storage, and retrieval of curated features for both offline training and low-latency online inference.
+
+**federated averaging**\
+The standard algorithm for federated learning where client model updates are aggregated using weighted averaging based on local dataset sizes to produce a global model.
+
+**federated learning**\
+A machine learning approach that trains across decentralized data sources without centralizing raw training records. Updates and released models can still reveal information, so privacy guarantees require additional mechanisms and explicit assumptions.
+
+**few-shot learning**\
+A machine learning paradigm that enables models to adapt to new tasks using only a small number of labeled examples, critical for data-sparse on-device scenarios.
+
+**FinOps**\
+A cloud financial management discipline and cultural practice that enables organizations to maximize business value by helping engineering, finance, and technology teams collaborate on data-driven spending decisions.
+
+**FlashAttention**\
+An exact, memory-efficient attention algorithm that computes softmax tiling in on-chip SRAM to eliminate quadratic intermediate writes to HBM.
+
+**Fleet Law**\
+The master equation of distributed step time, ${T_{\text{step}}}({N}) = {T_{\text{compute}}}/{N}+ {T_{\text{comm}}}({N}) + {T_{\text{sync}}}({N}) - {T_{\text{overlap}}}$, which decomposes an idealized fixed-work training step on ${N}$ devices into the Compute, Communication, and Coordination terms of the C³ taxonomy minus the time hidden by overlap. It is the distributed counterpart of the iron law.
+
+**fleet stack**\
+The book’s layered model of a machine learning fleet, with eight rows (Facility & Accelerators, Fabric & Storage, Distributed Execution, Reliability & Control, Runtime & Serving, Operations, Assurance, and Governance & Sustainability) grouped into four bands (Infrastructure, Distribution, Serving, and Governance), one band per part of the book. Constraints at lower rows bound the choices available above them.
+
+**FLOP/s**\
+Floating-point operations per second, a throughput measure of how many floating-point arithmetic operations a system performs per second.
+
+**flowlet switching**\
+An adaptive routing scheme that divides network flows into discrete packet bursts (flowlets) separated by idle gaps longer than path delay skew, rerouting flowlets across alternative links without triggering packet reordering.
+
+**forward error correction (FEC)**\
+A digital channel-coding technique that transmits structured parity symbols alongside payload data, enabling the receiver to detect and correct bit transmission errors without requesting retransmissions.
+
+**foundation models**\
+Large-scale pretrained models like GPT and BERT that can be adapted for a wide variety of downstream tasks, serving as a foundation for multiple applications.
+
+**fully sharded data parallel (FSDP)**\
+A native PyTorch implementation of ZeRO-3 that shards model parameters, gradients, and optimizer states across ranks, using AllGather before layer computation and ReduceScatter during the backward pass.
+
+## G
+
+^sec-glossary-volume-ii-scalable-systems-g-94a4
+
+**gang scheduling**\
+A co-scheduling discipline that atomically allocates all required compute and network resources for a distributed job simultaneously, preventing hold-and-wait deadlocks in barrier synchronization.
+
+**GDPR**\
+The General Data Protection Regulation, a European Union law that imposes strict requirements on personal data processing and significantly influences privacy-preserving machine learning design.
+
+**generality tax**\
+The area, power, and control overhead a general-purpose processor spends supporting diverse workloads rather than accelerating the operations dominant in a specialized workload.
+
+**generative adversarial network (GAN)**\
+A model class in which a generator network learns to produce synthetic data while a discriminator network learns to tell it from real data; the two are trained against each other.
+
+**goodput**\
+The rate of useful, retained progress over a stated wall-clock interval and resource allocation. Training goodput can account for statistical efficiency, replay, and recovery, so high arithmetic utilization alone does not establish high goodput. A goodput claim names its measure, such as ML productivity goodput (MPG) for fleet capacity or SLO goodput for requests that meet their latency targets.
+
+**governance frameworks**\
+Structured approaches for managing responsible AI development including policies, procedures, oversight mechanisms, and accountability structures.
+
+**GPU**\
+Graphics Processing Unit, a specialized electronic circuit designed to rapidly manipulate and alter memory to accelerate the creation of images and parallel processing tasks like AI training.
+
+**GPUDirect RDMA**\
+A direct data path that lets RDMA-capable network adapters transfer data to or from GPU memory without staging through host memory.
+
+**GPUDirect Storage (GDS)**\
+An NVIDIA technology enabling a direct DMA data path between NVMe storage devices and GPU high-bandwidth memory, bypassing CPU host DRAM bounce buffers and reducing per-transfer latency.
+
+**graceful degradation**\
+The ability of a distributed system to continue operating in a reduced capacity rather than failing completely when one or more components become unavailable.
+
+**gradient accumulation**\
+A technique that accumulates gradients over multiple microbatches before an optimizer step or synchronization.
+
+**gradient descent**\
+An optimization algorithm that iteratively updates model parameters by moving in the direction opposite to the gradient of the loss function, fundamental to neural network training.
+
+**gradient inversion attack**\
+An attack that reconstructs sensitive training examples or features from shared gradients or model updates.
+
+**gradient staleness**\
+The delay, measured in updates or steps, between when a gradient is computed and when it is applied.
+
+**graph break**\
+A fallback event in tracing JIT compilers where unsupported dynamic Python constructs force the compiler to terminate graph capture and return execution to the standard Python interpreter.
+
+**gray-box attack**\
+An adversarial attack where the attacker has partial knowledge about the model, such as knowing the architecture but not the specific parameters or training data.
+
+**gray failure**\
+A subtle, degraded operational failure where a component continues running and reporting healthy status while experiencing severe performance degradation or producing intermittent corruptions.
+
+**group distributionally robust optimization (GDRO)**\
+An optimization formulation that minimizes the worst-case training loss across predefined demographic or contextual sub-groups rather than average empirical loss.
+
+**grouped-query attention (GQA)**\
+An attention mechanism where multiple query attention heads share a single key-value head, drastically diminishing the KV cache memory footprint per decoding step relative to Multi-Head Attention.
+
+**Gustafson’s law**\
+The observation that when problem size grows with processor count, the scaled speedup grows nearly linearly, as ${N}- {s}({N}-1)$ for serial fraction ${s}$ of the scaled run. It describes weak scaling.
+
+## H
+
+^sec-glossary-volume-ii-scalable-systems-h-de56
+
+**hallucination**\
+A generative model failure where output is fluent and confident but unsupported, fabricated, or factually wrong.
+
+**hardware redundancy**\
+The duplication of critical hardware components to provide backup functionality and improve system reliability through voting mechanisms.
+
+**hardware-software co-design**\
+The coordinated, simultaneous optimization of hardware microarchitecture, system software, and model algorithms to achieve performance and efficiency unattainable through independent component design.
+
+**hardware trojan**\
+A malicious modification embedded in hardware components during manufacturing that can remain dormant under normal conditions but trigger harmful behavior when specific conditions are met.
+
+**heartbeat**\
+A periodic liveness signal that a node or process sends to a monitor; a missed heartbeat is the usual trigger for failure detection and recovery.
+
+**hierarchical AllReduce**\
+A multi-phase collective reduction that exploits the cluster bandwidth gap by performing local reductions over fast intra-node interconnects before routing aggregated node shards across slower inter-node fabrics, finishing with intra-node result distribution.
+
+**high-bandwidth memory (HBM)**\
+A 3D-stacked DRAM architecture where vertically bonded memory dies connect to host processors via thousands of through-silicon vias (TSVs) across a silicon interposer, delivering terabytes-per-second memory bandwidth.
+
+**Hockney model**\
+Another name for the alpha-beta model of point-to-point communication, ${T}({n}) = {\alpha}+ {n}/{\beta}$, after the author who applied it to parallel computers.
+
+**homomorphic encryption**\
+A cryptographic technique that allows computations to be performed directly on encrypted data without decrypting it first, enabling privacy-preserving machine learning inference.
+
+**hot spares**\
+Backup components kept ready to instantaneously replace failing components without disrupting system operation, providing redundancy.
+
+**Huber loss**\
+A robust loss function used in regression that is less sensitive to outliers compared to squared error loss, improving training stability.
+
+**human-AI collaboration**\
+The synergistic partnership between humans and AI systems where each contributes their unique strengths to solve complex problems more effectively than either could alone.
+
+**human oversight**\
+The principle that human judgment should supervise, correct, or halt automated decisions, maintaining meaningful human control over AI systems.
+
+**hyperparameter optimization**\
+The process of finding the optimal configuration of hyperparameters (learning rate, batch size, network architecture parameters) that control the machine learning training process.
+
+## I
+
+^sec-glossary-volume-ii-scalable-systems--39ec
+
+**I/O wall**\
+The widening performance disparity where storage media bandwidth and host bus interfaces cannot keep pace with accelerator consumption rates, resulting in low device utilization and idle compute cycles.
+
+**idempotent write**\
+A write whose repeated execution with the same stable identifier produces the same stored result as one execution, making replay safe after uncertain failures.
+
+**immersion cooling**\
+A liquid cooling technique where entire server blades and electronic components are submerged directly in a thermally conductive, electrically dielectric fluid bath.
+
+**in-network reduction (SHARP)**\
+A hardware-assisted collective communication mechanism that offloads associative reduction operations directly to switch ASICs at line rate, eliminating intermediate host-memory round trips.
+
+**incast**\
+A many-to-one traffic burst in which simultaneous senders overwhelm one destination egress or receiver, rapidly filling shared buffers and increasing tail latency.
+
+**inference**\
+The phase in machine learning where a trained model is used to make predictions or generate outputs on new, previously unseen data.
+
+**InfiniBand**\
+A high-performance, low-latency interconnect widely used for HPC and ML training clusters, with native RDMA and credit-based flow control.
+
+**inherently interpretable model**\
+A model architecture whose internal decision logic is directly inspectable, transparent, and understandable by design without requiring post-hoc explanation techniques.
+
+**intermittent faults**\
+Hardware faults that occur sporadically and unpredictably, appearing and disappearing without consistent patterns, making diagnosis challenging.
+
+**interpretability**\
+The degree to which humans can understand the reasoning behind a machine learning model’s predictions, often referring to inherently transparent models.
+
+**iron law**\
+The single-machine performance equation ${T}= {D_{\text{vol}}}/{\text{BW}} + {O}/({R_{\text{peak}}}{\eta_{\text{hw}}}) + {L_{\text{lat}}}$, which divides execution time into data movement, computation, and fixed overhead. The Fleet Law is its distributed counterpart.
+
+## J
+
+^sec-glossary-volume-ii-scalable-systems-j
+
+**jailbreak attack**\
+A prompt manipulation technique designed to bypass safety filters, alignment guardrails, and system guidelines of large language models to elicit restricted or harmful outputs.
+
+## K
+
+^sec-glossary-volume-ii-scalable-systems-k-adf5
+
+**k-anonymity**\
+A privacy guarantee where each released record is indistinguishable from at least ${k_{\text{anon}}} - 1$ others after generalizing or suppressing quasi-identifiers.
+
+**knowledge distillation**\
+A technique where a large, complex “teacher” model transfers its learned knowledge to a smaller, more efficient “student” model, maintaining performance while reducing computational requirements.
+
+**Kueue**\
+A Kubernetes-native job queueing controller that manages multi-tenant job admission, resource quotas, and cross-cluster queue borrowing before pods are created on worker nodes.
+
+**KV cache**\
+A memory buffer that stores previously computed transformer key and value tensors so autoregressive generation does not recompute attention history for every token.
+
+**KV cache wall**\
+The operational bottleneck in large-scale inference where accelerator high-bandwidth memory capacity and interconnect transfer bandwidth become saturated by dynamic key-value states across long contexts, rather than by model parameter weights.
+
+## L
+
+^sec-glossary-volume-ii-scalable-systems-l-b5d6
+
+**label shift**\
+A type of distribution shift in which the target-label distribution ${p}({y})$ changes while the class-conditional feature distribution ${p}({x}\mid {y})$ remains fixed.
+
+**large language models (LLMs)**\
+Neural networks with billions or trillions of parameters trained on vast text corpora, capable of understanding and generating human-like text across diverse domains and tasks.
+
+**life cycle assessment (LCA)**\
+A standardized, comprehensive cradle-to-grave accounting methodology (governed by ISO 14040/14044) for evaluating the environmental impacts of a product or service across design, manufacturing, operational use, and end-of-life disposal.
+
+**lighthouse archetype**\
+One of the three recurring workloads (Archetypes A, B, and C) that the book uses to expose a particular systems constraint across chapters. An archetype preserves continuity while allowing each chapter to examine the same workload through a different engineering lens.
+
+**Little’s law**\
+The queuing identity ${Q_{\text{req}}} = {\lambda_{\text{arr}}} {T_{\text{lat}}}$, which relates the average number of requests in a stable system to their arrival rate and average time in the system.
+
+**load balancing**\
+Techniques in mixture of experts models to ensure that computational load and training signal are distributed evenly across experts, preventing expert collapse and maintaining model efficiency.
+
+**LogGP model**\
+An extension of the LogP communication model incorporating a gap-per-byte parameter (${G}$) for large messages to accurately capture streaming and network pipelining effects in bulk data transfers.
+
+**LogP model**\
+An abstract parallel network performance model characterizing transfers using network latency (${L_{\text{LogGP}}}$), processor injection overhead (${o}$), message injection gap (${g}$), and rank count (${N}$).
+
+**lookup table**\
+A data structure that replaces runtime computation with simpler array indexing operations, commonly used for performance optimization.
+
+**LoRa**\
+A low-power, wide-area physical-layer radio modulation. LoRaWAN is the networking protocol that uses LoRa radios; achievable range depends on the frequency plan, transmit power, antennas, terrain, interference, and link budget.
+
+**low-rank adaptation**\
+A parameter-efficient fine-tuning method that approximates weight updates using low-rank matrices, reducing trainable parameters while maintaining adaptation capability.
+
+## M
+
+^sec-glossary-volume-ii-scalable-systems--fc9b
+
+**machine learning**\
+A subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed for each specific task.
+
+**machine learning fleet**\
+A distributed system of accelerators, storage, network fabrics, and control software engineered to operate as one coherent computational machine.
+
+**machine learning lifecycle**\
+The complete process of developing, deploying, and maintaining ML systems, from data collection through model retirement.
+
+**machine learning operations (MLOps)**\
+The practice of deploying and maintaining machine learning models in production reliably and efficiently through automated pipelines.
+
+**machine learning security**\
+The protection of data, models, and infrastructure from unauthorized access, manipulation, or disruption throughout the entire machine learning lifecycle.
+
+**machine unlearning**\
+Methods for removing or reducing the influence of specified training records from a model. The claimed guarantee must be evaluated against a stated reference training procedure; an approximate update does not automatically establish complete removal.
+
+**marginal emissions**\
+The emissions caused by an incremental increase in electricity demand, often from the generator dispatched next on the grid.
+
+**mean time between failures (MTBF)**\
+The average operating time between consecutive failures of a repairable component or system. For ${N}$ independent components with constant failure rates, system MTBF is the component value divided by ${N}$.
+
+**mean time to failure (MTTF)**\
+The average operating time before a component fails. Under a constant failure rate ${\lambda}$, it equals $1/{\lambda}$.
+
+**mean time to repair (MTTR)**\
+The average time required to diagnose, repair or replace, and restore a failed system component to full operational status.
+
+**megawatt-hour**\
+A unit of energy equal to one megawatt of power used for one hour, commonly used to measure electricity consumption in large facilities like data centers.
+
+**membership inference attack**\
+An adversarial privacy attack where an adversary queries a trained model to determine whether a specific individual’s record was part of the model’s training dataset.
+
+**meta-learning**\
+The process of learning how to learn, where models are trained to quickly adapt to new tasks with minimal data, particularly useful for personalization in on-device systems.
+
+**mice flow**\
+A transient, low-volume network flow, such as an RPC barrier or heartbeat message, whose primary performance constraint is tail latency and queuing delay rather than raw bandwidth.
+
+**microcontroller**\
+A compact integrated circuit designed to govern specific operations in embedded systems, typically featuring limited processing power and memory but optimized for low power consumption and real-time applications.
+
+**minimax**\
+A decision-making strategy used in game theory that attempts to minimize the maximum possible loss in adversarial scenarios.
+
+**mixed-precision training**\
+A technique that uses different numerical precisions for different parts of neural network training, typically combining 16-bit and 32-bit floating-point arithmetic to reduce memory usage and increase training speed.
+
+**mixture of experts**\
+An architectural approach that uses multiple specialized sub-models (experts) with a gating mechanism to route inputs to the most relevant experts, enabling efficient scaling while maintaining sparsity.
+
+**ML productivity goodput (MPG)**\
+The fraction of a fleet’s capacity-time that becomes useful work at the hardware’s ideal rate, the product of scheduling, runtime, and program goodput. Each factor is measured on a fixed accounting boundary so that every lost interval is charged to exactly one factor.
+
+**mobile ML**\
+Machine learning systems optimized for mobile devices like smartphones and tablets, balancing computational efficiency with inference accuracy for on-device processing.
+
+**MobileNet**\
+A family of efficient neural network architectures designed for mobile devices using depthwise separable convolutions to achieve significant reductions in model size and computation.
+
+**mode collapse**\
+A failure mode in generative models where the model produces only a limited variety of outputs, ignoring the diversity present in the training data and failing to capture the full distribution.
+
+**model card**\
+Standardized, short documentation reports that disclose the intended usage, performance benchmarks across subgroups, limitations, and ethical considerations of machine learning models.
+
+**model compression**\
+Techniques to reduce the size and computational requirements of machine learning models through methods like quantization, pruning, and knowledge distillation to enable deployment on resource-constrained devices.
+
+**model extraction**\
+An attack where an adversary reconstructs or clones the proprietary architecture, weights, or capabilities of a target model by systematically querying its public API.
+
+**model FLOPs utilization (MFU)**\
+The fraction of hardware peak FLOP/s spent on useful model computation over a stated measurement window. At fleet scale it measures program goodput only, how close retained steps run to the hardware peak, not the efficiency of the fleet as a whole.
+
+**model inversion attack**\
+A privacy attack that reconstructs representative features or private training data samples by analyzing model outputs and confidence scores.
+
+**model quantization**\
+A technique that reduces the precision of model parameters (typically from 32-bit to 8-bit or lower) to decrease model size and computational requirements while maintaining acceptable accuracy.
+
+**model registry**\
+A central catalog for model artifacts, versions, metadata, lineage, dependencies, and lifecycle state.
+
+**model theft**\
+An attack that copies a deployed model’s parameters, architecture, or behavior, either exactly (from leaked weights or artifacts) or approximately (by training a substitute on query responses, also called model extraction).
+
+**model uncertainty**\
+The inadequacy of a machine learning model to capture the full complexity of the underlying data-generating process, leading to prediction uncertainty.
+
+**model watermarking**\
+A technique for embedding verifiable ownership signatures into machine learning models that can be used to detect unauthorized use or prove intellectual property theft.
+
+**Monte Carlo dropout**\
+A technique that uses multiple forward passes with different dropout masks at inference time to estimate prediction uncertainty.
+
+**Moore’s law**\
+The observation that the number of transistors on a microchip doubles approximately every two years, reducing cost per transistor under historical scaling assumptions.
+
+**multi-instance GPU (MIG)**\
+NVIDIA’s hardware-level partitioning architecture that slices a physical GPU into up to seven fully isolated GPU instances, each with dedicated memory, SMs, and crossbar bandwidth.
+
+**multi-process service (MPS)**\
+NVIDIA’s runtime multiplexing layer that allows multiple CUDA processes to execute concurrently on a single GPU by sharing execution engines, compute contexts, and memory bandwidth.
+
+**multicalibration**\
+A fairness technique ensuring that model predictions remain calibrated across intersecting subgroups, addressing complex demographic interactions.
+
+## N
+
+^sec-glossary-volume-ii-scalable-systems-n-faa6
+
+**NCCL**\
+NVIDIA Collective Communications Library, a GPU communication library for topology-aware collective operations.
+
+**network fabric**\
+The links, switches, routing, and transport mechanisms that connect compute nodes and determine the bandwidth, latency, and failure behavior of distributed communication.
+
+**neural architecture search**\
+Automated methods for designing optimal neural network architectures, using algorithms to explore the space of possible network designs and find the best performing structures.
+
+**neural engine**\
+Specialized hardware accelerators designed for machine learning inference and training, such as Apple’s Neural Engine or Google’s Edge TPU, optimized for on-device AI workloads.
+
+**neural network**\
+A computational model inspired by biological neural networks, consisting of interconnected nodes (neurons) organized in layers that can learn complex patterns from data.
+
+**neural processing unit (NPU)**\
+A dedicated domain-specific hardware accelerator optimized for tensor arithmetic, low-precision operations, and high energy efficiency in mobile and edge devices.
+
+**neuromorphic computing**\
+Computing architectures inspired by the structure and function of biological neural networks, designed to process information more efficiently than traditional digital computers.
+
+**non-blocking fabric**\
+A network whose internal capacity allows any feasible permutation of endpoint pairs to communicate at full line rate without contention inside the fabric.
+
+**non-IID data**\
+Training or evaluation data across distributed devices whose local distributions are not independent and identically distributed, inducing client drift and slowing convergence in federated learning.
+
+**Non-Volatile Memory Express (NVMe)**\
+A high-performance protocol for SSDs attached over PCIe, often used as a local cache or checkpoint staging tier in ML storage hierarchies.
+
+**NVLink**\
+A high-bandwidth NVIDIA interconnect for GPU-to-GPU communication within a node.
+
+**NVMe over Fabrics (NVMe-oF)**\
+A storage networking protocol that extends NVMe command sets and queue parallelism across low-latency RDMA or TCP fabrics, enabling remote cluster storage access at near-local solid-state latency.
+
+## O
+
+^sec-glossary-volume-ii-scalable-systems--1d6f
+
+**object storage**\
+A storage model that manages data as objects with metadata and network API access, commonly used for durable lower-cost capacity.
+
+**on-device adaptation**\
+The local training or fine-tuning of a subset of parameters of a pretrained model directly on edge silicon without transmitting private training examples off-device.
+
+**on-device learning**\
+The local adaptation or training of machine learning models directly on deployed hardware devices without reliance on continuous connectivity to centralized servers.
+
+**online softmax**\
+A numerically stable, incremental softmax algorithm that updates running maximum and sum statistics across tiles, eliminating the need to materialize global attention matrices.
+
+**operational carbon**\
+The greenhouse gas emissions produced directly and indirectly by the consumption of electrical energy to run computing systems and facility infrastructure during their operational lifespan.
+
+**operator fusion**\
+An optimization that combines adjacent operations into fewer kernels so intermediate values stay on chip and memory traffic or launch overhead falls.
+
+**optical circuit switching (OCS)**\
+A physical networking architecture that redirects optical signals directly between fiber ports using micro-electromechanical mirror (MEMS) arrays without intermediate optical-electrical-optical conversions.
+
+**orchestration**\
+The coordination of fleet resources and workloads, including scheduling, placement, scaling, sequencing, recovery, and resource allocation across distributed infrastructure.
+
+**out-of-distribution (OOD) detection**\
+The algorithmic task of identifying whether a given input sample originates from a different data distribution than the dataset on which the model was trained.
+
+**over-selection**\
+A federated client scheduling strategy where the coordinator selects more clients than required for a training round and aggregates the first responding cohort to mitigate stragglers.
+
+**oversubscription**\
+A topology design in which aggregate downstream capacity exceeds upstream capacity, reducing switch cost while creating a shared bandwidth bottleneck under simultaneous traffic.
+
+**oxide breakdown**\
+The failure of an oxide layer in transistors due to excessive electric field stress, causing permanent hardware faults.
+
+## P
+
+^sec-glossary-volume-ii-scalable-systems-p-6377
+
+**packet spraying**\
+A dynamic multipath routing technique that disperses individual packets belonging to the same transport flow across multiple equal-cost network paths simultaneously, maximizing bisection bandwidth utilization.
+
+**PagedAttention**\
+An attention computation algorithm and dynamic memory manager inspired by operating system virtual memory paging that partitions key-value cache tensors into non-contiguous physical page blocks linked via page tables.
+
+**PAM4**\
+Pulse Amplitude Modulation 4-Level, a multilevel signaling scheme that encodes two bits per baud across four distinct electrical voltage levels, doubling channel throughput over traditional NRZ encoding.
+
+**parallel file system (PFS)**\
+A distributed file system (such as Lustre or GPFS) that decouples metadata operations from striped data blocks across multiple storage nodes to aggregate high concurrent bandwidth.
+
+**parameter**\
+A learnable variable in a machine learning model, such as weights and biases in neural networks, that are adjusted during training to optimize performance.
+
+**parameter-efficient fine-tuning (PEFT)**\
+Adaptation methods that update only a small subset of parameters or added modules while keeping most pretrained weights frozen.
+
+**partition skew**\
+An uneven distribution of records or keys that leaves one distributed-pipeline partition with disproportionate work and makes it determine stage completion time.
+
+**permanent faults**\
+Hardware defects that persist irreversibly until repair or component replacement, consistently affecting system behavior.
+
+**personalization layers**\
+Model components, typically the final classification layers, that are adapted locally to user-specific data while keeping shared backbone layers frozen.
+
+**PFC deadlock**\
+A permanent buffer starvation condition in a multi-hop lossless Ethernet network where cyclical priority flow control PAUSE-frame dependencies among switch queues halt packet forwarding indefinitely.
+
+**PFC storm**\
+A cascading congestion phenomenon in lossless fabrics where buffer saturation at a single slow-draining endpoint causes priority flow control PAUSE frames to propagate upstream across multiple tiers, freezing unrelated victim flows.
+
+**physical attack**\
+Direct manipulation or tampering with computing hardware to compromise the security and integrity of machine learning systems, bypassing traditional software defenses.
+
+**pipeline bubble**\
+Idle accelerator time in pipeline parallelism while stages wait for the pipeline to fill or drain. For ${N_{\text{PP}}}$ balanced stages and ${m}$ microbatches, the bubble fraction is $({N_{\text{PP}}}-1)/({N_{\text{PP}}}-1+{m})$.
+
+**pipeline parallelism**\
+A distributed training strategy that partitions layers into sequential stages and uses microbatches to overlap work across devices.
+
+**placement group**\
+A scheduler abstraction that enforces spatial or topological co-location constraints across multiple workers, minimizing cross-switch communication latency in distributed model training.
+
+**pluggable optics**\
+Modular, field-replaceable optical transceiver units (such as QSFP and OSFP form factors) mounted to switch and NIC faceplates that interface SerDes electrical traces with optical fibers.
+
+**point-in-time correctness**\
+The requirement in feature computation that training datasets reflect the exact feature values available at the precise historical timestamp of the prediction event, preventing data leakage.
+
+**point-in-time join**\
+A join that retrieves feature values valid for a historical prediction and available at that prediction time, preventing future or late-arriving information from leaking into training.
+
+**post-hoc explanations**\
+Explanation methods applied after model training that treat the model as a black box and infer reasoning patterns from input-output behavior.
+
+**power delivery network (PDN)**\
+The physical electrical distribution hierarchy, spanning rack-scale busbars, board power planes, voltage regulator modules, and package decoupling capacitors, that supplies stable sub-volt, kilo-ampere current to low-voltage silicon gates.
+
+**power usage effectiveness (PUE)**\
+The ratio of total data-center facility energy to the energy delivered to IT equipment. A value of 1.0 would mean no energy spent on cooling, power conversion, or other facility overhead.
+
+**predictive parity**\
+A fairness criterion requiring that the positive predictive value of a classifier is equal across different protected demographic subgroups.
+
+**preemption cascade**\
+A systemic failure mode where preempting one job causes cascading resource evictions across dependent or lower-priority jobs, incurring compounding checkpointing and cold-start overheads.
+
+**preemption overhead**\
+The cumulative unproductive overhead incurred by preempting and restarting a distributed training job, comprising time spent checkpointing, reloading weights, reconstructing communication groups, and recomputing lost iterations.
+
+**prefetch buffer**\
+A host DRAM queue that stages and holds pre-decoded, augmented training batches ahead of accelerator execution to absorb storage access jitter and tail latency spikes.
+
+**prefill-decode disaggregation**\
+A distributed serving architecture that physically decouples prompt prefill processing onto compute-dense GPU nodes from token decoding onto memory-bandwidth-optimized GPU nodes, transferring intermediate KV cache activations across network fabrics.
+
+**prefill phase**\
+The initial LLM inference phase that processes the prompt and populates the KV cache, often dominated by compute.
+
+**prefix caching**\
+A KV cache optimization that detects and retains precomputed attention activations for shared prompt prefixes (such as system instructions or few-shot exemplars), bypassing redundant prefill computation across sessions.
+
+**principle of least privilege**\
+A security concept where users are given the minimum access levels necessary to complete their job functions, reducing security risks.
+
+**priority flow control (PFC)**\
+An IEEE 802.1Qbb link-layer flow-control standard for lossless Ethernet that pauses upstream senders via PAUSE frames on a designated traffic class before switch ingress buffers saturate.
+
+**privacy budget**\
+The differential-privacy parameters governing the permitted change in output distributions on neighboring inputs. The parameter ${\epsilon}$ controls a multiplicative bound of $e^{{\epsilon}}$, ${\delta}$ allows additive slack, and privacy accounting tracks how guarantees compose across releases.
+
+**privacy-preserving techniques**\
+Methods intended to protect privacy at specified boundaries, including differential privacy and cryptographic protocols. Federated learning and local processing reduce raw-data movement but do not alone guarantee that updates or outputs reveal no private information.
+
+**privacy-utility trade-off**\
+The fundamental tension between preserving individual privacy and maintaining the utility of data for machine learning, requiring careful balance through techniques like differential privacy.
+
+**program goodput**\
+The factor of ML productivity goodput (MPG) that measures how close retained steps run to the hardware’s ideal rate, charging exposed communication, pipeline bubbles, stragglers, and memory stalls. MFU measures it for compute-bound training.
+
+**projected gradient descent (PGD)**\
+An iterative gradient-based adversarial attack that repeatedly perturbs an input and projects it back into an allowed norm ball.
+
+**prompt injection**\
+An attack against large language models where untrusted input content overrides system instructions and directs the model to perform unauthorized actions.
+
+**pruning**\
+A model compression technique that removes unnecessary connections or neurons from neural networks to reduce model size and computational requirements without significantly impacting performance.
+
+## Q
+
+^sec-glossary-volume-ii-scalable-systems-q-3a81
+
+**quantization**\
+The process of reducing the precision of model weights and activations from floating-point to lower-bit representations to decrease memory usage and accelerate computation on edge devices.
+
+**quantization-aware training (QAT)**\
+Training that simulates low-precision arithmetic so a model remains accurate after deployment with quantized weights or activations.
+
+**quota governance**\
+The organizational policies and control mechanisms (such as guaranteed vs. burst allocations, review cycles, and utilization-based reclamation) that regulate multi-tenant capacity reservation.
+
+## R
+
+^sec-glossary-volume-ii-scalable-systems-r-514e
+
+**rail-optimized routing**\
+A communication mapping that aligns corresponding model shards with the same local GPU and network rail across nodes. It can distribute traffic across available NICs, but shared links, placement, and competing traffic still determine contention.
+
+**rail-optimized topology**\
+A cluster network topology tailored for multi-accelerator servers where identical GPU ranks across nodes are connected to separate, dedicated leaf-switch fabrics, minimizing switch traversals for data-parallel collectives.
+
+**randomized smoothing**\
+A certified-defense method that classifies noisy versions of an input to obtain probabilistic robustness guarantees.
+
+**RDMA over Converged Ethernet (RoCE)**\
+A protocol that carries remote direct memory access semantics over Ethernet, relying on carefully managed low-loss or lossless behavior.
+
+**recursive halving-doubling**\
+A collective reduction algorithm that pairs ranks at exponentially increasing distances across $\log_2 {N}$ rounds, achieving both logarithmic latency and bandwidth optimality for power-of-two participant counts.
+
+**red teaming**\
+A structured adversarial testing exercise where security and safety experts deliberately probe ML systems, interfaces, and serving pipelines for safety vulnerabilities, security flaws, and compliance failures.
+
+**ReduceScatter**\
+A collective communication operation that reduces inputs across ranks and scatters distinct shards of the reduced result back to ranks.
+
+**regularization**\
+Methods used in machine learning to prevent overfitting by adding penalty terms to the loss function, constraining model complexity.
+
+**reliability collapse**\
+The exponential decline, ${A_{\text{component}}}^{N}$, in the probability that all ${N}$ required components of a tightly coupled job are available, even when each component’s availability ${A_{\text{component}}}$ is high.
+
+**reliability gap**\
+The difference between component reliability and the much lower probability that every component required by a large, tightly coupled job remains available. The gap widens as fleet size and job duration increase.
+
+**remote direct memory access (RDMA)**\
+A networking mechanism that lets one machine read or write another machine’s memory without kernel-mediated copies on the data path.
+
+**renewable energy**\
+Energy collected from renewable resources that are naturally replenished, including solar, wind, hydroelectric, geothermal, and biomass sources.
+
+**responsible AI**\
+The practice of developing and deploying AI systems in ways that are ethical, fair, transparent, and beneficial to society while minimizing potential harms and biases.
+
+**reward hacking**\
+The phenomenon where AI systems exploit unintended aspects of reward functions to maximize scores while violating the intended objectives.
+
+**ridge point**\
+The arithmetic intensity in the Roofline Model at which the memory bandwidth ceiling meets the peak computational ceiling, delineating the boundary between memory-bound and compute-bound operational regimes.
+
+**ring AllReduce**\
+A bandwidth-optimal collective communication algorithm that organizes participants into a logical ring, executing sequential ReduceScatter and AllGather neighbor transfers so each node communicates a constant volume of data independent of rank count.
+
+**RLHF**\
+Reinforcement learning from human feedback, a training method that uses human preferences to guide model behavior, enabling AI systems to better align with human values and intentions.
+
+**robust AI**\
+The ability of artificial intelligence systems to maintain performance and reliability despite internal errors, external perturbations, and environmental changes.
+
+**robustness**\
+A model’s ability to maintain stable and consistent performance under input variations, environmental changes, or adversarial conditions.
+
+**robustness margin**\
+The minimum distance or perturbation magnitude required to alter a model’s prediction on a given input sample under defined perturbation norms.
+
+**robustness metrics**\
+Quantitative measures for evaluating model stability under various perturbations, including adversarial accuracy, certified robustness bounds, and performance under distribution shift.
+
+**roofline model**\
+A performance model that compares arithmetic intensity with peak compute and memory bandwidth to identify compute-bound and bandwidth-bound regimes.
+
+**runtime goodput**\
+The factor of ML productivity goodput (MPG) that measures the share of held time that becomes retained progress at the job’s fault-free step rate, charging startup, input stalls, checkpoint pauses, failure recovery, rework, and preemption.
+
+## S
+
+^sec-glossary-volume-ii-scalable-systems--ef85
+
+**scale moment**\
+A critical threshold where an ML workload outgrows the memory capacity, arithmetic throughput, or reliability envelope of a single node, necessitating distributed execution and exposing systems to the network wall, energy wall, and reliability collapse.
+
+**scaling efficiency**\
+The ratio of actual distributed training throughput to ideal linear speedup (${\eta_{\text{scaling}}} = {T_1} / ({N}\cdot {T_N})$), quantifying capacity loss from communication, synchronization barriers, and idle pipeline bubbles.
+
+**scaling laws**\
+Empirical power-law relationships between model loss and training compute, parameter count, or dataset size, of the form ${\mathcal{L}}({X}) = {A_{\mathcal{L}}}{}{X}^{-{\alpha_{\text{scale}}}} + {C_{\mathcal{L}}}$, valid within the regime in which they were fitted. They explain why each further gain in model quality requires multiplicatively more resources.
+
+**scheduling goodput**\
+The factor of ML productivity goodput (MPG) that measures the share of fleet capacity-time held by complete allocations, charging unallocated capacity, partially assembled gangs, and fragmentation.
+
+**scope 1 emissions**\
+Direct greenhouse gas emissions from sources that are owned or controlled by an organization, such as on-site diesel backup generators and company facilities.
+
+**scope 2 emissions**\
+Indirect greenhouse gas emissions associated with the generation of purchased electricity, steam, heating, or cooling consumed by an organization.
+
+**scope 3 emissions**\
+All other indirect greenhouse gas emissions that occur throughout an organization’s upstream and downstream value chain, including hardware manufacturing and supply chain logistics.
+
+**secure aggregation**\
+A cryptographic protocol that lets a coordinator recover an aggregate of participating clients’ updates without seeing individual unmasked updates, under stated participation and collusion assumptions. It does not by itself bound information revealed by the aggregate or final model.
+
+**secure boot**\
+A hardware-backed startup process that cryptographically verifies firmware and software before execution.
+
+**secure computation**\
+Cryptographic protocols that enable multiple parties to jointly compute functions over private inputs without revealing those inputs to each other.
+
+**secure multi-party computation**\
+A cryptographic method that allows multiple parties to jointly compute a function over their private inputs without revealing those inputs to each other.
+
+**self-supervised learning**\
+A machine learning paradigm where models learn representations from unlabeled data by predicting parts of the input from other parts, reducing dependence on manually labeled datasets.
+
+**sequence parallelism**\
+A distributed technique that shards activations along the token sequence dimension across tensor-parallel ranks during non-GEMM operations (LayerNorm, Dropout) using ReduceScatter and AllGather without increasing total communication volume.
+
+**service-level objective (SLO)**\
+A measurable target for service behavior such as latency, freshness, availability, or model quality.
+
+**shadow deployment**\
+A deployment mechanism where production traffic is duplicated and routed to a candidate model alongside the active production model to validate performance and latency without affecting user experience.
+
+**SHAP**\
+SHapley Additive exPlanations, a feature-attribution framework based on Shapley values from cooperative game theory.
+
+**sharded checkpointing**\
+A checkpointing approach where each worker saves only its assigned model, gradient, or optimizer shard.
+
+**sharded data parallelism**\
+A distributed training strategy (exemplified by ZeRO and FSDP) that partitions model parameters, gradients, and optimizer states across data-parallel ranks, reconstructing full layers on demand via collective communication.
+
+**side-channel attack**\
+An attack that exploits information leaked through the physical implementation of computing systems, such as power consumption, electromagnetic emissions, or timing variations.
+
+**silent data corruption (SDC)**\
+A hardware error in compute units, memory, or data paths that changes a stored or computed value without raising any detectable error, so the corrupted result propagates silently into training or inference.
+
+**single instruction, multiple threads (SIMT)**\
+A parallel execution model where multiple independent threads execute the same instruction stream in lockstep across vector execution units, hiding high memory latency through hardware warp scheduling over large thread pools.
+
+**small file problem**\
+A data-loading bottleneck where accessing millions of individual sample files exhausts storage metadata server request capacity long before physical data transfer bandwidth saturates.
+
+**software fault**\
+Unintended behavior in software systems resulting from defects, bugs, or design oversights that can impair performance or compromise security.
+
+**sparse training**\
+A training approach that maintains sparsity in neural network weights throughout the training process, reducing computational requirements and memory usage.
+
+**sparse updates**\
+A training strategy that selectively updates only a subset of model parameters based on their importance or contribution to performance, reducing computational and memory overhead.
+
+**specification gaming**\
+When AI systems find unexpected ways to achieve high rewards that technically satisfy the objective function but violate the intended purpose.
+
+**speculative decoding**\
+An inference acceleration mechanism where a compact, lightweight draft model speculatively generates multiple candidate tokens in parallel that are subsequently verified in a single forward pass by the large target model.
+
+**speculative execution**\
+A performance optimization in processors that executes instructions before confirming they are needed, which can inadvertently expose sensitive data through microarchitectural side channels.
+
+**split learning**\
+A distributed learning paradigm and model partitioning technique where a neural network is divided between an edge client and a central server, with intermediate activations and gradients exchanged at a cut layer.
+
+**stale synchronous parallel (SSP)**\
+A synchronization model that lets faster workers advance a bounded number of steps ahead of the slowest worker.
+
+**straggler**\
+A correct but slow worker that delays synchronous progress for the rest of a distributed job.
+
+**strong scaling**\
+Adding processors to a fixed problem to finish it sooner. Its speedup is bounded by Amdahl’s law.
+
+**stuck-at fault**\
+A permanent hardware fault where a signal line becomes fixed at a logical 0 or 1 regardless of input, causing incorrect computations.
+
+**supply chain attack**\
+An attack that compromises hardware or software components during the manufacturing, distribution, or integration process, potentially affecting multiple downstream systems.
+
+**sustainable AI**\
+The practice of developing and deploying artificial intelligence systems that minimize environmental impact while maintaining effectiveness and accessibility.
+
+**switch radix**\
+The number of ports on a network switch, which constrains endpoint fan-out, topology depth, and the number of switching tiers needed at a given cluster scale.
+
+**symbol rate**\
+The number of signaling symbols transmitted per second on a link; multilevel modulation carries multiple bits per symbol without increasing this physical transition rate proportionally.
+
+**synchronous tight coupling**\
+A distributed execution dependency where all participating nodes must complete local computation and synchronize states at global barriers before any worker can proceed, coupling cluster progress to the slowest device.
+
+**synthetic data generation**\
+The creation of artificial datasets that approximate the statistical properties of real data while reducing privacy risks and avoiding direct exposure of sensitive information.
+
+**systolic array**\
+A specialized grid of tightly coupled processing elements that rhythmically computes and streams matrix data directly between neighbor cells without writing intermediate partial sums back to register files or memory.
+
+## T
+
+^sec-glossary-volume-ii-scalable-systems--e763
+
+**tail latency**\
+High-percentile request latency, such as p99, that captures rare slow responses affecting distributed service reliability.
+
+**targeted attack**\
+A type of data poisoning attack that aims to cause misclassification of specific inputs or classes while leaving the model’s general performance largely intact.
+
+**tensor core**\
+A specialized accelerator execution unit designed to perform mixed-precision fused matrix multiply-accumulate operations (${\mathbf{D}}= {\mathbf{A}}\cdot {\mathbf{B}}+ {\mathbf{C}}$) on matrix tiles as a single hardware instruction.
+
+**tensor parallelism**\
+An intra-layer model parallelism technique that shards individual weight matrices and operations (such as column- and row-parallel linear layers in multi-head attention and MLPs) across accelerators connected via high-bandwidth interconnects.
+
+**thermal design power (TDP)**\
+The vendor-specified maximum sustained rate of heat energy in watts that a cooling subsystem must dissipate under maximum expected operating workloads to maintain silicon below its critical junction temperature.
+
+**threat modeling**\
+A structured security analysis that identifies assets, adversary capabilities, attack paths, and defensive priorities for a system.
+
+**tiered storage**\
+A hierarchical data placement architecture spanning hot local NVMe, warm parallel file systems, cold object storage, and deep archive tiers to optimize throughput against capacity economics.
+
+**time per output token (TPOT)**\
+The average wall-clock time required to generate each subsequent token during autoregressive decoding, governed primarily by accelerator memory bandwidth.
+
+**time to first token (TTFT)**\
+The latency elapsed between submitting an inference request and receiving its initial generated token, reflecting the duration of the compute-bound prefill phase and serving as a primary interactive responsiveness metric.
+
+**time-travel query**\
+A database or feature store capability that reconstructs the exact state of feature data as it existed at any historical point in time.
+
+**TinyML**\
+Machine learning architectures, runtimes, and optimization techniques engineered to execute inference and ultra-lightweight adaptation on microcontrollers operating under milliwatt power and sub-megabyte memory limits.
+
+**topology-aware scheduling**\
+Placement that accounts for GPU and interconnect locality such as NVLink domains, racks, rails, or switch hierarchy.
+
+**total cost of ownership (TCO)**\
+A comprehensive financial assessment of the complete direct and indirect costs associated with designing, deploying, and maintaining machine learning infrastructure throughout its operational lifecycle.
+
+**TPU**\
+Tensor Processing Unit, a specialized AI accelerator chip developed by Google specifically designed for machine learning workloads, particularly neural network computations.
+
+**trackable resource (TRES)**\
+A fine-grained accounting and scheduling abstraction (standardized in Slurm) that treats individual accelerators, licenses, memory, and interconnect rails as distinct consumable scheduling units.
+
+**training**\
+The process of teaching a machine learning model to make predictions by showing it examples and adjusting its parameters based on performance feedback.
+
+**training-serving skew**\
+A discrepancy in performance between training and production environments caused by differences in data processing pipelines, feature definitions, or serving runtime environments.
+
+**transfer learning**\
+A machine learning technique that uses knowledge from a pretrained model on one task to improve learning on a related task, enabling efficient adaptation with limited data.
+
+**transformer**\
+A neural network architecture that uses self-attention mechanisms to process sequential data, forming the foundation for many modern language models.
+
+**transient faults**\
+Temporary hardware faults that do not persist or cause permanent damage but can lead to incorrect computations if not handled properly.
+
+**transient voltage droop**\
+A rapid drop in core supply voltage caused by the product of parasitic loop inductance and high current slew rates (${\Delta} {V}= {L_{\text{parasitic}}}\frac{d{i}}{d{t}}$) when thousands of execution cores abruptly transition between idle barriers and dense computation.
+
+**transparency**\
+Openness about how AI systems are built, trained, validated, and deployed, including disclosure of data sources, design assumptions, and limitations.
+
+**tree AllReduce**\
+A latency-oriented collective algorithm that reduces data up a spanning tree to a root before broadcasting results down, achieving $\mathcal{O}(\log {N})$ round-trip latency at the expense of higher link bandwidth consumption on large payloads.
+
+**triple modular redundancy (TMR)**\
+A fault-tolerance technique that runs three replicas of a computation and uses majority voting to mask one independent faulty result; it does not guarantee correctness under multiple or common-mode faults.
+
+**Triton**\
+A domain-specific language and compiler for tiled neural network programming that abstracts thread scheduling and memory coalescing while exposing block-level memory hierarchy management.
+
+**two-phase commit (2PC)**\
+A coordination protocol with prepare and commit phases that ensures participants commit atomically or abort.
+
+## U
+
+^sec-glossary-volume-ii-scalable-systems-u
+
+**uncoordinated checkpointing**\
+A checkpointing scheme where distributed nodes record local state independently without cross-node synchronization, risking domino-effect rollbacks during recovery.
+
+## V
+
+^sec-glossary-volume-ii-scalable-systems-v-50cc
+
+**value alignment**\
+The principle that AI systems should pursue goals consistent with human intent and ethical norms, addressing the challenge of encoding human values in machine objectives.
+
+**value-sensitive design**\
+A methodology for incorporating human values into technology design through systematic stakeholder engagement and ethical consideration of system impacts.
+
+**Volcano**\
+A cloud-native batch scheduling system for Kubernetes designed for distributed ML and big-data workloads, providing gang scheduling, fair-share queuing, and resource reservation primitives.
+
+## W
+
+^sec-glossary-volume-ii-scalable-systems-w-ec5f
+
+**wafer-scale engine (WSE)**\
+An accelerator architecture that integrates compute, memory, and communication across most or all of a silicon wafer to reduce the bandwidth and latency costs of crossing separate package boundaries.
+
+**wake-word detection**\
+An always-on keyword spotting workload executed on low-power edge processors that detects specific acoustic trigger phrases with minimal latency and sub-milliwatt power draw.
+
+**warehouse-scale computer (WSC)**\
+A building-scale computing system operated as one coherent machine, with the network fabric and storage hierarchy treated as system-level resources.
+
+**watchdog timer**\
+A hardware component that monitors system execution and triggers recovery actions if the system becomes unresponsive or stuck.
+
+**water usage effectiveness (WUE)**\
+The liters of water a data center consumes per kilowatt-hour of IT energy, determined largely by its cooling and heat-rejection design.
+
+**watermark**\
+A streaming-system estimate that event time has advanced far enough to close a window, subject to an explicit policy for arrivals that appear later.
+
+**weak scaling**\
+Growing the problem in proportion to the number of processors so that work per processor stays roughly constant. Gustafson’s law describes its speedup.
+
+**WebDataset**\
+A high-throughput sequential data loading format that packages dataset samples inside standard POSIX tar archives, enabling direct linear streaming over object storage without per-file filesystem overhead.
+
+**weight freezing**\
+A technique that fixes most model parameters during training while allowing only specific layers or components to be updated, reducing computational requirements for on-device adaptation.
+
+**white-box attack**\
+An adversarial attack where the attacker has complete knowledge of the model’s architecture, parameters, training data, and internal workings, enabling highly effective attack strategies.
+
+## Y
+
+^sec-glossary-volume-ii-scalable-systems-y
+
+**Young-Daly formula**\
+The first-order optimal checkpoint interval ${T^\ast_{\text{ckpt}}} = \sqrt{2 {T_{\text{write}}} \, {\text{MTBF}_{\text{system}}}}$, which balances checkpoint write time against expected rework after failures. It is accurate when writes are short compared with the system MTBF.
+
+## Z
+
+^sec-glossary-volume-ii-scalable-systems-z-38c9
+
+**ZeRO (Zero Redundancy Optimizer)**\
+A memory-optimization paradigm that progressively eliminates redundant state across data-parallel workers by partitioning optimizer states (ZeRO-1), gradients (ZeRO-2), and model parameters (ZeRO-3).
+
+**zero-bubble pipeline scheduling**\
+An advanced pipeline scheduling strategy that decouples backward passes into activation gradient computation (B) and deferred weight gradient computation (W), using the W kernels to fill startup, turnaround, and drain bubbles.
+
+**zero-day vulnerability**\
+A previously unknown security flaw in software or hardware that can be exploited by attackers before developers have had a chance to create and distribute a patch.
+
+Back to top
+
+## Source
+
+[Repository Source](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/books/vol2/backmatter/glossary/glossary.qmd) · [Original License](https://github.com/klappe-pm/cs249r_book/blob/de87c0103806d7bfb1c677dbb77a2b92fa00c298/LICENSE.md)
+
+[Rendered Reading Snapshot](https://mlsysbook.ai/vol2/backmatter/glossary/glossary.html#sec-glossary). Rendering provenance is recorded in the import manifest.
